@@ -72,7 +72,7 @@ import { RouterModule } from '@angular/router';
           <h3>JSON Convertor</h3>
           <p>Converting JSON(Coming Soon)</p>
           <div class="tool-features">
-            <span class="feature-tag">REST API</span>
+            <span class="feature-tag">Conversion</span>
             <span class="feature-tag">Batch Processing</span>
           </div>
         </div>
