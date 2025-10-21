@@ -1,0 +1,153 @@
+.home-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 60px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  color: white;
+  margin-bottom: 60px;
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    .cta-btn {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+
+      &.primary {
+        background: #ff6b6b;
+        color: white;
+
+        &:hover {
+          background: #ff5252;
+          transform: translateY(-2px);
+        }
+      }
+
+      &.secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+
+        &:hover {
+          background: white;
+          color: #667eea;
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+}
+
+.features-section {
+  margin-bottom: 60px;
+
+  h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: #2c3e50;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+  }
+
+  .feature-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #7f8c8d;
+      line-height: 1.6;
+    }
+  }
+}
+
+.quick-start {
+  h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: #2c3e50;
+  }
+
+  .code-example {
+    background: #2c3e50;
+    border-radius: 10px;
+    padding: 30px;
+    color: white;
+    position: relative;
+
+    pre {
+      margin: 0;
+      font-family: 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+
+      &:hover {
+        background: #2980b9;
+      }
+    }
+  }
+}
