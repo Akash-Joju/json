@@ -1,69 +1,207 @@
 .about-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 20px;
+  width: 100%;
+  overflow-x: hidden !important;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
 }
 
 .about-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
+  width: 100%;
+  padding-top: 10px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 30px;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 25px;
+  }
 
   h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
     color: #2c3e50;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    word-wrap: break-word;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 1.8rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.5rem;
+    }
   }
 
   .subtitle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #7f8c8d;
+    word-wrap: break-word;
+    line-height: 1.4;
+
+    @media (max-width: 480px) {
+      font-size: 1rem;
+    }
   }
 }
 
 .about-content {
+  width: 100%;
+  overflow-x: hidden !important;
+
   .about-section {
     background: white;
-    padding: 30px;
+    padding: 25px;
     border-radius: 10px;
-    margin-bottom: 30px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    border: 1px solid #f0f0f0;
+
+    @media (max-width: 768px) {
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 480px) {
+      padding: 18px 15px;
+      margin-bottom: 18px;
+      border-radius: 8px;
+    }
 
     h2 {
       color: #2c3e50;
-      margin-bottom: 15px;
-      font-size: 1.5rem;
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+      word-wrap: break-word;
+      line-height: 1.3;
+
+      @media (max-width: 480px) {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
     }
 
     p {
       color: #5a6c7d;
       line-height: 1.6;
-      font-size: 1.1rem;
+      font-size: 1rem;
+      word-wrap: break-word;
+      margin: 0;
+
+      @media (max-width: 480px) {
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
     }
   }
 
   .tech-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+    gap: 16px;
+    margin-top: 18px;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr !important;
+      gap: 10px;
+    }
 
     .tech-item {
       background: #f8f9fa;
-      padding: 20px;
+      padding: 18px;
       border-radius: 8px;
       text-align: center;
       border-left: 4px solid #3498db;
+      transition: transform 0.2s ease;
+      width: 100%;
+      overflow-x: hidden !important;
+
+      @media (max-width: 768px) {
+        padding: 16px;
+      }
+
+      @media (max-width: 480px) {
+        padding: 14px 12px;
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+      }
 
       h3 {
         color: #2c3e50;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+        word-wrap: break-word;
+
+        @media (max-width: 480px) {
+          font-size: 1rem;
+        }
       }
 
       p {
         color: #7f8c8d;
         margin: 0;
-        font-size: 1rem;
+        font-size: 0.9rem;
+        word-wrap: break-word;
+
+        @media (max-width: 480px) {
+          font-size: 0.85rem;
+        }
       }
     }
+  }
+}
+
+// Touch device improvements
+@media (hover: none) {
+  .about-content .tech-item:hover {
+    transform: none;
+  }
+}
+
+// Very small screens
+@media (max-width: 360px) {
+  .about-container {
+    padding: 10px 8px;
+  }
+
+  .about-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .about-content .about-section {
+    padding: 15px 12px;
+  }
+}
+
+/* CRITICAL FIX: Ensure header is below navbar and properly aligned */
+.about-container .about-header {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .about-container .about-header {
+    margin-top: 10px !important;
   }
 }

@@ -42,6 +42,13 @@ import { RouterModule } from '@angular/router';
             ⚡ JSON Differ
           </a>
           <a 
+            routerLink="/xml-viewer" 
+            routerLinkActive="active" 
+            class="nav-link"
+            (click)="closeMobileMenu()">
+            📄 XML Viewer
+          </a>
+          <a 
             routerLink="/tools" 
             routerLinkActive="active" 
             class="nav-link"
@@ -64,19 +71,19 @@ import { RouterModule } from '@angular/router';
             (click)="toggleMobileMenu()"
             [class.active]="isMobileMenuOpen"
             aria-label="Toggle menu"
-            aria-expanded="isMobileMenuOpen">
+            [attr.aria-expanded]="isMobileMenuOpen">
             <span class="menu-icon">☰</span>
             <span class="close-icon">✕</span>
           </button>
         </div>
+      </div>
 
-        <!-- Mobile menu overlay -->
-        <div 
-          class="mobile-overlay" 
-          [class.active]="isMobileMenuOpen"
-          (click)="closeMobileMenu()"
-          aria-hidden="true">
-        </div>
+      <!-- Mobile menu overlay -->
+      <div 
+        class="mobile-overlay" 
+        [class.active]="isMobileMenuOpen"
+        (click)="closeMobileMenu()"
+        aria-hidden="true">
       </div>
     </nav>
   `,
@@ -100,10 +107,8 @@ export class NavigationComponent implements OnDestroy {
   // Update body scroll based on menu state
   private updateBodyScroll(): void {
     if (this.isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
       document.body.classList.add('menu-open');
     } else {
-      document.body.style.overflow = '';
       document.body.classList.remove('menu-open');
     }
   }
@@ -133,7 +138,6 @@ export class NavigationComponent implements OnDestroy {
 
   // Clean up when component is destroyed
   ngOnDestroy(): void {
-    document.body.style.overflow = '';
     document.body.classList.remove('menu-open');
   }
 }

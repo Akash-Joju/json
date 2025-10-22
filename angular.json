@@ -23,16 +23,17 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/_redirects",
-              {
-                "glob": "**/*",
-                "input": "public"
-                  
-              }
-            ],
-            "styles": [
-              "src/styles.scss"
-            ]
+           "assets": [
+  "src/favicon.ico",
+  "src/assets",
+  "src/_redirects",
+  {
+    "glob": "**/*",
+    "input": "public",
+    "output": "/"
+  }
+]
+
           },
           "configurations": {
             "production": {
@@ -82,16 +83,17 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
-            "assets": [ "src/_redirects",
-              {
-                "glob": "**/*",
-                "input": "public"
-                 
-              }
-            ],
-            "styles": [
-              "src/styles.scss"
-            ]
+           "assets": [
+  "src/favicon.ico",
+  "src/assets",
+  "src/_redirects",
+  {
+    "glob": "**/*",
+    "input": "public",
+    "output": "/"
+  }
+]
+
           }
         }
       }

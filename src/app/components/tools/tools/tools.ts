@@ -9,8 +9,8 @@ import { RouterModule } from '@angular/router';
   template: `
     <div class="tools-container">
       <div class="tools-header">
-        <h1>JSON Tools Collection</h1>
-        <p class="subtitle">Various utilities for working with JSON data</p>
+        <h1>JSON & XML Tools Collection</h1>
+        <p class="subtitle">Various utilities for working with JSON and XML data</p>
       </div>
 
       <div class="tools-grid">
@@ -36,20 +36,21 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
 
-        <div class="tool-card coming-soon">
+        <div class="tool-card" routerLink="/xml-viewer">
           <div class="tool-icon">🔧</div>
           <h3>XML Viewer</h3>
-          <p>Visualize and explore JSON data with our interactive XML viewer (Coming Soon)</p>
+          <p>Visualize and explore XML data with our interactive tree viewer</p>
           <div class="tool-features">
-            <span class="feature-tag">Schema Validation</span>
-            <span class="feature-tag">Error Detection</span>
+            <span class="feature-tag">Tree View</span>
+            <span class="feature-tag">Syntax Highlight</span>
+            <span class="feature-tag">Validation</span>
           </div>
         </div>
 
         <div class="tool-card coming-soon">
           <div class="tool-icon">🔄</div>
           <h3>XML Differ</h3>
-          <p>Compare two XML and find differences with visual highlighting (Coming Soon)</p>
+          <p>Compare two XML documents and find differences with visual highlighting (Coming Soon)</p>
           <div class="tool-features">
             <span class="feature-tag">XML</span>
             <span class="feature-tag">CSV</span>
@@ -57,20 +58,10 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
 
-        <!-- <div class="tool-card coming-soon">
-          <div class="tool-icon">📊</div>
-          <h3>JSON Generator</h3>
-          <p>Generate mock JSON data for testing (Coming Soon)</p>
-          <div class="tool-features">
-            <span class="feature-tag">Mock Data</span>
-            <span class="feature-tag">Custom Schema</span>
-          </div>
-        </div> -->
-
         <div class="tool-card coming-soon">
           <div class="tool-icon">🔐</div>
           <h3>JSON Convertor</h3>
-          <p>Converting JSON(Coming Soon)</p>
+          <p>Converting JSON (Coming Soon)</p>
           <div class="tool-features">
             <span class="feature-tag">Conversion</span>
             <span class="feature-tag">Batch Processing</span>

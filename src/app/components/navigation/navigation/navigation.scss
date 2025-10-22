@@ -1,40 +1,86 @@
+/* Reset and base styles */
+// /* Reset and base styles */
 .navbar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: sticky;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  position: fixed; /* CHANGED from sticky to fixed */
   top: 0;
   z-index: 1000;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden !important;
+  height: 64px; /* Fixed height for desktop */
+
+  /* Fixed navbar on mobile */
+  @media (max-width: 768px) {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw !important;
+    overflow: hidden !important;
+    height: 60px; /* Fixed height for mobile */
+  }
+
+  @media (max-width: 480px) {
+    height: 56px;
+  }
+
+  @media (max-width: 360px) {
+    height: 52px;
+  }
 }
 
 .nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 60px;
+  height: 64px; /* Match navbar height */
   position: relative;
+  max-width: 100%;
+  overflow: hidden !important;
+
+  @media (max-width: 768px) {
+    height: 60px;
+  }
+
+  @media (max-width: 480px) {
+    height: 56px;
+  }
+
+  @media (max-width: 360px) {
+    height: 52px;
+  }
 }
 
+/* ... rest of your navigation.scss remains the same ... */
 .nav-brand {
+  flex-shrink: 0;
+  padding-left: 20px;
+  
   .logo-link {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     text-decoration: none;
     color: white;
-    font-size: 1.3rem;
-    font-weight: bold;
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 8px 0;
     
     .logo-icon {
-      font-size: 1.5rem;
+      font-size: 1.8rem;
+      flex-shrink: 0;
     }
 
     .logo-text {
-      @media (max-width: 480px) {
-        display: none;
-      }
+      white-space: nowrap;
     }
     
     &:hover {
@@ -47,25 +93,33 @@
 // Desktop Navigation Links
 .nav-links {
   display: flex;
-  gap: 20px;
-  
+  gap: 4px;
+  align-items: center;
+  padding-right: 20px;
+  margin: 0;
+
   .nav-link {
     color: white;
     text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     transition: all 0.3s ease;
-    font-weight: 500;
+    font-weight: 600;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    margin: 0;
     
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
       transform: translateY(-2px);
     }
     
     &.active {
-      background: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
   }
 }
@@ -73,58 +127,67 @@
 // Mobile Menu Button
 .mobile-menu {
   display: none;
-  
+  padding-right: 20px;
+
   .menu-btn {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.3);
     color: white;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 10px;
+    border-radius: 8px;
     transition: all 0.3s ease;
     position: relative;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    margin: 0;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.25);
       border-color: rgba(255, 255, 255, 0.5);
     }
 
     &.active {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.3);
       border-color: rgba(255, 255, 255, 0.8);
     }
 
     .menu-icon,
     .close-icon {
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease, transform 0.3s ease;
       position: absolute;
+      font-size: 1.2rem;
     }
 
     .close-icon {
       opacity: 0;
+      transform: rotate(-90deg);
     }
 
     &.active {
       .menu-icon {
         opacity: 0;
+        transform: rotate(90deg);
       }
       .close-icon {
         opacity: 1;
+        transform: rotate(0deg);
       }
     }
 
     &:not(.active) {
       .menu-icon {
         opacity: 1;
+        transform: rotate(0deg);
       }
       .close-icon {
         opacity: 0;
+        transform: rotate(90deg);
       }
     }
   }
@@ -134,14 +197,19 @@
 .mobile-overlay {
   display: none;
   position: fixed;
-  top: 60px;
+  top: 64px;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   z-index: 998;
   opacity: 0;
   transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+  margin: 0;
+  padding: 0;
+  width: 100vw !important;
+  overflow: hidden !important;
 
   &.active {
     display: block;
@@ -149,49 +217,81 @@
   }
 }
 
-// ===== RESPONSIVE DESIGN =====
+// ===== MOBILE RESPONSIVE STYLES =====
+
 @media (max-width: 768px) {
+  .nav-container {
+    height: 60px;
+  }
+
+  .navbar {
+    height: 60px;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw !important;
+    padding: 0;
+    margin: 0;
+    overflow: hidden !important;
+  }
+
   // Hide desktop navigation
   .nav-links {
     position: fixed;
     top: 60px;
-    right: -100%;
-    width: 280px;
+    left: -100%;
+    width: 100vw !important;
     height: calc(100vh - 60px);
-    background: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     flex-direction: column;
     gap: 0;
-    padding: 20px 0;
-    transition: right 0.3s ease;
+    padding: 0;
+    margin: 0;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 999;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-right: 0;
+    overflow-x: hidden !important;
 
     &.active {
-      right: 0;
+      left: 0;
     }
 
     .nav-link {
-      color: #2c3e50;
-      padding: 15px 25px;
+      color: white;
+      padding: 20px 24px;
       border-radius: 0;
       border-left: 4px solid transparent;
-      font-size: 1.1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 1.2rem;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
+      justify-content: flex-start;
+      width: 100%;
+      margin: 0;
+      min-height: 64px;
+      transition: all 0.3s ease;
 
       &:hover {
-        background: #f8f9fa;
+        background: rgba(255, 255, 255, 0.2);
         transform: none;
-        color: #667eea;
+        color: white;
+        border-left-color: rgba(255, 255, 255, 0.5);
       }
       
       &.active {
-        background: #f8f9fa;
-        border-left-color: #667eea;
-        color: #667eea;
+        background: rgba(255, 255, 255, 0.25);
+        border-left-color: white;
+        color: white;
         box-shadow: none;
+      }
+
+      &:last-child {
+        border-bottom: none;
       }
     }
   }
@@ -199,25 +299,223 @@
   // Show mobile menu button
   .mobile-menu {
     display: block;
+    padding-right: 16px;
+  }
+
+  .mobile-overlay {
+    top: 60px;
+    height: calc(100vh - 60px);
+    width: 100vw !important;
+  }
+
+  .nav-brand {
+    padding-left: 16px;
+    
+    .logo-link .logo-text {
+      display: block;
+    }
   }
 }
 
 @media (max-width: 480px) {
   .nav-container {
-    padding: 0 15px;
+    height: 56px;
+  }
+
+  .navbar {
+    height: 56px;
+  }
+
+  .nav-brand {
+    padding-left: 16px;
+    
+    .logo-link {
+      font-size: 1.3rem;
+      
+      .logo-icon {
+        font-size: 1.6rem;
+      }
+      
+      .logo-text {
+        display: none;
+      }
+    }
+  }
+
+  .mobile-menu {
+    padding-right: 16px;
+    
+    .menu-btn {
+      width: 44px;
+      height: 44px;
+    }
   }
 
   .nav-links {
-    width: 100%;
-    right: -100%;
+    top: 56px;
+    height: calc(100vh - 56px);
+    
+    .nav-link {
+      padding: 18px 20px;
+      font-size: 1.1rem;
+      min-height: 60px;
+      gap: 14px;
+    }
+  }
 
-    &.active {
-      right: 0;
+  .mobile-overlay {
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+}
+
+@media (max-width: 360px) {
+  .nav-container {
+    height: 52px;
+  }
+
+  .navbar {
+    height: 52px;
+  }
+
+  .nav-brand {
+    padding-left: 12px;
+    
+    .logo-link {
+      font-size: 1.2rem;
+      
+      .logo-icon {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .mobile-menu {
+    padding-right: 12px;
+    
+    .menu-btn {
+      width: 42px;
+      height: 42px;
+      font-size: 1.1rem;
+    }
+  }
+
+  .nav-links {
+    top: 52px;
+    height: calc(100vh - 52px);
+    
+    .nav-link {
+      padding: 16px 18px;
+      font-size: 1rem;
+      min-height: 56px;
+      gap: 12px;
+    }
+  }
+
+  .mobile-overlay {
+    top: 52px;
+    height: calc(100vh - 52px);
+  }
+}
+
+// Landscape orientation on mobile
+@media (max-height: 500px) and (max-width: 768px) {
+  .nav-links {
+    .nav-link {
+      padding: 16px 24px;
+      font-size: 1.1rem;
+      min-height: 56px;
     }
   }
 }
 
-// Smooth transitions for all interactive elements
-* {
-  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+// Smooth transitions
+.nav-link,
+.menu-btn,
+.logo-link {
+  transition: color 0.3s ease, 
+              background-color 0.3s ease, 
+              border-color 0.3s ease, 
+              transform 0.3s ease,
+              opacity 0.3s ease;
+}
+
+// Prevent text selection
+.nav-link,
+.menu-btn,
+.logo-link {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .navbar {
+    background: #000;
+    border-bottom: 3px solid #fff;
+  }
+  
+  .nav-link.active {
+    background: #fff;
+    color: #000;
+    border: 2px solid #000;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .nav-link,
+  .menu-btn,
+  .logo-link,
+  .nav-links,
+  .mobile-overlay {
+    transition: none;
+  }
+  
+  .nav-link:hover,
+  .menu-btn:hover {
+    transform: none;
+  }
+  
+  .menu-btn .menu-icon,
+  .menu-btn .close-icon {
+    transition: none;
+  }
+}
+
+// Ensure no horizontal scroll or space
+.navbar,
+.nav-container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+// Fix for mobile viewport height
+.nav-links {
+  @media (max-width: 768px) {
+    height: calc(100dvh - 60px);
+    
+    @media (max-width: 480px) {
+      height: calc(100dvh - 56px);
+    }
+    
+    @media (max-width: 360px) {
+      height: calc(100dvh - 52px);
+    }
+  }
+}
+
+/* CRITICAL FIX: Prevent any movement on mobile */
+@media (max-width: 768px) {
+  .navbar {
+    transform: none !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+  
+  .nav-links {
+    transform: none !important;
+  }
 }
