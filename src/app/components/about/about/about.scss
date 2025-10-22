@@ -1,17 +1,17 @@
 .about-container {
-  max-width: 800px;
+  // max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 15px;
   width: 100%;
   overflow-x: hidden !important;
   position: relative;
 
   @media (max-width: 768px) {
-    padding: 15px;
+    padding: 2px;
   }
 
   @media (max-width: 480px) {
-    padding: 12px;
+    padding: 1px;
   }
 }
 
