@@ -1,4 +1,4 @@
-// Variables
+// Variables - Same as JSON differ
 $primary-color: #007bff;
 $primary-hover: #0056b3;
 $secondary-color: #6c757d;
@@ -63,7 +63,7 @@ $highlight-border: #ffc107;
 }
 
 // Component Styles
-.json-differ-container {
+.xml-differ-container {
   max-width: 1600px;
   margin: 0 auto;
   padding: 40px 20px;
@@ -214,8 +214,8 @@ $highlight-border: #ffc107;
   }
 }
 
-// Raw JSON Section
-.raw-json-section {
+// Raw XML Section
+.raw-xml-section {
   margin-bottom: 40px;
   border: 1px solid $border-color;
   border-radius: 12px;
@@ -254,8 +254,13 @@ $highlight-border: #ffc107;
   }
 }
 
-.raw-json-container {
+.raw-xml-container {
   padding: 25px;
+}
+
+.xml-section {
+  display: flex;
+  flex-direction: column;
 
   h4 {
     margin-bottom: 15px;
@@ -265,9 +270,9 @@ $highlight-border: #ffc107;
   }
 }
 
-.json-textarea {
+.xml-textarea {
   width: 100%;
-  padding: 3px;
+  padding: 5px;
   border: 2px solid $border-color;
   border-radius: 8px;
   font-family: 'Courier New', monospace;
@@ -276,6 +281,7 @@ $highlight-border: #ffc107;
   transition: all 0.3s ease;
   line-height: 1.5;
   background: #fafafa;
+  min-height: 200px;
 
   &:focus {
     outline: none;
@@ -286,6 +292,33 @@ $highlight-border: #ffc107;
 
   &::placeholder {
     color: lighten($text-muted, 20%);
+  }
+}
+
+.xml-stats {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  
+  span {
+    padding: 4px 8px;
+    background: $light-color;
+    border-radius: 4px;
+    border: 1px solid $border-color;
+    
+    &.valid {
+      background: $success-bg;
+      color: $success-text;
+      border-color: $success-border;
+    }
+    
+    &.invalid {
+      background: $error-bg;
+      color: $error-text;
+      border-color: $error-border;
+    }
   }
 }
 
@@ -439,45 +472,6 @@ $highlight-border: #ffc107;
   }
 }
 
-.numeric-option, .depth-option {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: $light-color;
-  border-radius: 8px;
-  border: 1px solid $border-color;
-  margin-bottom: 12px;
-
-  label {
-    font-weight: 600;
-    color: $text-color;
-    min-width: 120px;
-    font-size: 0.9rem;
-  }
-
-  input {
-    padding: 8px 10px;
-    border: 2px solid $border-color;
-    border-radius: 6px;
-    font-size: 14px;
-    width: 70px;
-    transition: all 0.3s ease;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-    }
-  }
-
-  small {
-    color: $text-muted;
-    font-style: italic;
-    font-size: 0.8rem;
-  }
-}
-
 .options-actions {
   text-align: center;
   margin-top: 25px;
@@ -588,15 +582,46 @@ $highlight-border: #ffc107;
     padding: 2px 6px;
     border-radius: 4px;
   }
+
+  .diff-details {
+    color: $text-muted;
+    font-style: italic;
+    display: block;
+    margin-top: 5px;
+  }
+
+  .diff-values {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+
+    .value-left, .value-right {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    .value-left {
+      background: rgba($danger-color, 0.1);
+      border-left: 3px solid $danger-color;
+    }
+
+    .value-right {
+      background: rgba($success-color, 0.1);
+      border-left: 3px solid $success-color;
+    }
+  }
 }
 
-// JSON Viewers
+// XML Viewers
 .comparison-container {
   @include responsive-grid;
   gap: 30px;
 }
 
-.json-section {
+.xml-section {
   display: flex;
   flex-direction: column;
 
@@ -610,7 +635,7 @@ $highlight-border: #ffc107;
   }
 }
 
-.json-viewer {
+.xml-viewer {
   background: #f8f9fa;
   border: 2px solid $border-color;
   border-radius: 8px;
@@ -619,13 +644,13 @@ $highlight-border: #ffc107;
   overflow-y: auto;
 }
 
-.json-lines {
+.xml-lines {
   font-family: 'Courier New', monospace;
   font-size: 14px;
   line-height: 1.4;
 }
 
-.json-line {
+.xml-line {
   display: flex;
   padding: 4px 12px;
   border-left: 3px solid transparent;
@@ -714,18 +739,16 @@ $highlight-border: #ffc107;
 
 // Focus styles for accessibility
 .btn:focus-visible,
-.json-textarea:focus-visible,
+.xml-textarea:focus-visible,
 .url-input:focus-visible,
-input[type="checkbox"]:focus-visible,
-.precision-input:focus-visible,
-.depth-input:focus-visible {
+input[type="checkbox"]:focus-visible {
   outline: 2px solid $primary-color;
   outline-offset: 2px;
 }
 
 // Responsive adjustments
 @media (max-width: 768px) {
-  .json-differ-container {
+  .xml-differ-container {
     padding: 20px 15px;
   }
 
@@ -756,11 +779,19 @@ input[type="checkbox"]:focus-visible,
     }
   }
 
-  .raw-json-section {
+  .raw-xml-section {
     .section-header {
       flex-direction: column;
       align-items: stretch;
       text-align: center;
+    }
+  }
+
+  .xml-stats {
+    justify-content: center;
+    
+    span {
+      font-size: 0.8rem;
     }
   }
 
@@ -779,21 +810,6 @@ input[type="checkbox"]:focus-visible,
     gap: 12px;
   }
 
-  .numeric-option, .depth-option {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-
-    label {
-      min-width: auto;
-    }
-
-    input {
-      width: 100%;
-      max-width: 100px;
-    }
-  }
-
   .differences-navigation {
     padding: 20px;
 
@@ -808,11 +824,11 @@ input[type="checkbox"]:focus-visible,
     }
   }
 
-  .json-viewer {
+  .xml-viewer {
     height: 400px;
   }
 
-  .json-line {
+  .xml-line {
     padding: 3px 8px;
     
     .line-number {
@@ -831,7 +847,16 @@ input[type="checkbox"]:focus-visible,
     padding: 15px;
   }
 
-  .json-viewer {
+  .xml-viewer {
     height: 350px;
+  }
+
+  .xml-stats {
+    flex-direction: column;
+    align-items: center;
+    
+    span {
+      width: fit-content;
+    }
   }
 }

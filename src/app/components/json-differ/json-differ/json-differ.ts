@@ -15,6 +15,8 @@ interface Difference {
   rightLine?: number;
   type: 'added' | 'removed' | 'modified';
   path: string;
+  leftValue?: any;
+  rightValue?: any;
 }
 
 interface JsonLine {
@@ -22,6 +24,16 @@ interface JsonLine {
   lineNumber: number;
   isHighlighted: boolean;
   diffType?: 'added' | 'removed' | 'modified';
+}
+
+interface ComparisonOptions {
+  ignoreArrayOrder: boolean;
+  caseSensitive: boolean;
+  numericPrecision: number;
+  treatUndefinedAsNull: boolean;
+  ignoreEmptyArrays: boolean;
+  ignoreEmptyObjects: boolean;
+  maxDepth: number;
 }
 
 @Component({
@@ -96,22 +108,21 @@ interface JsonLine {
     <button (click)="loadSampleData()" class="btn btn--secondary">
       📋 Sample Data
     </button>
+    <button (click)="formatBothJson()" class="btn btn--secondary">
+      💫 Format Both
+    </button>
+    <!-- <button (click)="validateBoth()" class="btn btn--secondary">
+      ✅ Validate Both
+    </button> -->
   </div>
 
   <!-- Raw JSON Input Areas -->
   <div class="raw-json-section">
     <div class="section-header">
       <h3>JSON Input</h3>
-      <div class="text-area-buttons">
-        <!-- <button (click)="formatJson(leftJson, true)" class="btn btn--small">
-          💫 Format Left
-        </button>
-        <button (click)="formatJson(rightJson, false)" class="btn btn--small">
-          💫 Format Right
-        </button>
-        <button (click)="validateBoth()" class="btn btn--small">
-          ✅ Validate Both
-        </button> -->
+      <div class="json-stats">
+        <span *ngIf="leftJsonLines.length > 0">Left: {{leftJsonLines.length}} lines</span>
+        <span *ngIf="rightJsonLines.length > 0">Right: {{rightJsonLines.length}} lines</span>
       </div>
     </div>
     
@@ -148,6 +159,65 @@ interface JsonLine {
     ❌ {{ error }}
   </div>
 
+  <!-- Comparison Options Toggle Button - Only show when hasCompared is true -->
+  <div *ngIf="hasCompared && !showOptionsPanel" class="options-toggle-section">
+    <button (click)="toggleOptionsPanel()" class="btn btn--secondary options-toggle-btn">
+      ⚙️ Click here for compare options
+    </button>
+  </div>
+
+  <!-- Comparison Options Panel - Only show when showOptionsPanel is true -->
+  <div *ngIf="showOptionsPanel" class="options-section">
+    <div class="options-header">
+      <h3>Comparison Options</h3>
+      <button (click)="toggleOptionsPanel()" class="close-options-btn" title="Close options">
+        ✕
+      </button>
+    </div>
+    
+    <div class="options-grid">
+      <label class="option-checkbox">
+        <input type="checkbox" [(ngModel)]="options.ignoreArrayOrder">
+        <span class="checkmark"></span>
+        Ignore Array Order
+      </label>
+      <label class="option-checkbox">
+        <input type="checkbox" [(ngModel)]="options.caseSensitive" [value]="false">
+        <span class="checkmark"></span>
+        Case Insensitive
+      </label>
+      <label class="option-checkbox">
+        <input type="checkbox" [(ngModel)]="options.treatUndefinedAsNull">
+        <span class="checkmark"></span>
+        Treat Undefined as Null
+      </label>
+      <label class="option-checkbox">
+        <input type="checkbox" [(ngModel)]="options.ignoreEmptyArrays">
+        <span class="checkmark"></span>
+        Ignore Empty Arrays
+      </label>
+      <label class="option-checkbox">
+        <input type="checkbox" [(ngModel)]="options.ignoreEmptyObjects">
+        <span class="checkmark"></span>
+        Ignore Empty Objects
+      </label>
+    </div>
+    <div class="numeric-option">
+      <label>Numeric Precision:</label>
+      <input type="number" [(ngModel)]="options.numericPrecision" min="0" max="10" class="precision-input">
+      <small>(0 = exact match)</small>
+    </div>
+    <div class="depth-option">
+      <label>Max Depth:</label>
+      <input type="number" [(ngModel)]="options.maxDepth" min="1" max="100" class="depth-input">
+    </div>
+    <div class="options-actions">
+      <button (click)="applyOptions()" class="btn btn--primary">
+        🔄 Apply Options & Recompare
+      </button>
+    </div>
+  </div>
+
   <!-- Comparison Results Section -->
   <div *ngIf="differences.length > 0" class="results-section">
     <!-- Differences Navigation -->
@@ -173,6 +243,14 @@ interface JsonLine {
         </div>
         <p>{{differences[currentDiffIndex]?.description}}</p>
         <small class="diff-path">Path: {{differences[currentDiffIndex]?.path}}</small>
+        <div class="diff-values" *ngIf="differences[currentDiffIndex]?.leftValue !== undefined || differences[currentDiffIndex]?.rightValue !== undefined">
+          <span class="value-left" *ngIf="differences[currentDiffIndex]?.leftValue !== undefined">
+            Left: {{formatValue(differences[currentDiffIndex]?.leftValue)}}
+          </span>
+          <span class="value-right" *ngIf="differences[currentDiffIndex]?.rightValue !== undefined">
+            Right: {{formatValue(differences[currentDiffIndex]?.rightValue)}}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -248,6 +326,19 @@ export class JsonDifferComponent {
   error: string = '';
   loading: boolean = false;
   hasCompared: boolean = false;
+  showOptionsPanel: boolean = false;
+
+  options: ComparisonOptions = {
+    ignoreArrayOrder: false,
+    caseSensitive: true,
+    numericPrecision: 0,
+    treatUndefinedAsNull: false,
+    ignoreEmptyArrays: false,
+    ignoreEmptyObjects: false,
+    maxDepth: 50
+  };
+
+  private visited: WeakSet<object> = new WeakSet();
 
   constructor(private http: HttpClient) {}
 
@@ -320,6 +411,10 @@ export class JsonDifferComponent {
       this.differences = [];
       this.currentDiffIndex = 0;
       this.hasCompared = true;
+      this.showOptionsPanel = false; // Hide options panel initially
+      
+      // Reset visited set for circular reference detection
+      this.visited = new WeakSet();
 
       const leftObj = this.leftJson.trim() ? JSON.parse(this.leftJson) : {};
       const rightObj = this.rightJson.trim() ? JSON.parse(this.rightJson) : {};
@@ -341,6 +436,17 @@ export class JsonDifferComponent {
     }
   }
 
+  toggleOptionsPanel(): void {
+    this.showOptionsPanel = !this.showOptionsPanel;
+  }
+
+  applyOptions(): void {
+    // Re-run comparison with new options
+    this.compareJson();
+    // Keep the options panel open after re-comparing
+    this.showOptionsPanel = true;
+  }
+
   private parseJsonToLines(jsonString: string): JsonLine[] {
     if (!jsonString.trim()) return [];
     
@@ -352,79 +458,256 @@ export class JsonDifferComponent {
     }));
   }
 
-  private findDifferences(leftObj: any, rightObj: any, path: string = ''): void {
-    if (typeof leftObj !== typeof rightObj) {
+  private findDifferences(leftObj: any, rightObj: any, path: string = '', depth: number = 0): void {
+    // Check depth limit to prevent stack overflow
+    if (depth > this.options.maxDepth) {
+      return;
+    }
+
+    // Handle circular references for objects
+    if (this.isObject(leftObj) && this.visited.has(leftObj)) {
+      return;
+    }
+    if (this.isObject(leftObj)) {
+      this.visited.add(leftObj);
+    }
+
+    // Normalize values based on options
+    const normalizedLeft = this.normalizeValue(leftObj);
+    const normalizedRight = this.normalizeValue(rightObj);
+
+    // Check type differences
+    const leftType = this.getType(normalizedLeft);
+    const rightType = this.getType(normalizedRight);
+
+    if (leftType !== rightType) {
       this.differences.push({
-        description: `Type mismatch: ${typeof leftObj} vs ${typeof rightObj}`,
+        description: `Type changed from ${leftType} to ${rightType}`,
         type: 'modified',
-        path: path || 'root'
+        path: path || 'root',
+        leftValue: leftObj,
+        rightValue: rightObj
       });
       return;
     }
 
-    if (typeof leftObj !== 'object' || leftObj === null || rightObj === null) {
-      if (leftObj !== rightObj) {
-        this.differences.push({
-          description: `Value changed from "${leftObj}" to "${rightObj}"`,
-          type: 'modified',
-          path: path || 'root'
-        });
-      }
-      return;
-    }
-
-    // Handle arrays
-    if (Array.isArray(leftObj) && Array.isArray(rightObj)) {
-      if (leftObj.length !== rightObj.length) {
-        this.differences.push({
-          description: `Array length changed from ${leftObj.length} to ${rightObj.length}`,
-          type: 'modified',
-          path: path || 'root'
-        });
-      }
-
-      const maxLength = Math.max(leftObj.length, rightObj.length);
-      for (let i = 0; i < maxLength; i++) {
-        const newPath = path ? `${path}[${i}]` : `[${i}]`;
-        if (i >= leftObj.length) {
+    // Compare based on type
+    switch (leftType) {
+      case 'null':
+      case 'undefined':
+        // Already handled by normalization
+        break;
+      case 'boolean':
+      case 'string':
+        if (normalizedLeft !== normalizedRight) {
           this.differences.push({
-            description: `Element added at index ${i}: ${JSON.stringify(rightObj[i])}`,
-            type: 'added',
-            path: newPath
+            description: `Value changed from "${leftObj}" to "${rightObj}"`,
+            type: 'modified',
+            path: path || 'root',
+            leftValue: leftObj,
+            rightValue: rightObj
           });
-        } else if (i >= rightObj.length) {
-          this.differences.push({
-            description: `Element removed at index ${i}: ${JSON.stringify(leftObj[i])}`,
-            type: 'removed',
-            path: newPath
-          });
-        } else {
-          this.findDifferences(leftObj[i], rightObj[i], newPath);
         }
-      }
-      return;
+        break;
+      case 'number':
+        if (!this.areNumbersEqual(normalizedLeft, normalizedRight)) {
+          this.differences.push({
+            description: `Number changed from ${leftObj} to ${rightObj}`,
+            type: 'modified',
+            path: path || 'root',
+            leftValue: leftObj,
+            rightValue: rightObj
+          });
+        }
+        break;
+      case 'array':
+        this.compareArrays(normalizedLeft, normalizedRight, path, depth);
+        break;
+      case 'object':
+        this.compareObjects(normalizedLeft, normalizedRight, path, depth);
+        break;
     }
+  }
 
-    // Handle objects
-    const allKeys = new Set([...Object.keys(leftObj), ...Object.keys(rightObj)]);
+  private isObject(value: any): boolean {
+    return value !== null && typeof value === 'object';
+  }
+
+  private getType(value: any): string {
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
+    if (Array.isArray(value)) return 'array';
+    return typeof value;
+  }
+
+  private normalizeValue(value: any): any {
+    if (this.options.treatUndefinedAsNull && value === undefined) {
+      return null;
+    }
     
-    for (const key of allKeys) {
-      const newPath = path ? `${path}.${key}` : key;
-      
-      if (!(key in leftObj)) {
+    if (this.options.ignoreEmptyArrays && Array.isArray(value) && value.length === 0) {
+      return null;
+    }
+    
+    if (this.options.ignoreEmptyObjects && this.isObject(value) && Object.keys(value).length === 0) {
+      return null;
+    }
+    
+    if (typeof value === 'string' && !this.options.caseSensitive) {
+      return value.toLowerCase();
+    }
+    
+    return value;
+  }
+
+  private areNumbersEqual(a: number, b: number): boolean {
+    if (this.options.numericPrecision === 0) {
+      return a === b;
+    }
+    
+    const precision = Math.pow(10, this.options.numericPrecision);
+    return Math.abs(a - b) < (1 / precision);
+  }
+
+  private compareArrays(leftArr: any[], rightArr: any[], path: string, depth: number): void {
+    if (this.options.ignoreArrayOrder) {
+      this.compareArraysIgnoringOrder(leftArr, rightArr, path, depth);
+    } else {
+      this.compareArraysWithOrder(leftArr, rightArr, path, depth);
+    }
+  }
+
+  private compareArraysWithOrder(leftArr: any[], rightArr: any[], path: string, depth: number): void {
+    const maxLength = Math.max(leftArr.length, rightArr.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      const elementPath = path ? `${path}[${i}]` : `[${i}]`;
+
+      if (i >= leftArr.length) {
+        // Element added
         this.differences.push({
-          description: `Property "${key}" added with value: ${JSON.stringify(rightObj[key])}`,
+          description: `Element added at index ${i}`,
           type: 'added',
-          path: newPath
+          path: elementPath,
+          rightValue: rightArr[i]
         });
-      } else if (!(key in rightObj)) {
+      } else if (i >= rightArr.length) {
+        // Element removed
         this.differences.push({
-          description: `Property "${key}" removed (was: ${JSON.stringify(leftObj[key])})`,
+          description: `Element removed from index ${i}`,
           type: 'removed',
-          path: newPath
+          path: elementPath,
+          leftValue: leftArr[i]
         });
       } else {
-        this.findDifferences(leftObj[key], rightObj[key], newPath);
+        // Compare elements at same position
+        this.findDifferences(leftArr[i], rightArr[i], elementPath, depth + 1);
+      }
+    }
+  }
+
+  private compareArraysIgnoringOrder(leftArr: any[], rightArr: any[], path: string, depth: number): void {
+    const leftUsed = new Set<number>();
+    const rightUsed = new Set<number>();
+
+    // Find matches first
+    for (let i = 0; i < leftArr.length; i++) {
+      for (let j = 0; j < rightArr.length; j++) {
+        if (!rightUsed.has(j)) {
+          // Create a temporary visited set to avoid pollution
+          const originalVisited = this.visited;
+          this.visited = new WeakSet();
+          
+          const hasDifferences = this.hasDifferences(leftArr[i], rightArr[j], depth + 1);
+          
+          // Restore original visited set
+          this.visited = originalVisited;
+
+          if (!hasDifferences) {
+            leftUsed.add(i);
+            rightUsed.add(j);
+            break;
+          }
+        }
+      }
+    }
+
+    // Report added elements
+    for (let j = 0; j < rightArr.length; j++) {
+      if (!rightUsed.has(j)) {
+        this.differences.push({
+          description: `Element added`,
+          type: 'added',
+          path: path ? `${path}[*]` : '[*]',
+          rightValue: rightArr[j]
+        });
+      }
+    }
+
+    // Report removed elements
+    for (let i = 0; i < leftArr.length; i++) {
+      if (!leftUsed.has(i)) {
+        this.differences.push({
+          description: `Element removed`,
+          type: 'removed',
+          path: path ? `${path}[*]` : '[*]',
+          leftValue: leftArr[i]
+        });
+      }
+    }
+  }
+
+  private hasDifferences(leftObj: any, rightObj: any, depth: number): boolean {
+    // Quick check for primitive values
+    if (!this.isObject(leftObj) && !this.isObject(rightObj)) {
+      return leftObj !== rightObj;
+    }
+
+    // For objects/arrays, create a temporary differences array
+    const tempDifferences: Difference[] = [];
+    const originalDifferences = this.differences;
+    
+    // Temporarily replace the differences array
+    this.differences = tempDifferences;
+    
+    // Perform comparison
+    this.findDifferences(leftObj, rightObj, '', depth);
+    
+    // Restore original differences array
+    this.differences = originalDifferences;
+    
+    return tempDifferences.length > 0;
+  }
+
+  private compareObjects(leftObj: any, rightObj: any, path: string, depth: number): void {
+    const allKeys = new Set([
+      ...Object.keys(leftObj),
+      ...Object.keys(rightObj)
+    ]);
+
+    for (const key of allKeys) {
+      const normalizedKey = this.options.caseSensitive ? key : key.toLowerCase();
+      const propertyPath = path ? `${path}.${normalizedKey}` : normalizedKey;
+
+      if (!(key in leftObj)) {
+        // Property added
+        this.differences.push({
+          description: `Property "${key}" added`,
+          type: 'added',
+          path: propertyPath,
+          rightValue: rightObj[key]
+        });
+      } else if (!(key in rightObj)) {
+        // Property removed
+        this.differences.push({
+          description: `Property "${key}" removed`,
+          type: 'removed',
+          path: propertyPath,
+          leftValue: leftObj[key]
+        });
+      } else {
+        // Compare property values
+        this.findDifferences(leftObj[key], rightObj[key], propertyPath, depth + 1);
       }
     }
   }
@@ -467,9 +750,16 @@ export class JsonDifferComponent {
   }
 
   private lineContainsDifference(content: string, diff: Difference, side: 'left' | 'right'): boolean {
-    // Simple heuristic to find relevant lines
-    const searchTerms = diff.path.split('.').map(term => term.toLowerCase());
-    return searchTerms.some(term => content.includes(term));
+    const searchTerms = diff.path.split(/[\.\[\]]/).filter(term => term && term !== '*');
+    return searchTerms.some(term => content.includes(term.toLowerCase()));
+  }
+
+  formatValue(value: any): string {
+    if (value === null) return 'null';
+    if (value === undefined) return 'undefined';
+    if (typeof value === 'string') return `"${value}"`;
+    if (typeof value === 'object') return Array.isArray(value) ? '[...]' : '{...}';
+    return String(value);
   }
 
   nextDifference(): void {
@@ -499,16 +789,19 @@ export class JsonDifferComponent {
     this.currentDiffIndex = 0;
     this.error = '';
     this.hasCompared = false;
+    this.showOptionsPanel = false;
+    this.visited = new WeakSet();
   }
 
-  formatJson(jsonString: string, isLeft: boolean): void {
+  formatBothJson(): void {
     try {
-      const obj = JSON.parse(jsonString);
-      const formatted = JSON.stringify(obj, null, 2);
-      if (isLeft) {
-        this.leftJson = formatted;
-      } else {
-        this.rightJson = formatted;
+      if (this.leftJson.trim()) {
+        const obj = JSON.parse(this.leftJson);
+        this.leftJson = JSON.stringify(obj, null, 2);
+      }
+      if (this.rightJson.trim()) {
+        const obj = JSON.parse(this.rightJson);
+        this.rightJson = JSON.stringify(obj, null, 2);
       }
       this.error = '';
     } catch (err) {
@@ -548,25 +841,31 @@ export class JsonDifferComponent {
     const sample1 = {
       "name": "John Doe",
       "age": 30,
+      "score": 95.123456,
       "address": {
         "street": "123 Main St",
         "city": "New York"
       },
       "hobbies": ["reading", "swimming"],
-      "active": true
+      "active": true,
+      "tags": null,
+      "metadata": {}
     };
 
     const sample2 = {
-      "name": "John Doe",
-      "age": 31,
+      "name": "john doe",
+      "age": 30.000001,
+      "score": 95.123457,
       "address": {
         "street": "123 Main St",
         "city": "Boston",
         "zipcode": "02101"
       },
-      "hobbies": ["reading", "cycling", "gaming"],
+      "hobbies": ["swimming", "reading", "gaming"],
       "email": "john@example.com",
-      "active": true
+      "active": true,
+      "tags": undefined,
+      "metadata": { "version": 1 }
     };
 
     this.leftJson = JSON.stringify(sample1, null, 2);

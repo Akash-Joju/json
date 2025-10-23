@@ -47,14 +47,14 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
 
-        <div class="tool-card coming-soon">
+        <div class="tool-card" routerLink="/xml-differ">
           <div class="tool-icon">🔄</div>
           <h3>XML Differ</h3>
-          <p>Compare two XML documents and find differences with visual highlighting (Coming Soon)</p>
+          <p>Compare two XML documents and find differences with visual highlighting</p>
           <div class="tool-features">
-            <span class="feature-tag">XML</span>
-            <span class="feature-tag">CSV</span>
-            <span class="feature-tag">YAML</span>
+            <span class="feature-tag">XML Compare</span>
+            <span class="feature-tag">Side by Side</span>
+            <span class="feature-tag">Visual Diff</span>
           </div>
         </div>
 

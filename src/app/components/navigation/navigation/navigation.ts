@@ -49,6 +49,13 @@ import { RouterModule } from '@angular/router';
             📄 XML Viewer
           </a>
           <a 
+            routerLink="/xml-differ" 
+            routerLinkActive="active" 
+            class="nav-link"
+            (click)="closeMobileMenu()">
+            🔄 XML Differ
+          </a>
+          <a 
             routerLink="/tools" 
             routerLinkActive="active" 
             class="nav-link"
