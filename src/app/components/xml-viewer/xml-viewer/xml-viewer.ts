@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { XmlUtilsService, XmlNode, XmlViewerStats } from '../../../services/xml-utils.service';
@@ -155,17 +155,23 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
             </div>
             
             <div class="url-examples">
-              <p class="examples-title">Try these public XML URLs:</p>
+              <p class="examples-title">Test these working XML URLs:</p>
               <div class="example-links">
-                <a (click)="loadExampleUrl('https://www.w3schools.com/xml/note.xml')">Simple Note</a>
-                <a (click)="loadExampleUrl('https://www.w3schools.com/xml/cd_catalog.xml')">CD Catalog</a>
-                <a (click)="loadExampleUrl('https://www.w3schools.com/xml/plant_catalog.xml')">Plant Catalog</a>
+                <a *ngFor="let exampleUrl of workingExamples" 
+                   (click)="loadExampleUrl(exampleUrl)">
+                   {{ getUrlDisplayName(exampleUrl) }}
+                </a>
               </div>
+            </div>
+
+            <div class="url-status" *ngIf="urlLoading">
+              <div class="loading-spinner"></div>
+              <p>Loading XML from URL... (this may take a few seconds)</p>
             </div>
 
             <div class="url-error" *ngIf="urlError">
               <div class="error-icon">❌</div>
-              <p>{{ urlError }}</p>
+              <p class="error-message">{{ urlError }}</p>
             </div>
 
             <div class="url-success" *ngIf="urlSuccess">
@@ -252,7 +258,7 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
   `,
   styleUrls: ['./xml-viewer.scss']
 })
-export class XmlViewerComponent implements OnChanges {
+export class XmlViewerComponent implements OnChanges, OnInit {
   @Input() initialXml: string = '';
 
   // Input methods
@@ -270,6 +276,7 @@ export class XmlViewerComponent implements OnChanges {
   urlLoading: boolean = false;
   urlError: string | null = null;
   urlSuccess: boolean = false;
+  workingExamples: string[] = [];
 
   // XML data
   xmlData: string | null = null;
@@ -284,6 +291,10 @@ export class XmlViewerComponent implements OnChanges {
   };
 
   constructor(private xmlUtils: XmlUtilsService) {}
+
+  ngOnInit(): void {
+    this.workingExamples = this.xmlUtils.getWorkingExamples();
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['initialXml'] && this.initialXml) {
@@ -359,18 +370,22 @@ export class XmlViewerComponent implements OnChanges {
     this.fileLoading = true;
     this.fileError = null;
 
-    const result = await this.xmlUtils.readXmlFromFile(this.selectedFile);
-    
-    this.fileLoading = false;
+    try {
+      const result = await this.xmlUtils.readXmlFromFile(this.selectedFile);
+      
+      if (result.error) {
+        this.fileError = result.error;
+        return;
+      }
 
-    if (result.error) {
-      this.fileError = result.error;
-      return;
+      this.xmlInput = result.content;
+      this.parseXmlData();
+      this.activeInputMethod = 'manual';
+    } catch (error) {
+      this.fileError = 'Failed to load file';
+    } finally {
+      this.fileLoading = false;
     }
-
-    this.xmlInput = result.content;
-    this.parseXmlData();
-    this.activeInputMethod = 'manual'; // Switch to manual view after loading
   }
 
   clearFile(): void {
@@ -378,37 +393,55 @@ export class XmlViewerComponent implements OnChanges {
     this.fileError = null;
   }
 
-  // URL loading methods
+  // URL loading methods - IMPROVED VERSION
   async loadFromUrl(): Promise<void> {
-    if (!this.urlInput) return;
+    if (!this.urlInput?.trim()) {
+      this.urlError = 'Please enter a URL';
+      return;
+    }
 
     this.urlLoading = true;
     this.urlError = null;
     this.urlSuccess = false;
 
     try {
+      console.log('Starting URL load:', this.urlInput);
+      
       const result = await this.xmlUtils.loadXmlFromUrl(this.urlInput);
       
-      this.urlLoading = false;
-
       if (result.error) {
         this.urlError = result.error;
+        return;
+      }
+
+      if (!result.content) {
+        this.urlError = 'No content received from URL';
         return;
       }
 
       this.xmlInput = result.content;
       this.parseXmlData();
       this.urlSuccess = true;
-      this.activeInputMethod = 'manual'; // Switch to manual view after loading
+      this.activeInputMethod = 'manual';
+      
     } catch (error) {
+      console.error('URL load error:', error);
+      this.urlError = 'Unexpected error: ' + (error instanceof Error ? error.message : 'Unknown error');
+    } finally {
       this.urlLoading = false;
-      this.urlError = 'Failed to load XML from URL';
     }
   }
 
   loadExampleUrl(url: string): void {
     this.urlInput = url;
     this.loadFromUrl();
+  }
+
+  getUrlDisplayName(url: string): string {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.replace('www.', '');
+    const pathname = urlObj.pathname.split('/').pop() || 'feed';
+    return `${hostname} - ${pathname}`;
   }
 
   // Common methods

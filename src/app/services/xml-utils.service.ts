@@ -29,6 +29,15 @@ export interface XmlViewerStats {
 })
 export class XmlUtilsService {
   
+  // List of CORS proxies to try
+  private corsProxies = [
+    'https://api.allorigins.win/raw?url=',
+    'https://cors-anywhere.herokuapp.com/',
+    'https://corsproxy.io/?',
+    'https://proxy.cors.sh/',
+    'https://crossorigin.me/'
+  ];
+
   parseXml(xmlString: string): { nodes: XmlNode[], stats: XmlViewerStats, error: string | null } {
     const stats: XmlViewerStats = {
       totalNodes: 0,
@@ -222,36 +231,188 @@ export class XmlUtilsService {
 
   async loadXmlFromUrl(url: string): Promise<{ content: string; error?: string }> {
     try {
-      const response = await fetch(url);
+      // Clean the URL
+      const cleanUrl = url.trim();
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!cleanUrl) {
+        return { content: '', error: 'Please enter a URL' };
       }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('xml')) {
-        throw new Error('URL does not point to an XML file');
+
+      // Validate URL format
+      try {
+        new URL(cleanUrl);
+      } catch {
+        return { content: '', error: 'Invalid URL format' };
       }
-      
-      const content = await response.text();
+
+      console.log('Loading XML from URL:', cleanUrl);
+
+      // Try multiple approaches
+      let content: string | null = null;
+      let error: string | null = null;
+
+      // Approach 1: Try direct fetch with no-cors (for simple requests)
+      try {
+        console.log('Trying direct fetch...');
+        const response = await fetch(cleanUrl, {
+          method: 'GET',
+          mode: 'no-cors', // Use no-cors to avoid CORS issues
+          headers: {
+            'Accept': 'application/xml, text/xml, */*'
+          }
+        });
+
+        if (response.type === 'opaque') {
+          // With no-cors, we can't read the response, but we can try to fetch via proxy
+          console.log('No-CORS request made, trying proxy...');
+        } else if (response.ok) {
+          content = await response.text();
+        }
+      } catch (directError) {
+        console.log('Direct fetch failed:', directError);
+      }
+
+      // Approach 2: Try multiple CORS proxies
+      if (!content) {
+        for (const proxy of this.corsProxies) {
+          try {
+            console.log(`Trying proxy: ${proxy}`);
+            const proxyUrl = proxy + encodeURIComponent(cleanUrl);
+            const response = await fetch(proxyUrl, {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/xml, text/xml, */*',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+              }
+            });
+
+            if (response.ok) {
+              content = await response.text();
+              console.log('Success with proxy:', proxy);
+              break;
+            } else {
+              console.log(`Proxy ${proxy} failed with status:`, response.status);
+            }
+          } catch (proxyError) {
+            console.log(`Proxy ${proxy} error:`, proxyError);
+          }
+        }
+      }
+
+      // Approach 3: Try JSONP-like approach for public APIs
+      if (!content) {
+        content = await this.tryJsonPApproach(cleanUrl);
+      }
+
+      if (!content) {
+        throw new Error('All fetch attempts failed. The server may be blocking requests from your location.');
+      }
+
+      // Validate the content
+      if (!content.trim()) {
+        throw new Error('Empty response received');
+      }
+
+      // Check if content is XML
+      const trimmedContent = content.trim();
+      const isXml = trimmedContent.startsWith('<?xml') || 
+                   trimmedContent.startsWith('<') ||
+                   /^<\w+[\s>]/.test(trimmedContent) ||
+                   trimmedContent.includes('<?xml');
+
+      if (!isXml) {
+        // Try to extract XML from HTML response
+        const xmlMatch = trimmedContent.match(/<\?xml[\s\S]*?<\/\w+>$/m) || 
+                        trimmedContent.match(/<rss[\s\S]*?<\/rss>/mi) ||
+                        trimmedContent.match(/<feed[\s\S]*?<\/feed>/mi);
+        
+        if (xmlMatch) {
+          content = xmlMatch[0];
+        } else {
+          throw new Error('The URL does not contain valid XML content');
+        }
+      }
+
+      // Final validation
+      const validation = this.validateXml(content);
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid XML format');
+      }
+
       return { content };
+
     } catch (error) {
+      console.error('URL loading error:', error);
+      
+      let errorMessage = 'Failed to load XML from URL.\n\n';
+      
+      if (error instanceof Error) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Unknown error occurred.';
+      }
+
+      errorMessage += '\n\nPossible solutions:';
+      errorMessage += '\n• Try a different XML URL from the examples below';
+      errorMessage += '\n• Check if the URL works in your browser';
+      errorMessage += '\n• The server may be blocking external requests';
+      errorMessage += '\n• Try a local XML file instead';
+      
       return { 
         content: '', 
-        error: error instanceof Error ? error.message : 'Failed to load XML from URL' 
+        error: errorMessage
       };
     }
   }
 
+  private async tryJsonPApproach(url: string): Promise<string | null> {
+    // For specific known APIs that support JSONP or have public access
+    try {
+      // This is a fallback for specific cases
+      if (url.includes('rss') || url.includes('feed')) {
+        // Try with different user agent
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/rss+xml, application/xml, text/xml'
+          }
+        });
+        
+        if (response.ok) {
+          return await response.text();
+        }
+      }
+    } catch (error) {
+      console.log('JSONP approach failed:', error);
+    }
+    return null;
+  }
+
   readXmlFromFile(file: File): Promise<{ content: string; error?: string }> {
     return new Promise((resolve) => {
-      if (!file.type.includes('xml') && !file.name.endsWith('.xml')) {
-        resolve({ content: '', error: 'Please select an XML file' });
+      if (!file) {
+        resolve({ content: '', error: 'No file selected' });
         return;
       }
 
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      const isXmlFile = file.type.includes('xml') || 
+                       file.name.toLowerCase().endsWith('.xml') ||
+                       file.type === 'text/plain' ||
+                       file.type === 'application/xml' ||
+                       file.type === 'text/xml';
+
+      if (!isXmlFile) {
+        resolve({ content: '', error: 'Please select an XML file (.xml)' });
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
         resolve({ content: '', error: 'File size too large. Maximum 10MB allowed.' });
+        return;
+      }
+
+      if (file.size === 0) {
+        resolve({ content: '', error: 'File is empty' });
         return;
       }
 
@@ -260,9 +421,13 @@ export class XmlUtilsService {
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
+          if (!content) {
+            resolve({ content: '', error: 'Failed to read file content' });
+            return;
+          }
           resolve({ content });
         } catch (error) {
-          resolve({ content: '', error: 'Failed to read file' });
+          resolve({ content: '', error: 'Failed to process file content' });
         }
       };
       
@@ -270,7 +435,19 @@ export class XmlUtilsService {
         resolve({ content: '', error: 'Error reading file' });
       };
       
-      reader.readAsText(file);
+      reader.readAsText(file, 'UTF-8');
     });
+  }
+
+  // Method to get working example URLs
+  getWorkingExamples(): string[] {
+    return [
+      'https://www.w3schools.com/xml/note.xml',
+      'https://www.w3schools.com/xml/cd_catalog.xml',
+      'https://www.w3schools.com/xml/plant_catalog.xml',
+      'https://feeds.bbci.co.uk/news/rss.xml?format=xml',
+      'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml',
+      'https://feeds.npr.org/1001/rss.xml'
+    ];
   }
 }
