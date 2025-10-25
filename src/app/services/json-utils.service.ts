@@ -19,9 +19,11 @@ export interface SearchResult {
   fullPath: string;
   matchesKey: boolean;
   matchesValue: boolean;
-  highlightedValue?: string;
   parentObject?: any;
   parentPath?: string;
+  isArrayItem?: boolean;
+  arrayParentPath?: string;
+  arrayIndex?: number;
 }
 
 @Injectable({
@@ -123,35 +125,32 @@ export class JsonUtilsService {
     }
   }
 
-  // Enhanced search method
+  // Enhanced search method with array support
   searchInJson(jsonData: any, searchTerm: string): SearchResult[] {
     const results: SearchResult[] = [];
+    const searchTermLower = searchTerm.toLowerCase();
     
-    const searchRecursive = (obj: any, currentPath: string, parentObj?: any, parentPath?: string) => {
+    const searchRecursive = (obj: any, currentPath: string = '', parentPath: string = '', isInArray: boolean = false, arrayIndex: number = -1) => {
       if (typeof obj === 'object' && obj !== null) {
-        Object.keys(obj).forEach(key => {
-          const newPath = currentPath ? `${currentPath}.${key}` : key;
+        const isArray = Array.isArray(obj);
+        
+        Object.keys(obj).forEach((key, index) => {
           const value = obj[key];
-          const fullPath = currentPath ? `${currentPath}.${key}` : key;
+          const newPath = currentPath ? `${currentPath}.${key}` : key;
+          const newParentPath = isArray ? currentPath : newPath;
           
           // Check if key matches search
-          const keyMatches = key.toLowerCase().includes(searchTerm.toLowerCase());
+          const keyMatches = key.toLowerCase().includes(searchTermLower);
           
           // Check if value matches search
           let valueMatches = false;
-          let highlightedValue = '';
           
           if (typeof value === 'string') {
-            valueMatches = value.toLowerCase().includes(searchTerm.toLowerCase());
-            if (valueMatches) {
-              highlightedValue = this.highlightText(value, searchTerm);
-            }
+            valueMatches = value.toLowerCase().includes(searchTermLower);
           } else if (typeof value === 'number' || typeof value === 'boolean') {
-            const stringValue = value.toString();
-            valueMatches = stringValue.toLowerCase().includes(searchTerm.toLowerCase());
-            if (valueMatches) {
-              highlightedValue = this.highlightText(stringValue, searchTerm);
-            }
+            valueMatches = value.toString().toLowerCase().includes(searchTermLower);
+          } else if (value === null) {
+            valueMatches = 'null'.includes(searchTermLower);
           }
           
           if (keyMatches || valueMatches) {
@@ -159,89 +158,33 @@ export class JsonUtilsService {
               path: newPath,
               key: key,
               value: value,
-              fullPath: fullPath,
+              fullPath: newPath,
               matchesKey: keyMatches,
               matchesValue: valueMatches,
-              highlightedValue: highlightedValue,
-              parentObject: keyMatches ? obj : parentObj,
-              parentPath: parentPath
+              parentObject: obj,
+              parentPath: parentPath,
+              isArrayItem: isArray,
+              arrayParentPath: isArray ? currentPath : undefined,
+              arrayIndex: isArray ? index : -1
             });
           }
           
           // Recursively search nested objects/arrays
           if (typeof value === 'object' && value !== null) {
-            searchRecursive(value, newPath, obj, newPath);
+            searchRecursive(
+              value, 
+              newPath, 
+              newParentPath, 
+              Array.isArray(value),
+              Array.isArray(obj) ? index : -1
+            );
           }
         });
       }
     };
     
-    searchRecursive(jsonData, '');
+    searchRecursive(jsonData, '', '', Array.isArray(jsonData));
     return results;
-  }
-
-  // Get parent object/array for a search result
-  getParentObjectForSearch(jsonData: any, searchResult: SearchResult): any {
-    if (searchResult.parentObject) {
-      return searchResult.parentObject;
-    }
-    
-    // If no parent object found, try to extract from path
-    const pathParts = searchResult.path.split('.');
-    if (pathParts.length > 1) {
-      let current = jsonData;
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        if (current && typeof current === 'object') {
-          current = current[pathParts[i]];
-        } else {
-          break;
-        }
-      }
-      return current;
-    }
-    
-    return null;
-  }
-
-  // Helper method for text highlighting
-  private highlightText(text: string, searchTerm: string): string {
-    if (!searchTerm) return text;
-    
-    const regex = new RegExp(`(${this.escapeRegex(searchTerm)})`, 'gi');
-    return text.replace(regex, '<mark class="search-highlight">$1</mark>');
-  }
-
-  // Helper method to escape regex special characters
-  private escapeRegex(string: string): string {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  // Find the JSON node by path for navigation
-  findNodeByPath(nodes: JsonNode[], path: string): JsonNode | null {
-    for (const node of nodes) {
-      if (node.path === path) {
-        return node;
-      }
-      if (node.children) {
-        const found = this.findNodeByPath(node.children, path);
-        if (found) return found;
-      }
-    }
-    return null;
-  }
-
-  // Expand all parent nodes to show the searched node
-  expandPath(nodes: JsonNode[], path: string): void {
-    const pathParts = path.split('.');
-    let currentPath = '';
-    
-    for (let i = 0; i < pathParts.length - 1; i++) {
-      currentPath = currentPath ? `${currentPath}.${pathParts[i]}` : pathParts[i];
-      const node = this.findNodeByPath(nodes, currentPath);
-      if (node) {
-        node.expanded = true;
-      }
-    }
   }
 
   // Convert JSON object to tree structure
@@ -266,7 +209,7 @@ export class JsonUtilsService {
         key,
         value: `Array[${obj.length}]`,
         type: 'array',
-        expanded: true,
+        expanded: false,
         children,
         path: path ? `${path}.${key}` : key
       }];
@@ -282,7 +225,7 @@ export class JsonUtilsService {
         key,
         value: `Object{${children.length}}`,
         type: 'object',
-        expanded: true,
+        expanded: false,
         children,
         path: path ? `${path}.${key}` : key
       }];
@@ -296,5 +239,22 @@ export class JsonUtilsService {
       expanded: false,
       path: path ? `${path}.${key}` : key
     }];
+  }
+
+  // Helper method to get array parent path
+  getArrayParentPath(path: string): string | null {
+    const arrayMatch = path.match(/^(.+)\[\d+\](?:\..*)?$/);
+    return arrayMatch ? arrayMatch[1] : null;
+  }
+
+  // Helper method to check if path is in array
+  isPathInArray(path: string): boolean {
+    return /\[\d+\]/.test(path);
+  }
+
+  // Helper method to get array index from path
+  getArrayIndex(path: string): number {
+    const match = path.match(/\[(\d+)\]/);
+    return match ? parseInt(match[1]) : -1;
   }
 }

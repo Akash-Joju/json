@@ -27,7 +27,7 @@ import { RouterModule } from '@angular/router';
             (click)="closeMobileMenu()">
             🏠 Home
           </a>
-          <a 
+          <!-- <a 
             routerLink="/viewer" 
             routerLinkActive="active" 
             class="nav-link"
@@ -40,21 +40,21 @@ import { RouterModule } from '@angular/router';
             class="nav-link"
             (click)="closeMobileMenu()">
             ⚡ JSON Differ
-          </a>
-          <a 
+          </a> -->
+          <!-- <a 
             routerLink="/xml-viewer" 
             routerLinkActive="active" 
             class="nav-link"
             (click)="closeMobileMenu()">
             📄 XML Viewer
-          </a>
-          <a 
+          </a> -->
+          <!-- <a 
             routerLink="/xml-differ" 
             routerLinkActive="active" 
             class="nav-link"
             (click)="closeMobileMenu()">
             🔄 XML Differ
-          </a>
+          </a> -->
           <a 
             routerLink="/tools" 
             routerLinkActive="active" 
