@@ -18,9 +18,6 @@ $error-text: #721c24;
 $success-bg: #d4edda;
 $success-border: #c3e6cb;
 $success-text: #155724;
-$loading-bg: #fff3cd;
-$loading-border: #ffeaa7;
-$loading-text: #856404;
 $highlight-bg: #fff3cd;
 $highlight-border: #ffc107;
 
@@ -63,290 +60,89 @@ $highlight-border: #ffc107;
 }
 
 // Component Styles
-.json-differ-container {
+.json-results-container {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 40px 20px;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-
-  h2 {
-    color: $text-color;
-    margin-bottom: 12px;
-    font-size: 2.5rem;
-    font-weight: 600;
-  }
-
-  p {
-    color: $text-muted;
-    font-size: 1.2rem;
-    margin: 0;
-  }
-}
-
-// Load Section
-.load-section {
-  margin-bottom: 30px;
-}
-
-.load-container {
-  @include responsive-grid;
-  gap: 30px;
-}
-
-.load-options {
-  background: $light-color;
-  padding: 25px;
-  border-radius: 12px;
-  border: 2px dashed $border-color;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: $primary-color;
-    background: lighten($light-color, 1%);
-  }
-
-  h3 {
-    margin-bottom: 20px;
-    color: $text-color;
-    font-size: 1.3rem;
-    font-weight: 600;
-    text-align: center;
-    border-bottom: 2px solid $primary-color;
-    padding-bottom: 10px;
-  }
-}
-
-.load-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.file-upload {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  .file-input {
-    display: none;
-  }
-
-  .btn {
-    width: 100%;
-    padding: 12px;
-  }
-
-  .file-name {
-    font-size: 0.9rem;
-    color: $text-muted;
-    text-align: center;
-    font-style: italic;
-    word-break: break-all;
-  }
-}
-
-.url-load {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  .url-input {
-    padding: 12px;
-    border: 2px solid $border-color;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-    }
-
-    &::placeholder {
-      color: lighten($text-muted, 20%);
-    }
-  }
-
-  .btn {
-    width: 100%;
-    padding: 12px;
-  }
-}
-
-// Controls
-.controls {
-  @include flex-center;
-  gap: 12px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
   padding: 20px;
-  background: $light-color;
-  border-radius: 8px;
-  border: 1px solid $border-color;
-
-  @media (max-width: 768px) {
-    justify-content: center;
-  }
 }
 
-.btn {
-  padding: 10px 16px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-
-  &--primary {
-    @include button-variant($primary-color, $primary-hover);
-  }
-
-  &--secondary {
-    @include button-variant($secondary-color, $secondary-hover);
-  }
-
-  &--small {
-    padding: 8px 12px;
-    font-size: 12px;
-    @include button-variant($success-color, $success-hover);
-  }
-}
-
-// Raw JSON Section
-.raw-json-section {
-  margin-bottom: 40px;
-  border: 1px solid $border-color;
-  border-radius: 12px;
-  overflow: hidden;
+// Results Header
+.results-header {
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 20px 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid $primary-color;
 
-  .section-header {
+  .header-content {
     @include flex-center;
     justify-content: space-between;
-    padding: 20px 25px;
-    background: $light-color;
-    border-bottom: 1px solid $border-color;
+    flex-wrap: wrap;
+    gap: 20px;
 
-    h3 {
-      margin: 0;
+    h2 {
       color: $text-color;
-      font-size: 1.3rem;
+      margin: 0;
+      font-size: 1.8rem;
       font-weight: 600;
     }
+  }
 
-    .text-area-buttons {
-      @include flex-center;
-      gap: 10px;
+  .back-btn {
+    padding: 12px 20px;
+    font-weight: 600;
+    
+    &:hover {
+      background: $primary-hover;
+      transform: translateY(-2px);
+    }
+  }
 
-      @media (max-width: 768px) {
-        flex-direction: column;
-        width: 100%;
-        margin-top: 10px;
+  .header-actions {
+    @include flex-center;
+    gap: 12px;
+  }
+}
 
-        .btn {
-          width: 100%;
-        }
+// Summary Card
+.summary-card {
+  @include responsive-grid;
+  gap: 15px;
+  margin-bottom: 30px;
+
+  .summary-item {
+    background: $light-color;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid $primary-color;
+    text-align: center;
+
+    .summary-label {
+      display: block;
+      font-weight: 600;
+      color: $text-muted;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .summary-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $primary-color;
+
+      &.no-diff {
+        color: $success-color;
+      }
+
+      &.success {
+        color: $success-color;
       }
     }
   }
 }
 
-.raw-json-container {
-  padding: 25px;
-
-  h4 {
-    margin-bottom: 15px;
-    color: $text-color;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-}
-
-.json-textarea {
-  width: 100%;
-  padding: 5px; // More padding for height
-  border: 2px solid $border-color;
-  border-radius: 8px;
-  font-family: 'Courier New', monospace;
-  font-size: 14px; // Increased font size
-  resize: vertical;
-  transition: all 0.3s ease;
-  line-height: 1; // No space between lines
-  background: #fafafa;
-  min-height: 300px; // Minimum height
-
-  &:focus {
-    outline: none;
-    border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-    background: white;
-  }
-
-  &::placeholder {
-    color: lighten($text-muted, 20%);
-  }
-}
-// Messages
-.loading-message {
-  background-color: $loading-bg;
-  color: $loading-text;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  border: 1px solid $loading-border;
-  font-weight: 500;
-  text-align: center;
-}
-
-.error-message {
-  background-color: $error-bg;
-  color: $error-text;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  border: 1px solid $error-border;
-  font-weight: 500;
-  text-align: center;
-}
-
-// Options Toggle Section
-.options-toggle-section {
-  text-align: center;
-  margin: 30px 0;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 12px;
-  border: 2px dashed $border-color;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: $primary-color;
-    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-  }
-}
-
-.options-toggle-btn {
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  background: $primary-color;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: $primary-hover;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-  }
-}
-
-// Comparison Options Section
+// Options Section (Same as before)
 .options-section {
   background: white;
   padding: 25px;
@@ -354,8 +150,6 @@ $highlight-border: #ffc107;
   border: 2px solid $primary-color;
   margin-bottom: 30px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  position: relative;
-  animation: slideDown 0.3s ease-out;
 
   .options-header {
     @include flex-center;
@@ -390,17 +184,6 @@ $highlight-border: #ffc107;
       background: darken($danger-color, 10%);
       transform: scale(1.1);
     }
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -478,27 +261,7 @@ $highlight-border: #ffc107;
   }
 }
 
-.options-actions {
-  text-align: center;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid $border-color;
-
-  .btn {
-    padding: 12px 24px;
-    font-weight: 600;
-    font-size: 16px;
-  }
-}
-
-// Results Section
-.results-section {
-  margin-top: 40px;
-  padding-top: 40px;
-  border-top: 3px solid $primary-color;
-}
-
-// Differences Navigation
+// Differences Navigation (Same as before)
 .differences-navigation {
   background: white;
   border-radius: 12px;
@@ -590,7 +353,7 @@ $highlight-border: #ffc107;
   }
 }
 
-// JSON Viewers
+// JSON Viewers (Same as before)
 .comparison-container {
   @include responsive-grid;
   gap: 30px;
@@ -689,11 +452,11 @@ $highlight-border: #ffc107;
   background: $success-bg;
   border: 1px solid $success-border;
   border-radius: 12px;
-  margin-top: 40px;
+  margin: 40px 0;
 
   .no-diff-content {
     .no-diff-icon {
-      font-size: 3rem;
+      font-size: 4rem;
       display: block;
       margin-bottom: 20px;
     }
@@ -701,67 +464,56 @@ $highlight-border: #ffc107;
     h3 {
       color: $success-text;
       margin-bottom: 10px;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
     }
 
     p {
       color: $success-text;
-      font-size: 1.1rem;
-      margin: 0;
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
     }
   }
 }
 
-// Focus styles for accessibility
-.btn:focus-visible,
-.json-textarea:focus-visible,
-.url-input:focus-visible,
-input[type="checkbox"]:focus-visible,
-.precision-input:focus-visible,
-.depth-input:focus-visible {
-  outline: 2px solid $primary-color;
-  outline-offset: 2px;
+// Buttons
+.btn {
+  padding: 10px 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &--primary {
+    @include button-variant($primary-color, $primary-hover);
+  }
+
+  &--secondary {
+    @include button-variant($secondary-color, $secondary-hover);
+  }
 }
 
 // Responsive adjustments
 @media (max-width: 768px) {
-  .json-differ-container {
-    padding: 20px 15px;
+  .json-results-container {
+    padding: 15px;
   }
 
-  .header {
-    h2 {
-      font-size: 2rem;
-    }
-    
-    p {
-      font-size: 1.1rem;
-    }
-  }
+  .results-header {
+    padding: 15px;
 
-  .load-container {
-    gap: 20px;
-  }
-
-  .load-options {
-    padding: 20px;
-  }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-    
-    .btn {
-      width: 100%;
-    }
-  }
-
-  .raw-json-section {
-    .section-header {
+    .header-content {
       flex-direction: column;
-      align-items: stretch;
       text-align: center;
+      gap: 15px;
     }
+  }
+
+  .summary-card {
+    grid-template-columns: 1fr;
   }
 
   .options-section {
@@ -823,10 +575,6 @@ input[type="checkbox"]:focus-visible,
 }
 
 @media (max-width: 480px) {
-  .load-options {
-    padding: 15px;
-  }
-
   .options-section {
     padding: 15px;
   }
