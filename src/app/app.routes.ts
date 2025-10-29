@@ -8,6 +8,7 @@ import { XmlViewerComponent } from './components/xml-viewer/xml-viewer/xml-viewe
 import { XmlDifferComponent } from './components/xml-differ/xml-differ/xml-differ'; 
 import { JsonResultsComponent } from './components/json-result/json-result/json-result';// Add this import
 import { XmlResultsComponent } from './components/xml-result/xml-result/xml-result';
+import { XmlCodeEditorComponent } from './components/xml-code/xml-code/xml-code';
 export const routes: Routes = [
   { path: '', component: HomeComponent, title: 'JSON Viewer - Home' },
   { path: 'viewer', component: JsonViewerComponent, title: 'JSON Viewer' },
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'json-differ', component: JsonDifferComponent, title: 'JSON Differ' },
   { path: 'results', component: JsonResultsComponent, title: 'JSON Result' },
   { path: 'xml-viewer', component: XmlViewerComponent, title: 'XML Viewer' },
+  { path: 'xml-code', component: XmlCodeEditorComponent, title: 'XML code' },
   { path: 'xml-differ', component: XmlDifferComponent, title: 'XML Differ' }, // Add this route
   { path: 'xml-results', component: XmlResultsComponent, title: 'XML Result' },
   { path: 'about', component: AboutComponent, title: 'About' },

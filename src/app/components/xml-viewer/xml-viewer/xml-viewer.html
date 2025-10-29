@@ -1,1 +1,325 @@
-<p>xml-viewer works!</p>
+<!-- xml-viewer.component.html - WITH INTEGRATED SEARCH RESULTS -->
+<div class="xml-viewer" [class.dark-theme]="theme === 'dark'">
+  <!-- Fixed Header Section -->
+  <div class="fixed-header">
+    <!-- Enhanced Toolbar with Folding Controls -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button (click)="toggleViewMode()" class="btn btn-secondary">
+          {{ viewMode === 'tree' ? 'Raw View' : 'Tree View' }}
+        </button>
+        <button (click)="formatXml()" class="btn btn-secondary" title="Format XML (Ctrl+Shift+F)">
+          Format
+        </button>
+        <button (click)="minifyXml()" class="btn btn-secondary">
+          Minify
+        </button>
+        <button (click)="downloadXml()" class="btn btn-secondary">
+          Download
+        </button>
+        
+        <!-- Folding Controls -->
+        <div class="folding-controls" *ngIf="viewMode === 'tree'">
+          <button (click)="expandAll()" class="btn btn-secondary" title="Expand All">
+            Expand All
+          </button>
+          <button (click)="collapseAll()" class="btn btn-secondary" title="Collapse All">
+            Collapse All
+          </button>
+        </div>
+        
+        <!-- Color Scheme Selector -->
+        <!-- <div class="color-scheme-selector" *ngIf="viewMode === 'tree'">
+          <label>Colors:</label>
+          <select [(ngModel)]="colorScheme" (change)="changeColorScheme(colorScheme)" class="scheme-select">
+            <option value="default">Default</option>
+            <option value="vibrant">Vibrant</option>
+            <option value="pastel">Pastel</option>
+            <option value="monokai">Monokai</option>
+          </select>
+        </div>
+      </div> -->
+      
+      <div class="toolbar-right">
+        <div class="search-box">
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            (input)="applySearchFilter()"
+            placeholder="Search in XML..." 
+            class="search-input"
+          >
+          <span class="search-results" *ngIf="filteredNodes.length > 0">
+            {{ filteredNodes.length }} results
+          </span>
+          
+          <!-- Search Results Dropdown INSIDE search box -->
+          <div class="search-results-dropdown" *ngIf="filteredNodes.length > 0 && viewMode === 'tree'">
+            <div class="search-results-header">
+              <h4>Search Results ({{ filteredNodes.length }})</h4>
+              <button class="btn-close" (click)="searchTerm = ''; applySearchFilter()">×</button>
+            </div>
+            <div class="search-results-list">
+              <div class="search-result-item" 
+                   *ngFor="let node of filteredNodes" 
+                   (click)="selectNode(node)"
+                   [class.selected]="selectedNode === node">
+                <span class="result-name">{{ node.name }}</span>
+                <span class="result-line">Line {{ getNodeLineNumber(node) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Display -->
+    <div class="error-panel" *ngIf="error">
+      <div class="error-icon">⚠️</div>
+      <div class="error-message">{{ error }}</div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content-area">
+    <!-- Tree View with Perfect Line Number Alignment -->
+    <div class="view-container" *ngIf="viewMode === 'tree' && parsedData">
+      <!-- Tree Content Area (Reduced Width) -->
+      <div class="tree-content-area">
+        <!-- Tree Line Numbers Container -->
+        <div class="tree-line-numbers-container" *ngIf="showTreeLineNumbers">
+          <div class="tree-line-numbers" #treeLineNumbers>
+            <div *ngFor="let treeLine of treeLines" 
+                 class="tree-line-number"
+                 [class.hidden]="!treeLine.isVisible"
+                 [style.color]="currentColors.lineNumber">
+              {{ treeLine.displayNumber }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- XML Tree Content Container -->
+        <div class="xml-tree-container">
+          <div class="xml-tree" #xmlTree>
+            <div *ngFor="let treeLine of treeLines" 
+                 class="tree-line"
+                 [class.hidden]="!treeLine.isVisible"
+                 [class.selected]="selectedNode === treeLine.node"
+                 [class.open-tag]="treeLine.type === 'open'"
+                 [class.self-closing]="treeLine.type === 'self-closing'"
+                 [class.close-tag]="treeLine.type === 'close'"
+                 [class.text-line]="treeLine.type === 'text'"
+                 (click)="onTreeLineClick(treeLine)"
+                 (mouseenter)="onTreeLineHover(treeLine, true)"
+                 (mouseleave)="onTreeLineHover(treeLine, false)">
+              
+              <!-- Indentation Lines -->
+              <div class="indentation-lines" *ngIf="treeLine.level > 0">
+                <div *ngFor="let i of [].constructor(treeLine.level); let index = index" 
+                     class="indentation-line"
+                     [style.border-left-color]="currentColors.indentationLine"
+                     [style.left.px]="index * 20 + 8">
+                </div>
+              </div>
+
+              <div class="line-content" [style.padding-left.px]="treeLine.level * 20">
+                <!-- Toggle Button -->
+                <span class="toggle" 
+                      *ngIf="(treeLine.type === 'open' || treeLine.type === 'self-closing') && treeLine.node.children.length > 0"
+                      (click)="$event.stopPropagation(); toggleNode(treeLine.node)"
+                      [style.color]="currentColors.expandIcon"
+                      [style.background]="currentColors.expandIcon + '20'">
+                  {{ treeLine.node.isExpanded ? '−' : '+' }}
+                </span>
+
+                <span class="toggle-placeholder" 
+                      *ngIf="!(treeLine.type === 'open' || treeLine.type === 'self-closing') || treeLine.node.children.length === 0">
+                </span>
+
+                <!-- Special Node Icon -->
+                <span *ngIf="(treeLine.type === 'open' || treeLine.type === 'self-closing') && isSpecialNode(treeLine.node)" 
+                      class="special-node-icon">
+                  {{ getSpecialNodeSymbol(treeLine.node) }}
+                </span>
+
+                <!-- Line Content -->
+                <span class="line-text" [innerHTML]="getLineContent(treeLine)"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fixed Node Editor Panel - NO SCROLL -->
+      <div class="fixed-node-editor" *ngIf="selectedNode">
+        <div class="node-editor-content">
+          <h3>Node Editor</h3>
+          
+          <!-- Node Name Editing -->
+          <div class="detail-item">
+            <label>Name:</label>
+            <div class="edit-control">
+              <input 
+                type="text" 
+                [value]="selectedNode.name" 
+                (change)="onEditNodeName($event, selectedNode)"
+                class="edit-input"
+                [readonly]="!editable"
+              >
+            </div>
+          </div>
+
+          <!-- Node Type Display -->
+          <div class="detail-item" *ngIf="selectedNode.nodeType">
+            <label>Type:</label>
+            <span class="detail-value">{{ selectedNode.nodeType }}</span>
+          </div>
+
+          <!-- Text Content Editing -->
+          <div class="detail-item" *ngIf="selectedNode.textContent !== undefined">
+            <label>Content:</label>
+            <div class="edit-control">
+              <textarea
+                [value]="selectedNode.textContent || ''"
+                (change)="onEditNodeText($event, selectedNode)"
+                class="edit-textarea"
+                [readonly]="!editable"
+                placeholder="Text content..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Attributes Editing -->
+          <div class="detail-item" *ngIf="objectKeys(selectedNode.attributes).length > 0">
+            <label>Attributes:</label>
+            <div class="attributes-list">
+              <div class="attribute-item" *ngFor="let attr of objectKeys(selectedNode.attributes)">
+                <div class="attribute-editor">
+                  <input 
+                    type="text" 
+                    [value]="attr" 
+                    (change)="onUpdateAttributeKey($event, selectedNode, attr)"
+                    class="attr-key-input"
+                    [readonly]="!editable"
+                  >
+                  <span class="equals">=</span>
+                  <input 
+                    type="text" 
+                    [value]="selectedNode.attributes[attr]" 
+                    (change)="onEditNodeAttribute($event, selectedNode, attr)"
+                    class="attr-value-input"
+                    [readonly]="!editable"
+                  >
+                  <button 
+                    *ngIf="editable"
+                    (click)="removeAttribute(selectedNode, attr)" 
+                    class="btn-remove-attr"
+                    title="Remove attribute"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add New Attribute -->
+          <div class="detail-item" *ngIf="editable">
+            <label>Add Attribute:</label>
+            <div class="add-attribute-control">
+              <input 
+                #newAttrKey
+                type="text" 
+                placeholder="Attribute name"
+                class="attr-key-input"
+                (keyup.enter)="addAttribute(selectedNode, newAttrKey.value, newAttrValue.value); newAttrKey.value=''; newAttrValue.value=''"
+              >
+              <span class="equals">=</span>
+              <input 
+                #newAttrValue
+                type="text" 
+                placeholder="Attribute value"
+                class="attr-value-input"
+                (keyup.enter)="addAttribute(selectedNode, newAttrKey.value, newAttrValue.value); newAttrKey.value=''; newAttrValue.value=''"
+              >
+              <button 
+                (click)="addAttribute(selectedNode, newAttrKey.value, newAttrValue.value); newAttrKey.value=''; newAttrValue.value=''"
+                class="btn-add-attr"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Node Information -->
+          <div class="detail-item">
+            <label>Children:</label>
+            <span class="detail-value">{{ selectedNode.children.length }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Expanded:</label>
+            <span class="detail-value">{{ selectedNode.isExpanded ? 'Yes' : 'No' }}</span>
+          </div>
+          <div class="detail-item" *ngIf="getNodeLineNumber(selectedNode)">
+            <label>Line:</label>
+            <span class="detail-value">{{ getNodeLineNumber(selectedNode) }}</span>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="detail-item quick-actions" *ngIf="editable">
+            <label>Quick Actions:</label>
+            <div class="action-buttons">
+              <button 
+                (click)="toggleNode(selectedNode)" 
+                class="btn-action"
+                *ngIf="selectedNode.children.length > 0"
+              >
+                {{ selectedNode.isExpanded ? 'Collapse' : 'Expand' }}
+              </button>
+              <button 
+                (click)="selectedNode.isExpanded = true; expandNode(selectedNode)" 
+                class="btn-action"
+                *ngIf="selectedNode.children.length > 0 && !selectedNode.isExpanded"
+              >
+                Expand All Children
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw XML Editor -->
+    <div class="raw-editor" *ngIf="viewMode === 'raw' || !parsedData">
+      <div class="editor-container">
+        <div class="line-numbers" #lineNumbers>
+          <div *ngFor="let line of getLineNumbers()" class="line-number">
+            {{ line }}
+          </div>
+        </div>
+        <div class="textarea-container">
+          <textarea
+            #xmlTextArea
+            [(ngModel)]="xmlData"
+            (input)="onXmlInputChange()"
+            (scroll)="onTextAreaScroll($event)"
+            (keydown)="onTextAreaKeydown($event)"
+            (keyup)="onTextAreaKeyup()"
+            [readonly]="!editable"
+            placeholder="Paste or type XML here..."
+            class="xml-textarea"
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!xmlData && viewMode === 'tree'">
+      <div class="empty-icon">📄</div>
+      <h3>No XML Data</h3>
+      <p>Paste XML data or switch to Raw View to start editing</p>
+      <button (click)="toggleViewMode()" class="btn btn-primary">Switch to Raw View</button>
+    </div>
+  </div>
+</div>

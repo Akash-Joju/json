@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { XmlViewerComponent } from './xml-viewer';
+import { XmlCode } from './xml-code';
 
-describe('XmlViewer', () => {
-  let component: XmlViewerComponent;
-  let fixture: ComponentFixture<XmlViewerComponent>;
+describe('XmlCode', () => {
+  let component: XmlCode;
+  let fixture: ComponentFixture<XmlCode>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [XmlViewerComponent]
+      imports: [XmlCode]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(XmlViewerComponent);
+    fixture = TestBed.createComponent(XmlCode);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

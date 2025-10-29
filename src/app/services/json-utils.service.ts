@@ -70,6 +70,12 @@ export class JsonUtilsService {
   // Read JSON file
   async readJsonFile(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        reject(new Error('File size too large. Maximum 10MB allowed.'));
+        return;
+      }
+
       const reader = new FileReader();
       
       reader.onload = (event) => {
@@ -104,7 +110,12 @@ export class JsonUtilsService {
     }
 
     try {
-      const response = await this.http.get(url, { responseType: 'text' }).toPromise();
+      const response = await this.http.get(url, { 
+        responseType: 'text',
+        headers: {
+          'Accept': 'application/json'
+        }
+      }).toPromise();
       
       if (!response) {
         throw new Error('Empty response from URL');
@@ -119,8 +130,10 @@ export class JsonUtilsService {
         throw new Error('JSON file not found at the provided URL');
       } else if (error.status === 403) {
         throw new Error('Access forbidden to the provided URL');
+      } else if (error.status === 0) {
+        throw new Error('Network error: Cannot reach the URL');
       } else {
-        throw new Error('Failed to load JSON from URL: ' + error.message);
+        throw new Error('Failed to load JSON from URL: ' + (error.message || 'Unknown error'));
       }
     }
   }

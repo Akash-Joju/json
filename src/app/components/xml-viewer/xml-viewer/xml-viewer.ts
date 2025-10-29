@@ -1,540 +1,910 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+// xml-viewer.component.ts - WITH COLORS AND DASHED INDENTATION LINES
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { XmlUtilsService, XmlNode, XmlViewerStats } from '../../../services/xml-utils.service';
-import { XmlNodeComponent } from '../../xml-node/xml-node/xml-node';
-import { FileSizePipe } from '../../../pipes/file-size.pipe';
+
+export interface XmlNode {
+  treeLineNumber: any;
+  name: string;
+  attributes: { [key: string]: string };
+  children: XmlNode[];
+  textContent?: string;
+  isExpanded: boolean;
+  level: number;
+  nodeType?: 'element' | 'text' | 'comment' | 'cdata';
+  isVisible?: boolean;
+  parent?: XmlNode;
+  isHovered?: boolean;
+}
+
+export interface ColorTheme {
+  tagName: string;
+  attributeName: string;
+  attributeValue: string;
+  textContent: string;
+  comment: string;
+  cdata: string;
+  punctuation: string;
+  expandIcon: string;
+  hoverBackground: string;
+  selectedBackground: string;
+  lineNumber: string;
+  indentationLine: string;
+}
+
+export interface TreeLine {
+  number: number;
+  node: XmlNode;
+  type: 'open' | 'close' | 'text' | 'self-closing';
+  level: number;
+  isVisible: boolean;
+  displayNumber: number;
+}
 
 @Component({
   selector: 'app-xml-viewer',
   standalone: true,
-  imports: [CommonModule, FormsModule, XmlNodeComponent, FileSizePipe],
-  template: `
-    <div class="xml-viewer">
-      <!-- Header Section -->
-      <div class="viewer-header">
-        <h2>XML Viewer</h2>
-        <div class="header-actions">
-          <button 
-            class="btn btn-primary" 
-            (click)="toggleExpandAll()"
-            [disabled]="!xmlData || parsingError">
-            {{ allExpanded ? 'Collapse All' : 'Expand All' }}
-          </button>
-          <button 
-            class="btn btn-secondary" 
-            (click)="copyToClipboard()"
-            [disabled]="!xmlData || parsingError">
-            Copy XML
-          </button>
-          <button 
-            class="btn btn-outline" 
-            (click)="downloadXml()"
-            [disabled]="!xmlData || parsingError">
-            Download
-          </button>
-        </div>
-      </div>
-
-      <!-- Input Methods Section -->
-      <div class="input-methods">
-        <div class="method-tabs">
-          <button 
-            class="method-tab" 
-            [class.active]="activeInputMethod === 'manual'"
-            (click)="setInputMethod('manual')">
-            <span class="tab-icon">📝</span>
-            <span class="tab-text">Manual Input</span>
-          </button>
-          <button 
-            class="method-tab" 
-            [class.active]="activeInputMethod === 'file'"
-            (click)="setInputMethod('file')">
-            <span class="tab-icon">📁</span>
-            <span class="tab-text">Upload File</span>
-          </button>
-          <button 
-            class="method-tab" 
-            [class.active]="activeInputMethod === 'url'"
-            (click)="setInputMethod('url')">
-            <span class="tab-icon">🌐</span>
-            <span class="tab-text">Load from URL</span>
-          </button>
-        </div>
-
-        <!-- Manual Input -->
-        <div class="method-content" *ngIf="activeInputMethod === 'manual'">
-          <div class="input-section">
-            <div class="input-header">
-              <h3>XML Content</h3>
-              <div class="input-actions">
-                <button class="btn btn-sm" (click)="formatXml()" [disabled]="!xmlData">Format</button>
-                <button class="btn btn-sm" (click)="clearXml()">Clear</button>
-                <button class="btn btn-sm" (click)="loadSampleXml()">Load Sample</button>
-              </div>
-            </div>
-            <textarea
-              class="xml-input"
-              [(ngModel)]="xmlInput"
-              (ngModelChange)="onXmlInputChange()"
-              placeholder="Paste your XML here or enter XML content..."
-              rows="8"
-              spellcheck="false">
-            </textarea>
-            <div class="input-info">
-              <span class="char-count">{{ xmlInput?.length || 0 }} characters</span>
-              <span class="error-count" *ngIf="parsingError">⚠️ Invalid XML</span>
-              <span class="success-count" *ngIf="xmlData && !parsingError">✓ Valid XML</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- File Upload -->
-        <div class="method-content" *ngIf="activeInputMethod === 'file'">
-          <div class="file-upload-section">
-            <div class="upload-area" 
-                 [class.dragover]="isDragOver"
-                 (drop)="onFileDrop($event)"
-                 (dragover)="onDragOver($event)"
-                 (dragleave)="onDragLeave($event)">
-              <input 
-                type="file" 
-                #fileInput
-                (change)="onFileSelected($event)"
-                accept=".xml,application/xml,text/xml"
-                class="file-input">
-              
-              <div class="upload-content" *ngIf="!selectedFile">
-                <div class="upload-icon">📁</div>
-                <h3>Upload XML File</h3>
-                <p>Drag & drop your XML file here or click to browse</p>
-                <button class="btn btn-primary" (click)="fileInput.click()">
-                  Choose File
-                </button>
-                <p class="upload-hint">Supports .xml files up to 10MB</p>
-              </div>
-
-              <div class="file-info" *ngIf="selectedFile">
-                <div class="file-icon">📄</div>
-                <div class="file-details">
-                  <h4>{{ selectedFile.name }}</h4>
-                  <p>{{ selectedFile.size | fileSize }} • {{ selectedFile.type || 'Unknown type' }}</p>
-                </div>
-                <div class="file-actions">
-                  <button class="btn btn-sm" (click)="loadFile()" [disabled]="fileLoading">
-                    {{ fileLoading ? 'Loading...' : 'Load XML' }}
-                  </button>
-                  <button class="btn btn-sm btn-outline" (click)="clearFile()">Remove</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="upload-error" *ngIf="fileError">
-              <div class="error-icon">❌</div>
-              <p>{{ fileError }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- URL Load -->
-        <div class="method-content" *ngIf="activeInputMethod === 'url'">
-          <div class="url-load-section">
-            <div class="url-input-group">
-              <input
-                type="url"
-                [(ngModel)]="urlInput"
-                placeholder="https://example.com/data.xml"
-                class="url-input"
-                [class.error]="urlError">
-              <button 
-                class="btn btn-primary" 
-                (click)="loadFromUrl()"
-                [disabled]="!urlInput || urlLoading">
-                {{ urlLoading ? 'Loading...' : 'Load XML' }}
-              </button>
-            </div>
-            
-            <div class="url-examples">
-              <p class="examples-title">Test these working XML URLs:</p>
-              <div class="example-links">
-                <a *ngFor="let exampleUrl of workingExamples" 
-                   (click)="loadExampleUrl(exampleUrl)">
-                   {{ getUrlDisplayName(exampleUrl) }}
-                </a>
-              </div>
-            </div>
-
-            <div class="url-status" *ngIf="urlLoading">
-              <div class="loading-spinner"></div>
-              <p>Loading XML from URL... (this may take a few seconds)</p>
-            </div>
-
-            <div class="url-error" *ngIf="urlError">
-              <div class="error-icon">❌</div>
-              <p class="error-message">{{ urlError }}</p>
-            </div>
-
-            <div class="url-success" *ngIf="urlSuccess">
-              <div class="success-icon">✅</div>
-              <p>XML loaded successfully from URL!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Viewer Section -->
-      <div class="viewer-section">
-        <div class="section-header">
-          <h3>Tree View</h3>
-          <div class="view-stats" *ngIf="xmlData && !parsingError">
-            <span class="stat">Nodes: {{ stats.totalNodes }}</span>
-            <span class="stat">Depth: {{ stats.maxDepth }}</span>
-            <span class="stat">Attributes: {{ stats.totalAttributes }}</span>
-          </div>
-        </div>
-
-        <div class="viewer-content">
-          <!-- Loading/Empty State -->
-          <div *ngIf="!xmlData" class="empty-state">
-            <div class="empty-icon">📄</div>
-            <h4>No XML Data</h4>
-            <p>Choose an input method above to load XML content.</p>
-          </div>
-
-          <!-- Error State -->
-          <div *ngIf="xmlData && parsingError" class="error-state">
-            <div class="error-icon">❌</div>
-            <h4>XML Parsing Error</h4>
-            <p class="error-message">{{ parsingError }}</p>
-            <div class="error-actions">
-              <button class="btn btn-primary" (click)="tryRepair()">Try Auto-Repair</button>
-              <button class="btn btn-outline" (click)="clearXml()">Clear Input</button>
-            </div>
-          </div>
-
-          <!-- XML Tree -->
-          <div *ngIf="xmlData && !parsingError" class="xml-tree-container">
-            <div class="tree-actions">
-              <button class="btn btn-sm" (click)="expandToLevel(1)">Level 1</button>
-              <button class="btn btn-sm" (click)="expandToLevel(2)">Level 2</button>
-              <button class="btn btn-sm" (click)="expandToLevel(3)">Level 3</button>
-              <button class="btn btn-sm" (click)="collapseAll()">Collapse All</button>
-            </div>
-            
-            <div class="xml-tree">
-              <div class="xml-node root-node" *ngIf="parsedNodes.length > 0">
-                <div class="node-line" (click)="toggleNode(parsedNodes[0])">
-                  <span class="toggle-icon" *ngIf="parsedNodes[0]?.hasChildren">
-                    {{ parsedNodes[0]?.expanded ? '▼' : '►' }}
-                  </span>
-                  <span class="node-tag">
-                    &lt;<span class="tag-name">{{ parsedNodes[0]?.name }}</span>
-                    <span *ngIf="parsedNodes[0]?.attributes" class="attributes">
-                      <span *ngFor="let attr of parsedNodes[0]?.attributes" class="attribute">
-                        {{ attr.name }}="<span class="attribute-value">{{ attr.value }}</span>"
-                      </span>
-                    </span>
-                    &gt;
-                  </span>
-                </div>
-                
-                <div *ngIf="parsedNodes[0]?.expanded" class="node-children">
-                  <app-xml-node 
-                    [nodes]="parsedNodes[0]?.children || []"
-                    [depth]="1"
-                    (nodeToggle)="onNodeToggle($event)">
-                  </app-xml-node>
-                </div>
-                
-                <div class="closing-tag">
-                  &lt;/<span class="tag-name">{{ parsedNodes[0]?.name }}</span>&gt;
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './xml-viewer.html',
   styleUrls: ['./xml-viewer.scss']
 })
-export class XmlViewerComponent implements OnChanges, OnInit {
-  @Input() initialXml: string = '';
-
-  // Input methods
-  activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
-  xmlInput: string = '';
+export class XmlViewerComponent implements OnChanges, AfterViewInit {
+  @Input() xmlData: string = '';
+  @Input() editable: boolean = true;
+  @Input() showLineNumbers: boolean = true;
+  @Input() showTreeLineNumbers: boolean = true;
+  @Input() theme: 'light' | 'dark' = 'light';
+  @Input() colorScheme: 'default' | 'vibrant' | 'pastel' | 'monokai' = 'default';
+  @Output() xmlChanged = new EventEmitter<string>();
   
-  // File upload
-  selectedFile: File | null = null;
-  fileLoading: boolean = false;
-  fileError: string | null = null;
-  isDragOver: boolean = false;
-  
-  // URL loading
-  urlInput: string = '';
-  urlLoading: boolean = false;
-  urlError: string | null = null;
-  urlSuccess: boolean = false;
-  workingExamples: string[] = [];
+  @ViewChild('xmlTextArea') xmlTextArea!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('lineNumbers') lineNumbers!: ElementRef<HTMLDivElement>;
+  @ViewChild('treeLineNumbers') treeLineNumbers!: ElementRef<HTMLDivElement>;
+  @ViewChild('xmlTree') xmlTree!: ElementRef<HTMLDivElement>;
 
-  // XML data
-  xmlData: string | null = null;
-  parsedNodes: XmlNode[] = [];
-  parsingError: string | null = null;
-  allExpanded: boolean = false;
-  stats: XmlViewerStats = {
-    totalNodes: 0,
-    maxDepth: 0,
-    totalAttributes: 0,
-    isValid: false
+  parsedData: XmlNode | null = null;
+  error: string = '';
+  viewMode: 'tree' | 'raw' = 'tree';
+  searchTerm: string = '';
+  filteredNodes: XmlNode[] = [];
+  selectedNode: XmlNode | null = null;
+  lineCount: number = 1;
+  isSyncingScroll: boolean = false;
+  
+  treeLines: TreeLine[] = [];
+  private nextDisplayLineNumber: number = 1;
+
+  // Color themes for tree view - VIBRANT IS NOW DEFAULT
+  colorThemes: { [key: string]: ColorTheme } = {
+    default: {
+      tagName: '#e11d48',
+      attributeName: '#3b82f6',
+      attributeValue: '#ea580c',
+      textContent: '#16a34a',
+      comment: '#6b7280',
+      cdata: '#9333ea',
+      punctuation: '#1f2937',
+      expandIcon: '#6b7280',
+      hoverBackground: '#fef3c7',
+      selectedBackground: '#bfdbfe',
+      lineNumber: '#6b7280',
+      indentationLine: '#d1d5db'
+    },
+    vibrant: {
+      tagName: '#e11d48',
+      attributeName: '#3b82f6',
+      attributeValue: '#ea580c',
+      textContent: '#16a34a',
+      comment: '#6b7280',
+      cdata: '#9333ea',
+      punctuation: '#1f2937',
+      expandIcon: '#6b7280',
+      hoverBackground: '#fef3c7',
+      selectedBackground: '#bfdbfe',
+      lineNumber: '#6b7280',
+      indentationLine: '#d1d5db'
+    },
+    pastel: {
+      tagName: '#7dd3fc',
+      attributeName: '#c4b5fd',
+      attributeValue: '#fda4af',
+      textContent: '#bbf7d0',
+      comment: '#d1d5db',
+      cdata: '#f0abfc',
+      punctuation: '#9ca3af',
+      expandIcon: '#9ca3af',
+      hoverBackground: '#f8fafc',
+      selectedBackground: '#e0e7ff',
+      lineNumber: '#9ca3af',
+      indentationLine: '#e5e7eb'
+    },
+    monokai: {
+      tagName: '#f92672',
+      attributeName: '#a6e22e',
+      attributeValue: '#e6db74',
+      textContent: '#ffffff',
+      comment: '#75715e',
+      cdata: '#ae81ff',
+      punctuation: '#f8f8f2',
+      expandIcon: '#f8f8f2',
+      hoverBackground: '#3e3d32',
+      selectedBackground: '#49483e',
+      lineNumber: '#75715e',
+      indentationLine: '#75715e'
+    }
   };
 
-  constructor(private xmlUtils: XmlUtilsService) {}
+  darkColorThemes: { [key: string]: ColorTheme } = {
+    default: {
+      tagName: '#f87171',
+      attributeName: '#60a5fa',
+      attributeValue: '#fb923c',
+      textContent: '#4ade80',
+      comment: '#9ca3af',
+      cdata: '#c084fc',
+      punctuation: '#f8fafc',
+      expandIcon: '#9ca3af',
+      hoverBackground: '#374151',
+      selectedBackground: '#1e3a8a',
+      lineNumber: '#9ca3af',
+      indentationLine: '#4b5563'
+    },
+    vibrant: {
+      tagName: '#f87171',
+      attributeName: '#60a5fa',
+      attributeValue: '#fb923c',
+      textContent: '#4ade80',
+      comment: '#9ca3af',
+      cdata: '#c084fc',
+      punctuation: '#f8fafc',
+      expandIcon: '#9ca3af',
+      hoverBackground: '#374151',
+      selectedBackground: '#1e3a8a',
+      lineNumber: '#9ca3af',
+      indentationLine: '#4b5563'
+    },
+    pastel: {
+      tagName: '#7dd3fc',
+      attributeName: '#c4b5fd',
+      attributeValue: '#fda4af',
+      textContent: '#bbf7d0',
+      comment: '#d1d5db',
+      cdata: '#f0abfc',
+      punctuation: '#9ca3af',
+      expandIcon: '#9ca3af',
+      hoverBackground: '#374151',
+      selectedBackground: '#4338ca',
+      lineNumber: '#9ca3af',
+      indentationLine: '#6b7280'
+    },
+    monokai: {
+      tagName: '#f92672',
+      attributeName: '#a6e22e',
+      attributeValue: '#e6db74',
+      textContent: '#ffffff',
+      comment: '#75715e',
+      cdata: '#ae81ff',
+      punctuation: '#f8f8f2',
+      expandIcon: '#f8f8f2',
+      hoverBackground: '#3e3d32',
+      selectedBackground: '#49483e',
+      lineNumber: '#75715e',
+      indentationLine: '#75715e'
+    }
+  };
 
-  ngOnInit(): void {
-    this.workingExamples = this.xmlUtils.getWorkingExamples();
+  objectKeys = Object.keys;
+  snackBar: any;
+
+  get currentColors(): ColorTheme {
+    const themes = this.theme === 'dark' ? this.darkColorThemes : this.colorThemes;
+    return themes[this.colorScheme] || themes['default'];
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['initialXml'] && this.initialXml) {
-      this.xmlInput = this.initialXml;
-      this.parseXmlData();
+    if (changes['xmlData']) {
+      this.parseXml();
+      this.updateLineCount();
+      setTimeout(() => this.synchronizeHeights(), 0);
     }
   }
 
-  setInputMethod(method: 'manual' | 'file' | 'url'): void {
-    this.activeInputMethod = method;
-    this.clearErrors();
+  ngAfterViewInit(): void {
+    this.setupScrollSync();
+    this.updateLineCount();
+    setTimeout(() => this.synchronizeHeights(), 100);
+    setTimeout(() => this.synchronizeTreeHeights(), 150);
   }
 
-  // Manual input methods
-  onXmlInputChange(): void {
-    this.parseXmlData();
+  private setupScrollSync(): void {
+    // Raw editor scroll sync
+    if (this.xmlTextArea && this.lineNumbers) {
+      const textArea = this.xmlTextArea.nativeElement;
+      const lineNumbers = this.lineNumbers.nativeElement;
+
+      textArea.addEventListener('scroll', () => {
+        if (!this.isSyncingScroll) {
+          this.isSyncingScroll = true;
+          lineNumbers.scrollTop = textArea.scrollTop;
+          setTimeout(() => this.isSyncingScroll = false, 10);
+        }
+      });
+    }
+
+    // Tree view scroll sync - FIXED SCROLLING
+    if (this.treeLineNumbers && this.xmlTree) {
+      const treeLineNumbers = this.treeLineNumbers.nativeElement;
+      const xmlTree = this.xmlTree.nativeElement;
+
+      // Sync tree content scroll to line numbers
+      xmlTree.addEventListener('scroll', () => {
+        if (!this.isSyncingScroll) {
+          this.isSyncingScroll = true;
+          treeLineNumbers.scrollTop = xmlTree.scrollTop;
+          setTimeout(() => this.isSyncingScroll = false, 10);
+        }
+      });
+
+      // Sync line numbers scroll to tree content
+      treeLineNumbers.addEventListener('scroll', () => {
+        if (!this.isSyncingScroll) {
+          this.isSyncingScroll = true;
+          xmlTree.scrollTop = treeLineNumbers.scrollTop;
+          setTimeout(() => this.isSyncingScroll = false, 10);
+        }
+      });
+    }
   }
 
-  private parseXmlData(): void {
-    this.parsingError = null;
-    this.parsedNodes = [];
-    this.stats = {
-      totalNodes: 0,
-      maxDepth: 0,
-      totalAttributes: 0,
-      isValid: false
+  private synchronizeHeights(): void {
+    if (!this.xmlTextArea || !this.lineNumbers) return;
+
+    const textArea = this.xmlTextArea.nativeElement;
+    const lineNumbers = this.lineNumbers.nativeElement;
+
+    const textAreaStyle = window.getComputedStyle(textArea);
+    const lineHeight = parseInt(textAreaStyle.lineHeight) || 21;
+
+    const totalHeight = Math.max(textArea.scrollHeight, lineHeight * this.lineCount);
+    
+    lineNumbers.style.height = totalHeight + 'px';
+    
+    const lineNumberElements = lineNumbers.querySelectorAll('.line-number');
+    lineNumberElements.forEach((lineEl: any) => {
+      lineEl.style.height = lineHeight + 'px';
+      lineEl.style.lineHeight = lineHeight + 'px';
+    });
+
+    textArea.style.lineHeight = lineHeight + 'px';
+  }
+
+  private synchronizeTreeHeights(): void {
+    if (!this.treeLineNumbers || !this.xmlTree) return;
+
+    const treeLineNumbers = this.treeLineNumbers.nativeElement;
+    const xmlTree = this.xmlTree.nativeElement;
+
+    // Calculate the exact height needed for both containers
+    const lineHeight = 20; // Fixed line height for tree view
+    const totalLines = this.treeLines.filter(line => line.isVisible).length;
+    const totalHeight = Math.max(totalLines * lineHeight, xmlTree.scrollHeight);
+
+    // Set both to have the same height
+    treeLineNumbers.style.height = totalHeight + 'px';
+    xmlTree.style.height = totalHeight + 'px';
+
+    // Ensure consistent heights for all line elements
+    const lineNumberElements = treeLineNumbers.querySelectorAll('.tree-line-number');
+    const treeLineElements = xmlTree.querySelectorAll('.tree-line');
+    
+    lineNumberElements.forEach((lineEl: any, index: number) => {
+      lineEl.style.height = lineHeight + 'px';
+      lineEl.style.lineHeight = lineHeight + 'px';
+      lineEl.style.minHeight = lineHeight + 'px';
+    });
+
+    treeLineElements.forEach((lineEl: any) => {
+      lineEl.style.height = lineHeight + 'px';
+      lineEl.style.minHeight = lineHeight + 'px';
+      lineEl.style.lineHeight = lineHeight + 'px';
+    });
+
+    // Force reflow to ensure proper rendering
+    treeLineNumbers.style.display = 'none';
+    treeLineNumbers.offsetHeight; // Trigger reflow
+    treeLineNumbers.style.display = 'block';
+  }
+
+  private updateLineCount(): void {
+    if (this.xmlData) {
+      this.lineCount = Math.max(this.xmlData.split('\n').length, 1);
+    } else {
+      this.lineCount = 1;
+    }
+  }
+
+  parseXml(): void {
+    if (!this.xmlData?.trim()) {
+      this.parsedData = null;
+      this.error = '';
+      this.treeLines = [];
+      return;
+    }
+
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(this.xmlData, 'text/xml');
+      
+      const parseError = xmlDoc.getElementsByTagName('parsererror')[0];
+      if (parseError) {
+        this.error = parseError.textContent || 'Unknown XML parsing error';
+        this.parsedData = null;
+        this.treeLines = [];
+        return;
+      }
+
+      this.error = '';
+      this.parsedData = this.parseNode(xmlDoc.documentElement, 0);
+      this.generateTreeLines();
+      
+      setTimeout(() => {
+        this.synchronizeTreeHeights();
+        this.setupScrollSync(); // Re-setup scroll sync after tree is generated
+      }, 0);
+    } catch (err) {
+      this.error = err instanceof Error ? err.message : 'Failed to parse XML';
+      this.parsedData = null;
+      this.treeLines = [];
+    }
+  }
+
+  private parseNode(node: Element, level: number): XmlNode {
+    const xmlNode: XmlNode = {
+      name: node.nodeName,
+      attributes: {},
+      children: [],
+      isExpanded: level < 2,
+      level: level,
+      nodeType: 'element',
+      isVisible: true,
+      treeLineNumber: undefined
     };
 
-    if (!this.xmlInput?.trim()) {
-      this.xmlData = null;
-      return;
+    // Parse attributes
+    for (let i = 0; i < node.attributes.length; i++) {
+      const attr = node.attributes[i];
+      xmlNode.attributes[attr.name] = attr.value;
     }
 
-    this.xmlData = this.xmlInput.trim();
-    const result = this.xmlUtils.parseXml(this.xmlData);
-    this.parsedNodes = result.nodes;
-    this.stats = result.stats;
-    this.parsingError = result.error;
-  }
-
-  // File upload methods
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      this.fileError = null;
+    // Parse child nodes
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const child = node.childNodes[i];
+      
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const childNode = this.parseNode(child as Element, level + 1);
+        childNode.parent = xmlNode;
+        xmlNode.children.push(childNode);
+      } else if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim()) {
+        if (child.textContent.includes('<!--') && child.textContent.includes('-->')) {
+          const commentNode: XmlNode = {
+            name: 'comment',
+            attributes: {},
+            children: [],
+            textContent: child.textContent.replace(/<!--|-->/g, '').trim(),
+            isExpanded: true,
+            level: level + 1,
+            nodeType: 'comment',
+            isVisible: true,
+            parent: xmlNode,
+            treeLineNumber: undefined
+          };
+          xmlNode.children.push(commentNode);
+        } else if (child.textContent.includes('<![CDATA[') && child.textContent.includes(']]>')) {
+          const cdataNode: XmlNode = {
+            name: 'cdata',
+            attributes: {},
+            children: [],
+            textContent: child.textContent.replace(/<!\[CDATA\[|\]\]>/g, '').trim(),
+            isExpanded: true,
+            level: level + 1,
+            nodeType: 'cdata',
+            isVisible: true,
+            parent: xmlNode,
+            treeLineNumber: undefined
+          };
+          xmlNode.children.push(cdataNode);
+        } else {
+          xmlNode.textContent = child.textContent.trim();
+        }
+      }
     }
+
+    return xmlNode;
   }
 
-  onFileDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragOver = false;
+  private generateTreeLines(): void {
+    this.treeLines = [];
+    this.nextDisplayLineNumber = 1;
     
-    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      this.selectedFile = event.dataTransfer.files[0];
-      this.fileError = null;
+    if (this.parsedData) {
+      this.generateNodeLines(this.parsedData);
     }
+    
+    setTimeout(() => {
+      this.synchronizeTreeHeights();
+    }, 0);
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragOver = true;
-  }
+  private generateNodeLines(node: XmlNode): void {
+    if (!node.isVisible) return;
 
-  onDragLeave(event: DragEvent): void {
-    event.preventDefault();
-    this.isDragOver = false;
-  }
+    const isSelfClosing = node.children.length === 0 && !node.textContent;
+    const lineType = isSelfClosing ? 'self-closing' : 'open';
 
-  async loadFile(): Promise<void> {
-    if (!this.selectedFile) return;
+    // Add opening/self-closing tag line
+    this.treeLines.push({
+      number: this.nextDisplayLineNumber,
+      node: node,
+      type: lineType,
+      level: node.level,
+      isVisible: true,
+      displayNumber: this.nextDisplayLineNumber++
+    });
 
-    this.fileLoading = true;
-    this.fileError = null;
+    // Add child nodes if expanded and not self-closing
+    if (node.isExpanded && !isSelfClosing) {
+      node.children.forEach(child => {
+        this.generateNodeLines(child);
+      });
 
-    try {
-      const result = await this.xmlUtils.readXmlFromFile(this.selectedFile);
-      
-      if (result.error) {
-        this.fileError = result.error;
-        return;
+      // Add text content line if present
+      if (node.textContent) {
+        this.treeLines.push({
+          number: this.nextDisplayLineNumber,
+          node: node,
+          type: 'text',
+          level: node.level + 1,
+          isVisible: true,
+          displayNumber: this.nextDisplayLineNumber++
+        });
       }
+    }
 
-      this.xmlInput = result.content;
-      this.parseXmlData();
-      this.activeInputMethod = 'manual';
-    } catch (error) {
-      this.fileError = 'Failed to load file';
-    } finally {
-      this.fileLoading = false;
+    // Add closing tag line (unless it's self-closing)
+    if (!isSelfClosing && node.isExpanded) {
+      this.treeLines.push({
+        number: this.nextDisplayLineNumber,
+        node: node,
+        type: 'close',
+        level: node.level,
+        isVisible: true,
+        displayNumber: this.nextDisplayLineNumber++
+      });
     }
   }
 
-  clearFile(): void {
-    this.selectedFile = null;
-    this.fileError = null;
-  }
-
-  // URL loading methods - IMPROVED VERSION
-  async loadFromUrl(): Promise<void> {
-    if (!this.urlInput?.trim()) {
-      this.urlError = 'Please enter a URL';
-      return;
-    }
-
-    this.urlLoading = true;
-    this.urlError = null;
-    this.urlSuccess = false;
-
-    try {
-      console.log('Starting URL load:', this.urlInput);
-      
-      const result = await this.xmlUtils.loadXmlFromUrl(this.urlInput);
-      
-      if (result.error) {
-        this.urlError = result.error;
-        return;
-      }
-
-      if (!result.content) {
-        this.urlError = 'No content received from URL';
-        return;
-      }
-
-      this.xmlInput = result.content;
-      this.parseXmlData();
-      this.urlSuccess = true;
-      this.activeInputMethod = 'manual';
-      
-    } catch (error) {
-      console.error('URL load error:', error);
-      this.urlError = 'Unexpected error: ' + (error instanceof Error ? error.message : 'Unknown error');
-    } finally {
-      this.urlLoading = false;
-    }
-  }
-
-  loadExampleUrl(url: string): void {
-    this.urlInput = url;
-    this.loadFromUrl();
-  }
-
-  getUrlDisplayName(url: string): string {
-    const urlObj = new URL(url);
-    const hostname = urlObj.hostname.replace('www.', '');
-    const pathname = urlObj.pathname.split('/').pop() || 'feed';
-    return `${hostname} - ${pathname}`;
-  }
-
-  // Common methods
   toggleNode(node: XmlNode): void {
-    if (node.hasChildren) {
-      node.expanded = !node.expanded;
-    }
+    node.isExpanded = !node.isExpanded;
+    this.updateNodeVisibility(node);
+    this.generateTreeLines();
   }
 
-  onNodeToggle(node: XmlNode): void {
-    // Handle child node toggles
-  }
-
-  toggleExpandAll(): void {
-    this.allExpanded = !this.allExpanded;
-    this.xmlUtils.setAllNodesExpanded(this.parsedNodes, this.allExpanded);
-  }
-
-  expandToLevel(level: number): void {
-    this.xmlUtils.setNodesExpandedToLevel(this.parsedNodes, level);
-    this.allExpanded = level > 2;
+  private updateNodeVisibility(node: XmlNode): void {
+    node.children.forEach(child => {
+      child.isVisible = node.isExpanded;
+      if (node.isExpanded) {
+        this.updateNodeVisibility(child);
+      }
+    });
   }
 
   collapseAll(): void {
-    this.xmlUtils.setAllNodesExpanded(this.parsedNodes, false);
-    this.allExpanded = false;
+    this.collapseNode(this.parsedData);
+    this.generateTreeLines();
   }
 
-  formatXml(): void {
-    if (!this.xmlData) return;
-    this.xmlInput = this.xmlUtils.formatXml(this.xmlData);
-    this.parseXmlData();
+  expandAll(): void {
+    this.expandNode(this.parsedData);
+    this.generateTreeLines();
   }
 
-  clearXml(): void {
-    this.xmlInput = '';
-    this.xmlData = null;
-    this.parsedNodes = [];
-    this.parsingError = null;
-    this.allExpanded = false;
-    this.clearErrors();
-  }
-
-  tryRepair(): void {
-    if (!this.xmlData) return;
-    this.xmlInput = this.xmlUtils.tryRepairXml(this.xmlData);
-    this.parseXmlData();
-  }
-
-  async copyToClipboard(): Promise<void> {
-    if (!this.xmlData) return;
+  public collapseNode(node: XmlNode | null): void {
+    if (!node) return;
     
-    try {
-      await navigator.clipboard.writeText(this.xmlData);
-      console.log('XML copied to clipboard');
-    } catch (err) {
-      console.error('Failed to copy XML: ', err);
+    node.isExpanded = false;
+    node.children.forEach(child => {
+      this.collapseNode(child);
+    });
+    this.updateTreeLines();
+  }
+
+  public expandNode(node: XmlNode | null): void {
+    if (!node) return;
+    
+    node.isExpanded = true;
+    node.children.forEach(child => {
+      this.expandNode(child);
+    });
+    this.updateTreeLines();
+  }
+
+  updateTreeLines() {
+    this.generateTreeLines();
+  }
+
+  selectNode(node: XmlNode): void {
+    this.selectedNode = node;
+  }
+
+  onTextAreaScroll(event: Event): void {
+    if (this.isSyncingScroll) return;
+    
+    this.isSyncingScroll = true;
+    const textArea = event.target as HTMLTextAreaElement;
+    
+    if (this.lineNumbers) {
+      this.lineNumbers.nativeElement.scrollTop = textArea.scrollTop;
+    }
+    
+    setTimeout(() => this.isSyncingScroll = false, 10);
+  }
+
+  onTextAreaKeyup(): void {
+    this.updateLineCount();
+    setTimeout(() => this.synchronizeHeights(), 0);
+  }
+
+  onXmlInputChange(): void {
+    this.xmlChanged.emit(this.xmlData);
+    this.updateLineCount();
+    setTimeout(() => this.synchronizeHeights(), 0);
+    if (this.viewMode === 'tree') {
+      this.parseXml();
     }
   }
 
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'tree' ? 'raw' : 'tree';
+    if (this.viewMode === 'tree') {
+      this.parseXml();
+    }
+    setTimeout(() => this.synchronizeHeights(), 0);
+  }
+
+  changeColorScheme(scheme: 'default' | 'vibrant' | 'pastel' | 'monokai'): void {
+    this.colorScheme = scheme;
+  }
+
+  getTagColor(node: XmlNode): string {
+    if (node.nodeType === 'comment') return this.currentColors.comment;
+    if (node.nodeType === 'cdata') return this.currentColors.cdata;
+    return this.currentColors.tagName;
+  }
+
+  getTextColor(node: XmlNode): string {
+    if (node.nodeType === 'comment') return this.currentColors.comment;
+    if (node.nodeType === 'cdata') return this.currentColors.cdata;
+    return this.currentColors.textContent;
+  }
+
+  getNodeDisplayName(node: XmlNode): string {
+    if (node.nodeType === 'comment') return '!--';
+    if (node.nodeType === 'cdata') return '![CDATA[';
+    return node.name;
+  }
+
+  getNodeClosingName(node: XmlNode): string {
+    if (node.nodeType === 'comment') return '--';
+    if (node.nodeType === 'cdata') return ']]';
+    return node.name;
+  }
+
+  isSpecialNode(node: XmlNode): boolean {
+    return node.nodeType === 'comment' || node.nodeType === 'cdata';
+  }
+
+  getSpecialNodeSymbol(node: XmlNode): string {
+    if (node.nodeType === 'comment') return '💬';
+    if (node.nodeType === 'cdata') return '📄';
+    return '';
+  }
+
+  isSelfClosing(node: XmlNode): boolean {
+    return node.children.length === 0 && !node.textContent;
+  }
+
+  getLineContent(treeLine: TreeLine): string {
+    const node = treeLine.node;
+    
+    switch (treeLine.type) {
+      case 'open':
+        return `<span class="tag-punctuation">&lt;</span><span class="tag-name" style="color: ${this.getTagColor(node)}">${this.getNodeDisplayName(node)}</span>${this.getAttributesString(node)}<span class="tag-punctuation">&gt;</span>`;
+      case 'self-closing':
+        return `<span class="tag-punctuation">&lt;</span><span class="tag-name" style="color: ${this.getTagColor(node)}">${this.getNodeDisplayName(node)}</span>${this.getAttributesString(node)}<span class="tag-punctuation"> /&gt;</span>`;
+      case 'close':
+        return `<span class="tag-punctuation">&lt;/</span><span class="tag-name" style="color: ${this.getTagColor(node)}">${this.getNodeClosingName(node)}</span><span class="tag-punctuation">&gt;</span>`;
+      case 'text':
+        return `<span class="text-content" style="color: ${this.getTextColor(node)}">${node.textContent || ''}</span>`;
+      default:
+        return '';
+    }
+  }
+
+  private getAttributesString(node: XmlNode): string {
+    const attributes = this.objectKeys(node.attributes);
+    if (attributes.length === 0) return '';
+    
+    return ' ' + attributes.map(attr => 
+      `<span class="attr-name" style="color: ${this.currentColors.attributeName}">${attr}</span><span class="tag-punctuation">=</span><span class="attr-value" style="color: ${this.currentColors.attributeValue}">"${node.attributes[attr]}"</span>`
+    ).join(' ');
+  }
+
+  onTreeLineClick(treeLine: TreeLine): void {
+    this.selectNode(treeLine.node);
+    
+    if ((treeLine.type === 'open' || treeLine.type === 'self-closing') && 
+        treeLine.node.children.length > 0) {
+      this.toggleNode(treeLine.node);
+    }
+  }
+
+  onTreeLineHover(treeLine: TreeLine, isHovered: boolean): void {
+    treeLine.node.isHovered = isHovered;
+  }
+
+  formatXml(): void {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(this.xmlData, 'text/xml');
+      const serializer = new XMLSerializer();
+      const formatted = serializer.serializeToString(xmlDoc);
+      
+      const formattedWithIndent = this.formatXmlString(formatted);
+      this.xmlData = formattedWithIndent;
+      this.onXmlInputChange();
+    } catch (err) {
+      this.error = 'Failed to format XML';
+    }
+  }
+
+  private formatXmlString(xml: string): string {
+    const PADDING = '  ';
+    const reg = /(>)(<)(\/*)/g;
+    let formatted = '';
+    let pad = 0;
+    
+    xml = xml.replace(reg, '$1\r\n$2$3');
+    
+    xml.split('\r\n').forEach((node) => {
+      let indent = 0;
+      if (node.match(/.+<\/\w[^>]*>$/)) {
+        indent = 0;
+      } else if (node.match(/^<\/\w/) && pad !== 0) {
+        pad -= 1;
+      } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
+        indent = 1;
+      }
+      
+      const padding = new Array(pad + 1).join(PADDING);
+      formatted += padding + node + '\r\n';
+      pad += indent;
+    });
+    
+    return formatted;
+  }
+
+  minifyXml(): void {
+    this.xmlData = this.xmlData.replace(/>\s+</g, '><').trim();
+    this.onXmlInputChange();
+  }
+
+  applySearchFilter(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredNodes = [];
+      return;
+    }
+
+    this.filteredNodes = [];
+    this.searchInNode(this.parsedData, this.searchTerm.toLowerCase());
+  }
+
+  private searchInNode(node: XmlNode | null, searchTerm: string): void {
+    if (!node) return;
+
+    const nodeContent = `${node.name} ${Object.values(node.attributes).join(' ')} ${node.textContent || ''}`.toLowerCase();
+    
+    if (nodeContent.includes(searchTerm)) {
+      this.filteredNodes.push(node);
+    }
+
+    node.children.forEach(child => this.searchInNode(child, searchTerm));
+  }
+
   downloadXml(): void {
-    if (!this.xmlData) return;
-    this.xmlUtils.downloadXml(this.xmlData, 'document.xml');
+    const blob = new Blob([this.xmlData], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.xml';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
-  loadSampleXml(): void {
-    this.xmlInput = `<?xml version="1.0" encoding="UTF-8"?>
-<catalog>
-  <book id="1">
-    <title>XML Guide</title>
-    <author>John Doe</author>
-    <price currency="USD">29.99</price>
-    <categories>
-      <category>Programming</category>
-      <category>Web</category>
-    </categories>
-  </book>
-  <book id="2">
-    <title>Advanced XML</title>
-    <author>Jane Smith</author>
-    <price currency="EUR">39.99</price>
-    <categories>
-      <category>Programming</category>
-      <category>Advanced</category>
-    </categories>
-  </book>
-</catalog>`;
-    this.parseXmlData();
+  getLineNumbers(): number[] {
+    return Array.from({ length: this.lineCount }, (_, i) => i + 1);
   }
 
-  private clearErrors(): void {
-    this.fileError = null;
-    this.urlError = null;
-    this.urlSuccess = false;
+  onTextAreaKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      const start = this.xmlTextArea.nativeElement.selectionStart;
+      const end = this.xmlTextArea.nativeElement.selectionEnd;
+      
+      this.xmlData = this.xmlData.substring(0, start) + '  ' + this.xmlData.substring(end);
+      
+      setTimeout(() => {
+        this.xmlTextArea.nativeElement.selectionStart = this.xmlTextArea.nativeElement.selectionEnd = start + 2;
+        this.onXmlInputChange();
+      });
+    }
+
+    if (event.ctrlKey && event.shiftKey && event.key === 'F') {
+      event.preventDefault();
+      this.formatXml();
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    setTimeout(() => this.synchronizeTreeHeights(), 0);
+  }
+
+  // ========== TREE VIEW EDITING METHODS ==========
+  
+  getNodeLineNumber(node: XmlNode): number {
+    const treeLine = this.treeLines.find(tl => tl.node === node);
+    return treeLine ? treeLine.displayNumber : 0;
+  }
+
+  // Method to update XML when tree nodes are modified
+  updateXmlFromTree(): void {
+    if (!this.parsedData) return;
+    
+    try {
+      // Reconstruct XML from the tree structure
+      const xmlString = this.serializeNode(this.parsedData);
+      this.xmlData = xmlString;
+      this.xmlChanged.emit(this.xmlData);
+      
+      // Re-parse to update the tree view
+      this.parseXml();
+    } catch (err) {
+      this.error = 'Failed to update XML from tree changes';
+    }
+  }
+
+  // Serialize a node back to XML string
+  private serializeNode(node: XmlNode, indent: string = ''): string {
+    let xml = '';
+    
+    // Opening tag
+    xml += `${indent}<${node.name}`;
+    
+    // Attributes
+    for (const [key, value] of Object.entries(node.attributes)) {
+      xml += ` ${key}="${this.escapeXml(value)}"`;
+    }
+    
+    if (node.children.length === 0 && !node.textContent) {
+      // Self-closing tag
+      xml += '/>';
+    } else {
+      // Opening tag with content
+      xml += '>';
+      
+      // Text content
+      if (node.textContent) {
+        xml += this.escapeXml(node.textContent);
+      }
+      
+      // Child nodes
+      if (node.children.length > 0) {
+        xml += '\n';
+        const childIndent = indent + '  ';
+        node.children.forEach(child => {
+          xml += this.serializeNode(child, childIndent) + '\n';
+        });
+        xml += indent;
+      }
+      
+      // Closing tag
+      xml += `</${node.name}>`;
+    }
+    
+    return xml;
+  }
+
+  // Escape XML special characters
+  private escapeXml(unsafe: string): string {
+    return unsafe.replace(/[<>&'"]/g, (c) => {
+      switch (c) {
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '&': return '&amp;';
+        case '\'': return '&apos;';
+        case '"': return '&quot;';
+        default: return c;
+      }
+    });
+  }
+
+  // Tree editing methods
+  editNodeName(node: XmlNode, newName: string): void {
+    if (!this.editable || !newName.trim()) return;
+    
+    const oldName = node.name;
+    node.name = newName.trim();
+    this.updateXmlFromTree();
+    // this.snackBar.open(`Node name changed from "${oldName}" to "${newName}"`, 'Close', {
+    //   duration: 2000
+    // });
+  }
+
+  editNodeAttribute(node: XmlNode, attrName: string, newValue: string): void {
+    if (attrName && newValue !== node.attributes[attrName]) {
+      node.attributes[attrName] = newValue;
+      this.updateXmlFromTree();
+    }
+  }
+
+  updateAttributeKey(node: XmlNode, oldKey: string, newKey: string): void {
+    if (newKey && newKey !== oldKey && !node.attributes[newKey]) {
+      const value = node.attributes[oldKey];
+      delete node.attributes[oldKey];
+      node.attributes[newKey] = value;
+      this.updateXmlFromTree();
+    }
+  }
+
+  addAttribute(node: XmlNode, attrName: string, attrValue: string): void {
+    if (attrName && !node.attributes[attrName]) {
+      node.attributes[attrName] = attrValue;
+      this.updateXmlFromTree();
+    }
+  }
+
+  removeAttribute(node: XmlNode, attrName: string): void {
+    if (node.attributes[attrName]) {
+      delete node.attributes[attrName];
+      this.updateXmlFromTree();
+    }
+  }
+
+  editNodeText(node: XmlNode, newText: string): void {
+    if (newText !== node.textContent) {
+      node.textContent = newText;
+      this.updateXmlFromTree();
+    }
+  }
+
+  // Event handlers with proper typing
+  onEditNodeName(event: Event, node: XmlNode): void {
+    const target = event.target as HTMLInputElement;
+    this.editNodeName(node, target.value);
+  }
+
+  onEditNodeText(event: Event, node: XmlNode): void {
+    const target = event.target as HTMLTextAreaElement;
+    this.editNodeText(node, target.value);
+  }
+
+  onEditNodeAttribute(event: Event, node: XmlNode, attr: string): void {
+    const target = event.target as HTMLInputElement;
+    this.editNodeAttribute(node, attr, target.value);
+  }
+
+  onUpdateAttributeKey(event: Event, node: XmlNode, oldKey: string): void {
+    const target = event.target as HTMLInputElement;
+    this.updateAttributeKey(node, oldKey, target.value);
   }
 }

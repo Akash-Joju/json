@@ -11,17 +11,16 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
   imports: [CommonModule, FormsModule, JsonNodeComponent, FileSizePipe],
   template: `
     <div class="json-viewer-container">
-      <!-- Header -->
+      <!-- Ultra Compact Header -->
       <div class="page-header">
-        <h1>🔍 JSON Viewer</h1>
-        <p>Paste, validate, and visualize your JSON data</p>
+        <h1>JSON Viewer</h1>
       </div>
 
       <!-- Main Content Area -->
       <div class="main-content-area">
         <!-- Left Panel - Input and Tree View -->
         <section class="viewer-panel">
-          <!-- Sticky Controls Header -->
+          <!-- Ultra Compact Controls -->
           <div class="sticky-controls-header">
             <div class="viewer-controls">
               <div class="mode-switcher">
@@ -29,14 +28,14 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                   class="mode-btn" 
                   [class.active]="currentMode === 'input'"
                   (click)="switchMode('input')">
-                  📝 Edit
+                  Edit
                 </button>
                 <button 
                   class="mode-btn viewer-btn"
                   [class.active]="currentMode === 'tree'"
                   [disabled]="!isValid || !jsonInput.trim()"
                   (click)="switchMode('tree')">
-                  🌳 Viewer
+                  View
                 </button>
               </div>
               
@@ -45,24 +44,24 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                   (click)="formatJson()" 
                   [disabled]="!isValid || !jsonInput.trim()"
                   class="btn btn-format">
-                  🔧 Format
+                  Format
                 </button>
                 <button 
                   (click)="minifyJson()" 
                   [disabled]="!isValid || !jsonInput.trim()"
                   class="btn btn-minify">
-                  📏 Minify
+                  Minify
                 </button>
                 <button 
                   (click)="copyToClipboard()" 
                   [disabled]="!isValid || !jsonInput.trim()"
                   class="btn btn-copy">
-                  📋 Copy
+                  Copy
                 </button>
                 <button 
                   (click)="clearAll()" 
                   class="btn btn-clear">
-                  🗑️ Clear
+                  Clear
                 </button>
               </div>
 
@@ -70,43 +69,38 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                 <button 
                   (click)="expandAll()" 
                   class="btn btn-expand">
-                  ➕ Expand All
+                  Expand
                 </button>
                 <button 
                   (click)="collapseAll()" 
                   class="btn btn-collapse">
-                  ➖ Collapse All
+                  Collapse
                 </button>
 
-                <!-- Search in Tree Mode -->
+                <!-- Search -->
                 <div class="tree-search" *ngIf="isValid && jsonTree.length > 0">
                   <div class="search-input-container">
                     <input
                       type="text"
                       [(ngModel)]="searchTerm"
                       (input)="onSearch()"
-                      placeholder="Search keys or values..."
+                      placeholder="Search..."
                       class="search-input"
                     >
                     <button
                       (click)="clearSearch()"
                       *ngIf="searchTerm"
                       class="clear-search-btn"
-                      title="Clear search">
-                      ✕
+                      title="Clear">
+                      ×
                     </button>
                   </div>
                   
-                  <!-- Search Results Navigation -->
+                  <!-- Search Results -->
                   <div class="search-navigation" *ngIf="searchResults.length > 0">
-                    <div class="results-info">
-                      <span class="results-count">
-                        {{ getGroupedSearchResults().length }} object(s) found
-                      </span>
-                      <span class="current-position" *ngIf="getGroupedSearchResults().length > 1">
-                        ({{ currentGroupIndex + 1 }} of {{ getGroupedSearchResults().length }})
-                      </span>
-                    </div>
+                    <span class="results-count">
+                      {{ getGroupedSearchResults().length }}
+                    </span>
                     <div class="navigation-buttons" *ngIf="getGroupedSearchResults().length > 1">
                       <button 
                         (click)="previousGroup()" 
@@ -129,29 +123,26 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
 
           <!-- Content Area -->
           <div class="content-area">
-            <!-- Input Methods Section with Tabs -->
+            <!-- Input Methods -->
             <div class="input-methods" *ngIf="currentMode === 'input'">
               <div class="method-tabs">
                 <button 
                   class="method-tab" 
                   [class.active]="activeInputMethod === 'manual'"
                   (click)="setInputMethod('manual')">
-                  <span class="tab-icon">📝</span>
-                  <span class="tab-text">Manual Input</span>
+                  Input
                 </button>
                 <button 
                   class="method-tab" 
                   [class.active]="activeInputMethod === 'file'"
                   (click)="setInputMethod('file')">
-                  <span class="tab-icon">📁</span>
-                  <span class="tab-text">Upload File</span>
+                  File
                 </button>
                 <button 
                   class="method-tab" 
                   [class.active]="activeInputMethod === 'url'"
                   (click)="setInputMethod('url')">
-                  <span class="tab-icon">🌐</span>
-                  <span class="tab-text">Load from URL</span>
+                  URL
                 </button>
               </div>
 
@@ -159,46 +150,32 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
               <div class="method-content" *ngIf="activeInputMethod === 'manual'">
                 <div class="input-section">
                   <div class="input-header">
-                    <h3>JSON Content</h3>
+                    <h3>JSON</h3>
                     <div class="input-actions">
-                      <button class="btn btn-sm" (click)="loadSampleJson()">Load Sample</button>
+                      <button class="btn btn-sm" (click)="loadSampleJson()">Sample</button>
                     </div>
                   </div>
-                  
-                  <!-- Quick View Button -->
-                  <div class="quick-view-container">
-                    <button 
-                      class="quick-view-btn"
-                      [disabled]="!isValid || !jsonInput.trim()"
-                      (click)="switchToTreeView()">
-                      🌳 Quick View
-                    </button>
-                    <span class="quick-view-hint" *ngIf="!isValid || !jsonInput.trim()">
-                      Enter valid JSON to enable tree view
-                    </span>
-                  </div>
 
-                  <!-- FIXED: Textarea with full width -->
+                  <!-- Textarea with maximum height -->
                   <div class="textarea-container">
                     <textarea
                       class="json-textarea"
                       [(ngModel)]="jsonInput"
                       (ngModelChange)="onJsonInputChange()"
-                      placeholder='Paste your JSON here... Example: {"name": "John", "age": 30, "hobbies": ["reading", "gaming"]}'
+                      placeholder='{"example": "json"}'
                       spellcheck="false"
                       [class.error]="!isValid && jsonInput.trim() !== ''">
                     </textarea>
                   </div>
 
                   <div class="input-info">
-                    <span class="char-count">{{ jsonInput?.length || 0 }} characters</span>
-                    <span class="error-count" *ngIf="!isValid && jsonInput.trim() !== ''">⚠️ Invalid JSON</span>
-                    <span class="success-count" *ngIf="isValid && jsonInput.trim() !== ''">✓ Valid JSON</span>
+                    <span class="char-count">{{ jsonInput?.length || 0 }}</span>
+                    <span class="error-count" *ngIf="!isValid && jsonInput.trim() !== ''">⚠️ Invalid</span>
+                    <span class="success-count" *ngIf="isValid && jsonInput.trim() !== ''">✓ Valid</span>
                   </div>
 
                   <!-- Error Message -->
                   <div *ngIf="errorMessage" class="error-message">
-                    <span class="error-icon">❌</span>
                     {{ errorMessage }}
                   </div>
                 </div>
@@ -220,33 +197,28 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                       class="file-input">
                     
                     <div class="upload-content" *ngIf="!selectedFile">
-                      <div class="upload-icon">📁</div>
-                      <h3>Upload JSON File</h3>
-                      <p>Drag & drop your JSON file here or click to browse</p>
+                      <p>Drop JSON file or click to browse</p>
                       <button class="btn btn-primary" (click)="fileInput.click()">
                         Choose File
                       </button>
-                      <p class="upload-hint">Supports .json files up to 5MB</p>
                     </div>
 
                     <div class="file-info" *ngIf="selectedFile">
-                      <div class="file-icon">📄</div>
                       <div class="file-details">
                         <h4>{{ selectedFile.name }}</h4>
-                        <p>{{ selectedFile.size | fileSize }} • {{ selectedFile.type || 'Unknown type' }}</p>
+                        <p>{{ selectedFile.size | fileSize }}</p>
                       </div>
                       <div class="file-actions">
                         <button class="btn btn-sm" (click)="loadFile()" [disabled]="fileLoading">
-                          {{ fileLoading ? 'Loading...' : 'Load JSON' }}
+                          {{ fileLoading ? '...' : 'Load' }}
                         </button>
-                        <button class="btn btn-sm btn-outline" (click)="clearFile()">Remove</button>
+                        <button class="btn btn-sm btn-outline" (click)="clearFile()">×</button>
                       </div>
                     </div>
                   </div>
 
                   <div class="upload-error" *ngIf="fileError">
-                    <div class="error-icon">❌</div>
-                    <p>{{ fileError }}</p>
+                    {{ fileError }}
                   </div>
                 </div>
               </div>
@@ -266,33 +238,20 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                       class="btn btn-primary" 
                       (click)="loadFromUrl()"
                       [disabled]="!urlInput || urlLoading">
-                      {{ urlLoading ? 'Loading...' : 'Load JSON' }}
+                      {{ urlLoading ? '...' : 'Load' }}
                     </button>
-                  </div>
-                  
-                  <div class="url-examples">
-                    <p class="examples-title">Try these sample JSON URLs:</p>
-                    <div class="example-links">
-                      <a *ngFor="let exampleUrl of workingExamples" 
-                         (click)="loadExampleUrl(exampleUrl)">
-                         {{ getUrlDisplayName(exampleUrl) }}
-                      </a>
-                    </div>
                   </div>
 
                   <div class="url-status" *ngIf="urlLoading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading JSON from URL... (this may take a few seconds)</p>
+                    Loading...
                   </div>
 
                   <div class="url-error" *ngIf="urlError">
-                    <div class="error-icon">❌</div>
-                    <p class="error-message">{{ urlError }}</p>
+                    {{ urlError }}
                   </div>
 
                   <div class="url-success" *ngIf="urlSuccess">
-                    <div class="success-icon">✅</div>
-                    <p>JSON loaded successfully from URL!</p>
+                    Loaded
                   </div>
                 </div>
               </div>
@@ -314,16 +273,12 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
 
                   <!-- Empty State -->
                   <div *ngIf="!jsonInput.trim()" class="empty-state">
-                    <div class="empty-icon">📄</div>
-                    <h3>No JSON Data</h3>
-                    <p>Switch to Edit mode and enter JSON to get started</p>
+                    <p>No JSON data</p>
                   </div>
 
                   <!-- Invalid State -->
                   <div *ngIf="!isValid && jsonInput.trim() !== ''" class="invalid-state">
-                    <div class="invalid-icon">⚠️</div>
-                    <h3>Invalid JSON</h3>
-                    <p>Please fix the errors in your JSON to view the tree structure</p>
+                    <p>Invalid JSON</p>
                   </div>
                 </div>
               </div>
@@ -331,28 +286,17 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
           </div>
         </section>
 
-        <!-- Right Panel - Search Results (Only in Tree Mode) -->
+        <!-- Right Panel - Search Results -->
         <section class="search-results-panel" *ngIf="currentMode === 'tree' && searchResults.length > 0">
-          <!-- Sticky Search Results Header -->
-          <div class="sticky-search-header">
-            <div class="search-results-header">
-              <h3>Search Results</h3>
-              <span class="results-count">{{ getGroupedSearchResults().length }} objects</span>
-            </div>
+          <div class="search-results-header">
+            <h3>Search</h3>
+            <span class="results-count">{{ getGroupedSearchResults().length }}</span>
           </div>
           
           <div class="search-results-container">
             <div class="results-table" *ngIf="getCurrentGroup() as parent">
               <div class="parent-header">
                 {{ parent.parentName }}
-                <span class="match-type" *ngIf="parent.matchType === 'object'">(Object)</span>
-                <span class="match-type" *ngIf="parent.matchType === 'array'">(Array)</span>
-                <span class="match-type" *ngIf="parent.matchType === 'key'">(Property)</span>
-                <span class="match-type" *ngIf="parent.matchType === 'array-item'">(Array Item)</span>
-              </div>
-              <div class="table-header">
-                <div class="header-name">Name</div>
-                <div class="header-value">Value</div>
               </div>
               
               <div class="table-body">
@@ -364,22 +308,13 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                   
                   <div class="result-name">
                     <span class="name-text">{{ result.key }}</span>
-                    <span class="match-badge" *ngIf="result.isMatch">🔍</span>
-                    <span class="array-badge" *ngIf="result.isArrayItem">📋</span>
                   </div>
                   
-                  <div class="result-value" [class.object-value]="result.isObject">
+                  <div class="result-value">
                     {{ result.displayValue }}
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- No results message -->
-            <div *ngIf="getGroupedSearchResults().length === 0" class="no-results">
-              <div class="no-results-icon">🔍</div>
-              <h4>No matching objects found</h4>
-              <p>Try a different search term</p>
             </div>
           </div>
         </section>

@@ -1,3 +1,4 @@
+// tools.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -35,6 +36,19 @@ import { RouterModule } from '@angular/router';
             <span class="feature-tag">Visual Compare</span>
           </div>
         </div>
+
+        <!-- NEW: XML Code Editor Tool -->
+        <!-- <div class="tool-card" routerLink="/xml-code">
+          <div class="tool-icon">📝</div>
+          <h3>XML Code Editor</h3>
+          <p>Advanced XML editor with syntax highlighting, folding, and formatting features</p>
+          <div class="tool-features">
+            <span class="feature-tag">Line Numbers</span>
+            <span class="feature-tag">Code Folding</span>
+            <span class="feature-tag">Syntax Highlight</span>
+            <span class="feature-tag">Auto Format</span>
+          </div>
+        </div> -->
 
         <div class="tool-card" routerLink="/xml-viewer">
           <div class="tool-icon">🔧</div>
