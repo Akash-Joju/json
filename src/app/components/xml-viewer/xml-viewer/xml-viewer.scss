@@ -1,11 +1,11 @@
-// xml-viewer.component.scss - WITH INTEGRATED SEARCH RESULTS
+// xml-viewer.component.scss - PROPORTIONAL MOBILE SCALING
 .xml-viewer {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 14px;
   border: 1px solid #e1e1e1;
   border-radius: 6px;
   background: white;
-  height: 100%;
+  height: calc(100vh - 64px); // Subtract navbar height
   display: flex;
   flex-direction: column;
   position: relative;
@@ -17,16 +17,16 @@
     border-color: #3e3e3e;
   }
 
-  // Fixed Header Section
+  // Fixed Header Section - ALWAYS VISIBLE
   .fixed-header {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 100;
     background: white;
-    margin-top: 60px;
     border-bottom: 1px solid #e1e1e1;
+    flex-shrink: 0;
 
     .dark-theme & {
       background: #1e1e1e;
@@ -147,7 +147,6 @@
         color: #6b7280;
       }
 
-      // Search Results Dropdown INSIDE search box container
       .search-results-dropdown {
         position: absolute;
         top: 100%;
@@ -287,15 +286,15 @@
     }
   }
 
-  // Main Content Area
+  // Main Content Area - FIXED HEIGHT CALCULATION
   .main-content-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: auto;
+    overflow: hidden;
     position: relative;
-    margin-top: 60px; // Reduced space for header since search results are integrated
-    height: calc(100% - 60px);
+    min-height: 0;
+    height: calc(100vh - 184px); // Reserve space for toolbar, error panel AND navbar
   }
 
   .view-container {
@@ -303,14 +302,59 @@
     flex: 1;
     min-height: 0;
     position: relative;
+    overflow: hidden;
+    height: 100%;
   }
 
+  // Tree Content Area - SINGLE SCROLLING CONTAINER
   .tree-content-area {
     display: flex;
     flex: 1;
     min-height: 0;
     position: relative;
-    margin-right: 320px; // Space for fixed node editor
+    overflow-y: auto;
+    overflow-x: auto;
+    height: 100%;
+    
+    &::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 6px;
+      
+      .dark-theme & {
+        background: #2d2d30;
+      }
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 6px;
+      border: 2px solid #f1f1f1;
+      
+      .dark-theme & {
+        background: #555;
+        border-color: #2d2d30;
+      }
+    }
+    
+    &::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+      
+      .dark-theme & {
+        background: #777;
+      }
+    }
+    
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+    
+    .dark-theme & {
+      scrollbar-color: #555 #2d2d30;
+    }
   }
 
   .tree-line-numbers-container {
@@ -319,6 +363,8 @@
     border-right: 1px solid #e1e1e1;
     overflow: hidden;
     position: relative;
+    height: fit-content;
+    min-height: 100%;
     
     .dark-theme & {
       background: #1e1e1e;
@@ -334,7 +380,6 @@
     min-width: 40px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     line-height: 20px;
-    height: 100%;
     
     .tree-line-number {
       height: 20px;
@@ -353,8 +398,10 @@
 
   .xml-tree-container {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
     position: relative;
+    height: fit-content;
+    min-height: 100%;
   }
 
   .xml-tree {
@@ -515,17 +562,16 @@
     }
   }
 
-  // Fixed Node Editor Panel - NO SCROLL
+  // Fixed Node Editor Panel - ALWAYS VISIBLE WITH PROPER HEIGHT
   .fixed-node-editor {
-    position: fixed;
-    top: 60px; // Below header
-    right: 0;
-    // width: 320px;
-    height: calc(100vh - 60px);
+    flex-shrink: 0;
     background: #f9fafb;
     border-left: 1px solid #e1e1e1;
-    z-index: 900;
-    overflow: hidden; // No scroll bar
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
 
     .dark-theme & {
       background: #252526;
@@ -535,18 +581,45 @@
 
     .node-editor-content {
       padding: 12px;
-      height: 100%;
-      overflow-y: auto; // Allow content to scroll if needed, but no visible scrollbar
+      flex: 1;
+      overflow-y: auto;
+      max-height: 100%;
       
-      // Hide scrollbar but keep functionality
       &::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
+        width: 6px;
       }
       
-      & {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+      &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+        
+        .dark-theme & {
+          background: #2d2d30;
+        }
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+        
+        .dark-theme & {
+          background: #555;
+        }
+      }
+      
+      &::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+        
+        .dark-theme & {
+          background: #777;
+        }
+      }
+      
+      scrollbar-width: thin;
+      scrollbar-color: #c1c1c1 #f1f1f1;
+      
+      .dark-theme & {
+        scrollbar-color: #555 #2d2d30;
       }
     }
 
@@ -554,9 +627,15 @@
       margin: 0 0 12px 0;
       font-size: 14px;
       color: #374151;
+      position: sticky;
+      top: 0;
+      background: #f9fafb;
+      padding: 8px 0;
+      z-index: 1;
 
       .dark-theme & {
         color: #d4d4d4;
+        background: #252526;
       }
     }
 
@@ -779,96 +858,95 @@
     }
   }
 
-  .raw-editor {
-    flex: 1;
+ .raw-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  .editor-container {
     display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    min-height: min-content;
+    background: white;
+    position: relative;
 
-    .editor-container {
+    .dark-theme & {
+      background: #1e1e1e;
+    }
+  }
+
+  .line-numbers {
+    background: #f8f9fa;
+    padding: 8px 4px 8px 12px;
+    border-right: 1px solid #e1e1e1;
+    text-align: right;
+    font-size: 13px;
+    color: #6b7280;
+    user-select: none;
+    min-width: 48px;
+    overflow: visible;
+    line-height: 21px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    flex-shrink: 0;
+    height: auto;
+
+    .dark-theme & {
+      background: #1e1e1e;
+      color: #858585;
+      border-color: #3e3e3e;
+    }
+
+    .line-number {
+      height: 21px;
       display: flex;
-      flex: 1;
-      overflow: hidden;
-      background: white;
-
-      .dark-theme & {
-        background: #1e1e1e;
-      }
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-variant-numeric: tabular-nums;
     }
+  }
 
-    .line-numbers {
-      background: #f8f9fa;
-      padding: 8px 4px 8px 12px;
-      border-right: 1px solid #e1e1e1;
-      text-align: right;
-      font-size: 13px;
-      color: #6b7280;
-      user-select: none;
-      min-width: 48px;
-      overflow: hidden;
-      line-height: 21px;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      height: fit-content;
-      flex-shrink: 0;
+  .textarea-container {
+    flex: 1;
+    position: relative;
+    overflow: visible;
+    min-height: min-content;
+  }
 
-      .dark-theme & {
-        background: #1e1e1e;
-        color: #858585;
-        border-color: #3e3e3e;
-      }
+  .xml-textarea {
+    width: 100%;
+    min-height: 100%;
+    border: none;
+    padding: 8px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    line-height: 21px;
+    resize: none;
+    outline: none;
+    background: transparent;
+    color: #1f2937;
+    tab-size: 2;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow: visible;
+    margin: 0;
+    box-sizing: border-box;
+    display: block;
 
-      .line-number {
-        height: 21px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        padding-right: 8px;
-        font-variant-numeric: tabular-nums;
-      }
-    }
-
-    .textarea-container {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .xml-textarea {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      padding: 8px;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-      font-size: 13px;
-      line-height: 21px;
-      resize: none;
-      outline: none;
+    .dark-theme & {
       background: transparent;
-      color: #1f2937;
-      tab-size: 2;
-      white-space: pre;
-      overflow-wrap: normal;
-      overflow-x: auto;
-      margin: 0;
-      box-sizing: border-box;
+      color: #d4d4d4;
+    }
+
+    &:read-only {
+      background: #f9fafb;
 
       .dark-theme & {
-        background: transparent;
-        color: #d4d4d4;
-      }
-
-      &:read-only {
-        background: #f9fafb;
-
-        .dark-theme & {
-          background: #2d2d30;
-        }
+        background: #2d2d30;
       }
     }
   }
+}
 
   .empty-state {
     display: flex;
@@ -918,9 +996,265 @@
   }
 }
 
-// Ensure proper container sizing
+// Mobile Responsive Styles - PROPORTIONAL SCALING (Same layout, smaller sizes)
+@media (max-width: 768px) {
+  .xml-viewer {
+    height: calc(100vh - 56px); // Slightly smaller navbar height
+    font-size: 12px; // Base font size reduction
+    
+    .main-content-area {
+      height: calc(100vh - 140px); // Proportional height adjustment
+    }
+
+    .toolbar {
+      padding: 6px 10px; // Smaller padding
+      
+      .btn {
+        padding: 4px 8px; // Smaller buttons
+        font-size: 10px; // Smaller font
+      }
+      
+      .folding-controls .btn {
+        padding: 3px 6px;
+        font-size: 9px;
+      }
+    }
+
+    .search-box {
+      .search-input {
+        width: 150px; // Smaller search box
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+      
+      .search-results {
+        font-size: 9px;
+      }
+    }
+
+    .error-panel {
+      padding: 6px 10px;
+      font-size: 10px;
+    }
+
+    // Tree View - Proportional scaling
+    .tree-line-numbers-container {
+      min-width: 35px; // Slightly smaller line numbers area
+    }
+
+    .tree-line-numbers {
+      padding: 6px 2px 6px 8px;
+      font-size: 10px;
+      line-height: 16px;
+      
+      .tree-line-number {
+        height: 16px;
+        min-height: 16px;
+        padding-right: 6px;
+      }
+    }
+
+    .xml-tree {
+      padding: 6px 10px 6px 6px;
+      line-height: 16px;
+      
+      .tree-line {
+        height: 16px;
+        min-height: 16px;
+      }
+    }
+
+    .line-content {
+      height: 16px;
+      min-height: 16px;
+    }
+
+    .toggle {
+      width: 14px;
+      height: 14px;
+      font-size: 9px;
+      margin-right: 3px;
+    }
+
+    .toggle-placeholder {
+      width: 14px;
+      height: 14px;
+      margin-right: 3px;
+    }
+
+    .special-node-icon {
+      font-size: 10px;
+      margin-right: 3px;
+    }
+
+    .line-text {
+      font-size: 11px;
+      
+      .tag-name, .attr-name, .attr-value, .tag-punctuation, .text-content {
+        font-size: inherit; // Inherit scaled font size
+      }
+    }
+
+    // Node Editor - Proportional scaling
+    .fixed-node-editor {
+      .node-editor-content {
+        padding: 8px;
+        
+        h3 {
+          font-size: 12px;
+          padding: 6px 0;
+          margin-bottom: 8px;
+        }
+      }
+
+      .detail-item {
+        margin-bottom: 8px;
+        
+        label {
+          font-size: 9px;
+          margin-bottom: 2px;
+        }
+        
+        .detail-value {
+          font-size: 10px;
+        }
+        
+        .edit-control {
+          .edit-input, .edit-textarea {
+            padding: 4px 6px;
+            font-size: 10px;
+          }
+          
+          .edit-textarea {
+            min-height: 50px;
+            max-height: 100px;
+          }
+        }
+        
+        .attributes-list .attribute-editor {
+          .attr-key-input, .attr-value-input {
+            padding: 3px 4px;
+            font-size: 9px;
+          }
+          
+          .btn-remove-attr {
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+          }
+        }
+        
+        .add-attribute-control {
+          .attr-key-input, .attr-value-input {
+            padding: 4px 6px;
+            font-size: 10px;
+          }
+          
+          .btn-add-attr {
+            padding: 4px 8px;
+            font-size: 9px;
+          }
+        }
+        
+        .quick-actions .btn-action {
+          padding: 4px 8px;
+          font-size: 9px;
+        }
+      }
+    }
+
+    // Raw Editor - Proportional scaling
+    .raw-editor {
+      .line-numbers {
+        padding: 6px 2px 6px 8px;
+        font-size: 11px;
+        min-width: 40px;
+        line-height: 18px;
+        
+        .line-number {
+          height: 18px;
+          padding-right: 6px;
+        }
+      }
+      
+      .xml-textarea {
+        padding: 6px;
+        font-size: 11px;
+        line-height: 18px;
+      }
+    }
+
+    // Empty State - Proportional scaling
+    .empty-state {
+      padding: 40px 15px;
+      
+      .empty-icon {
+        font-size: 36px;
+        margin-bottom: 12px;
+      }
+      
+      h3 {
+        font-size: 16px;
+      }
+      
+      p {
+        font-size: 12px;
+      }
+      
+      .btn-primary {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+// Extra small mobile devices
+@media (max-width: 480px) {
+  .xml-viewer {
+    font-size: 11px; // Even smaller base font
+    
+    .toolbar {
+      padding: 4px 8px;
+      
+      .btn {
+        padding: 3px 6px;
+        font-size: 9px;
+      }
+    }
+
+    .search-box .search-input {
+      width: 120px;
+      padding: 3px 6px;
+      font-size: 9px;
+    }
+
+    .tree-line-numbers {
+      min-width: 30px;
+      font-size: 9px;
+    }
+
+    .xml-tree {
+      font-size: 10px;
+    }
+
+    .fixed-node-editor {
+      .node-editor-content {
+        padding: 6px;
+      }
+    }
+  }
+}
+
 :host {
   display: block;
-  height: 100%;
+  height: calc(100vh - 64px);
   min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  :host {
+    height: calc(100vh - 56px);
+    min-height: 300px;
+  }
 }

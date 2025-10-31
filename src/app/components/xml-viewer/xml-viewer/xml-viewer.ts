@@ -1,4 +1,4 @@
-// xml-viewer.component.ts - WITH COLORS AND DASHED INDENTATION LINES
+// xml-viewer.component.ts - WITH IMPROVED XML VALIDATION AND MOBILE SUPPORT
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -59,8 +59,7 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   
   @ViewChild('xmlTextArea') xmlTextArea!: ElementRef<HTMLTextAreaElement>;
   @ViewChild('lineNumbers') lineNumbers!: ElementRef<HTMLDivElement>;
-  @ViewChild('treeLineNumbers') treeLineNumbers!: ElementRef<HTMLDivElement>;
-  @ViewChild('xmlTree') xmlTree!: ElementRef<HTMLDivElement>;
+  @ViewChild('treeContentArea') treeContentArea!: ElementRef<HTMLDivElement>;
 
   parsedData: XmlNode | null = null;
   error: string = '';
@@ -74,7 +73,10 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   treeLines: TreeLine[] = [];
   private nextDisplayLineNumber: number = 1;
 
-  // Color themes for tree view - VIBRANT IS NOW DEFAULT
+  // Mobile detection
+  isMobileView: boolean = false;
+
+  // Color themes (same as before)
   colorThemes: { [key: string]: ColorTheme } = {
     default: {
       tagName: '#e11d48',
@@ -194,11 +196,14 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   };
 
   objectKeys = Object.keys;
-  snackBar: any;
 
   get currentColors(): ColorTheme {
     const themes = this.theme === 'dark' ? this.darkColorThemes : this.colorThemes;
     return themes[this.colorScheme] || themes['default'];
+  }
+
+  ngOnInit(): void {
+    this.checkMobileView();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -213,47 +218,42 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     this.setupScrollSync();
     this.updateLineCount();
     setTimeout(() => this.synchronizeHeights(), 100);
-    setTimeout(() => this.synchronizeTreeHeights(), 150);
+  }
+
+  private checkMobileView(): void {
+    this.isMobileView = window.innerWidth <= 768;
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.checkMobileView();
+    setTimeout(() => this.synchronizeHeights(), 0);
   }
 
   private setupScrollSync(): void {
-    // Raw editor scroll sync
-    if (this.xmlTextArea && this.lineNumbers) {
-      const textArea = this.xmlTextArea.nativeElement;
-      const lineNumbers = this.lineNumbers.nativeElement;
+    // Setup sync for raw editor - bidirectional sync between textarea and line numbers
+    // if (this.xmlTextArea && this.lineNumbers) {
+    //   const textArea = this.xmlTextArea.nativeElement;
+    //   const lineNumbers = this.lineNumbers.nativeElement;
 
-      textArea.addEventListener('scroll', () => {
-        if (!this.isSyncingScroll) {
-          this.isSyncingScroll = true;
-          lineNumbers.scrollTop = textArea.scrollTop;
-          setTimeout(() => this.isSyncingScroll = false, 10);
-        }
-      });
-    }
+    //   // Sync from textarea to line numbers
+    //   textArea.addEventListener('scroll', () => {
+    //     if (!this.isSyncingScroll) {
+    //       this.isSyncingScroll = true;
+    //       lineNumbers.scrollTop = textArea.scrollTop;
+    //       setTimeout(() => this.isSyncingScroll = false, 10);
+    //     }
+    //   });
 
-    // Tree view scroll sync - FIXED SCROLLING
-    if (this.treeLineNumbers && this.xmlTree) {
-      const treeLineNumbers = this.treeLineNumbers.nativeElement;
-      const xmlTree = this.xmlTree.nativeElement;
-
-      // Sync tree content scroll to line numbers
-      xmlTree.addEventListener('scroll', () => {
-        if (!this.isSyncingScroll) {
-          this.isSyncingScroll = true;
-          treeLineNumbers.scrollTop = xmlTree.scrollTop;
-          setTimeout(() => this.isSyncingScroll = false, 10);
-        }
-      });
-
-      // Sync line numbers scroll to tree content
-      treeLineNumbers.addEventListener('scroll', () => {
-        if (!this.isSyncingScroll) {
-          this.isSyncingScroll = true;
-          xmlTree.scrollTop = treeLineNumbers.scrollTop;
-          setTimeout(() => this.isSyncingScroll = false, 10);
-        }
-      });
-    }
+    //   // Sync from line numbers to textarea
+    //   lineNumbers.addEventListener('scroll', () => {
+    //     if (!this.isSyncingScroll) {
+    //       this.isSyncingScroll = true;
+    //       textArea.scrollTop = lineNumbers.scrollTop;
+    //       setTimeout(() => this.isSyncingScroll = false, 10);
+    //     }
+    //   });
+    // }
   }
 
   private synchronizeHeights(): void {
@@ -265,9 +265,9 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     const textAreaStyle = window.getComputedStyle(textArea);
     const lineHeight = parseInt(textAreaStyle.lineHeight) || 21;
 
-    const totalHeight = Math.max(textArea.scrollHeight, lineHeight * this.lineCount);
-    
-    lineNumbers.style.height = totalHeight + 'px';
+    // For raw view, we don't need to set explicit heights
+    // The containers will naturally fill the available space
+    // and the main scrollbar will handle scrolling
     
     const lineNumberElements = lineNumbers.querySelectorAll('.line-number');
     lineNumberElements.forEach((lineEl: any) => {
@@ -276,43 +276,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     });
 
     textArea.style.lineHeight = lineHeight + 'px';
-  }
-
-  private synchronizeTreeHeights(): void {
-    if (!this.treeLineNumbers || !this.xmlTree) return;
-
-    const treeLineNumbers = this.treeLineNumbers.nativeElement;
-    const xmlTree = this.xmlTree.nativeElement;
-
-    // Calculate the exact height needed for both containers
-    const lineHeight = 20; // Fixed line height for tree view
-    const totalLines = this.treeLines.filter(line => line.isVisible).length;
-    const totalHeight = Math.max(totalLines * lineHeight, xmlTree.scrollHeight);
-
-    // Set both to have the same height
-    treeLineNumbers.style.height = totalHeight + 'px';
-    xmlTree.style.height = totalHeight + 'px';
-
-    // Ensure consistent heights for all line elements
-    const lineNumberElements = treeLineNumbers.querySelectorAll('.tree-line-number');
-    const treeLineElements = xmlTree.querySelectorAll('.tree-line');
-    
-    lineNumberElements.forEach((lineEl: any, index: number) => {
-      lineEl.style.height = lineHeight + 'px';
-      lineEl.style.lineHeight = lineHeight + 'px';
-      lineEl.style.minHeight = lineHeight + 'px';
-    });
-
-    treeLineElements.forEach((lineEl: any) => {
-      lineEl.style.height = lineHeight + 'px';
-      lineEl.style.minHeight = lineHeight + 'px';
-      lineEl.style.lineHeight = lineHeight + 'px';
-    });
-
-    // Force reflow to ensure proper rendering
-    treeLineNumbers.style.display = 'none';
-    treeLineNumbers.offsetHeight; // Trigger reflow
-    treeLineNumbers.style.display = 'block';
   }
 
   private updateLineCount(): void {
@@ -332,12 +295,26 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     }
 
     try {
+      // Pre-process XML to escape special characters
+      const processedXml = this.preprocessXml(this.xmlData);
+      
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(this.xmlData, 'text/xml');
+      const xmlDoc = parser.parseFromString(processedXml, 'text/xml');
       
       const parseError = xmlDoc.getElementsByTagName('parsererror')[0];
       if (parseError) {
-        this.error = parseError.textContent || 'Unknown XML parsing error';
+        const errorText = parseError.textContent || 'Unknown XML parsing error';
+        const lineMatch = errorText.match(/line\s+(\d+)/i);
+        const columnMatch = errorText.match(/column\s+(\d+)/i);
+        
+        let detailedError = errorText;
+        if (lineMatch && columnMatch) {
+          const lineNum = parseInt(lineMatch[1]);
+          const columnNum = parseInt(columnMatch[1]);
+          detailedError = `XML Error at line ${lineNum}, column ${columnNum}: ${errorText}`;
+        }
+        
+        this.error = detailedError;
         this.parsedData = null;
         this.treeLines = [];
         return;
@@ -346,16 +323,16 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       this.error = '';
       this.parsedData = this.parseNode(xmlDoc.documentElement, 0);
       this.generateTreeLines();
-      
-      setTimeout(() => {
-        this.synchronizeTreeHeights();
-        this.setupScrollSync(); // Re-setup scroll sync after tree is generated
-      }, 0);
     } catch (err) {
       this.error = err instanceof Error ? err.message : 'Failed to parse XML';
       this.parsedData = null;
       this.treeLines = [];
     }
+  }
+
+  private preprocessXml(xml: string): string {
+    // Replace unescaped ampersands that are not part of valid entities
+    return xml.replace(/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#x[0-9a-fA-F]+;)/g, '&amp;');
   }
 
   private parseNode(node: Element, level: number): XmlNode {
@@ -370,13 +347,11 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       treeLineNumber: undefined
     };
 
-    // Parse attributes
     for (let i = 0; i < node.attributes.length; i++) {
       const attr = node.attributes[i];
       xmlNode.attributes[attr.name] = attr.value;
     }
 
-    // Parse child nodes
     for (let i = 0; i < node.childNodes.length; i++) {
       const child = node.childNodes[i];
       
@@ -429,10 +404,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     if (this.parsedData) {
       this.generateNodeLines(this.parsedData);
     }
-    
-    setTimeout(() => {
-      this.synchronizeTreeHeights();
-    }, 0);
   }
 
   private generateNodeLines(node: XmlNode): void {
@@ -441,7 +412,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     const isSelfClosing = node.children.length === 0 && !node.textContent;
     const lineType = isSelfClosing ? 'self-closing' : 'open';
 
-    // Add opening/self-closing tag line
     this.treeLines.push({
       number: this.nextDisplayLineNumber,
       node: node,
@@ -451,13 +421,11 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       displayNumber: this.nextDisplayLineNumber++
     });
 
-    // Add child nodes if expanded and not self-closing
     if (node.isExpanded && !isSelfClosing) {
       node.children.forEach(child => {
         this.generateNodeLines(child);
       });
 
-      // Add text content line if present
       if (node.textContent) {
         this.treeLines.push({
           number: this.nextDisplayLineNumber,
@@ -470,7 +438,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       }
     }
 
-    // Add closing tag line (unless it's self-closing)
     if (!isSelfClosing && node.isExpanded) {
       this.treeLines.push({
         number: this.nextDisplayLineNumber,
@@ -537,16 +504,16 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   }
 
   onTextAreaScroll(event: Event): void {
-    if (this.isSyncingScroll) return;
+    // if (this.isSyncingScroll) return;
     
-    this.isSyncingScroll = true;
-    const textArea = event.target as HTMLTextAreaElement;
+    // this.isSyncingScroll = true;
+    // const textArea = event.target as HTMLTextAreaElement;
     
-    if (this.lineNumbers) {
-      this.lineNumbers.nativeElement.scrollTop = textArea.scrollTop;
-    }
+    // if (this.lineNumbers) {
+    //   this.lineNumbers.nativeElement.scrollTop = textArea.scrollTop;
+    // }
     
-    setTimeout(() => this.isSyncingScroll = false, 10);
+    // setTimeout(() => this.isSyncingScroll = false, 10);
   }
 
   onTextAreaKeyup(): void {
@@ -654,8 +621,11 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   formatXml(): void {
     try {
+      // Pre-process XML to escape special characters before formatting
+      const processedXml = this.preprocessXml(this.xmlData);
+      
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(this.xmlData, 'text/xml');
+      const xmlDoc = parser.parseFromString(processedXml, 'text/xml');
       const serializer = new XMLSerializer();
       const formatted = serializer.serializeToString(xmlDoc);
       
@@ -663,7 +633,7 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       this.xmlData = formattedWithIndent;
       this.onXmlInputChange();
     } catch (err) {
-      this.error = 'Failed to format XML';
+      this.error = 'Failed to format XML - check for unescaped special characters';
     }
   }
 
@@ -754,60 +724,42 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  @HostListener('window:resize')
-  onWindowResize(): void {
-    setTimeout(() => this.synchronizeTreeHeights(), 0);
-  }
-
-  // ========== TREE VIEW EDITING METHODS ==========
-  
   getNodeLineNumber(node: XmlNode): number {
     const treeLine = this.treeLines.find(tl => tl.node === node);
     return treeLine ? treeLine.displayNumber : 0;
   }
 
-  // Method to update XML when tree nodes are modified
   updateXmlFromTree(): void {
     if (!this.parsedData) return;
     
     try {
-      // Reconstruct XML from the tree structure
       const xmlString = this.serializeNode(this.parsedData);
       this.xmlData = xmlString;
       this.xmlChanged.emit(this.xmlData);
-      
-      // Re-parse to update the tree view
       this.parseXml();
     } catch (err) {
       this.error = 'Failed to update XML from tree changes';
     }
   }
 
-  // Serialize a node back to XML string
   private serializeNode(node: XmlNode, indent: string = ''): string {
     let xml = '';
     
-    // Opening tag
     xml += `${indent}<${node.name}`;
     
-    // Attributes
     for (const [key, value] of Object.entries(node.attributes)) {
       xml += ` ${key}="${this.escapeXml(value)}"`;
     }
     
     if (node.children.length === 0 && !node.textContent) {
-      // Self-closing tag
       xml += '/>';
     } else {
-      // Opening tag with content
       xml += '>';
       
-      // Text content
       if (node.textContent) {
         xml += this.escapeXml(node.textContent);
       }
       
-      // Child nodes
       if (node.children.length > 0) {
         xml += '\n';
         const childIndent = indent + '  ';
@@ -817,14 +769,12 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
         xml += indent;
       }
       
-      // Closing tag
       xml += `</${node.name}>`;
     }
     
     return xml;
   }
 
-  // Escape XML special characters
   private escapeXml(unsafe: string): string {
     return unsafe.replace(/[<>&'"]/g, (c) => {
       switch (c) {
@@ -838,16 +788,12 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     });
   }
 
-  // Tree editing methods
   editNodeName(node: XmlNode, newName: string): void {
     if (!this.editable || !newName.trim()) return;
     
     const oldName = node.name;
     node.name = newName.trim();
     this.updateXmlFromTree();
-    // this.snackBar.open(`Node name changed from "${oldName}" to "${newName}"`, 'Close', {
-    //   duration: 2000
-    // });
   }
 
   editNodeAttribute(node: XmlNode, attrName: string, newValue: string): void {
@@ -887,7 +833,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  // Event handlers with proper typing
   onEditNodeName(event: Event, node: XmlNode): void {
     const target = event.target as HTMLInputElement;
     this.editNodeName(node, target.value);
@@ -906,5 +851,25 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   onUpdateAttributeKey(event: Event, node: XmlNode, oldKey: string): void {
     const target = event.target as HTMLInputElement;
     this.updateAttributeKey(node, oldKey, target.value);
+  }
+
+  // New method to auto-fix common XML issues
+  autoFixXml(): void {
+    try {
+      // Fix unescaped ampersands
+      this.xmlData = this.preprocessXml(this.xmlData);
+      
+      // Fix other common issues
+      this.xmlData = this.xmlData
+        .replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+      
+      this.onXmlInputChange();
+    } catch (err) {
+      this.error = 'Failed to auto-fix XML';
+    }
   }
 }

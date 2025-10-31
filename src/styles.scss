@@ -440,3 +440,26 @@ h3 {
     margin: 6px 0;
   }
 }
+/* Global fix for navbar spacing */
+.app-container {
+  main.main-content {
+    padding-top: 64px; /* Match navbar height */
+    
+    @media (max-width: 768px) {
+      padding-top: 60px;
+    }
+    
+    @media (max-width: 480px) {
+      padding-top: 56px;
+    }
+    
+    @media (max-width: 360px) {
+      padding-top: 52px;
+    }
+  }
+}
+
+/* Ensure router outlet content respects navbar */
+.container-fluid {
+  height: 100%;
+}

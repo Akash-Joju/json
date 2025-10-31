@@ -1,9 +1,8 @@
 /* Reset and base styles */
-// /* Reset and base styles */
 .navbar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-  position: fixed; /* CHANGED from sticky to fixed */
+  position: fixed;
   top: 0;
   z-index: 1000;
   width: 100%;
@@ -12,7 +11,7 @@
   left: 0;
   right: 0;
   overflow: hidden !important;
-  height: 64px; /* Fixed height for desktop */
+  height: 64px;
 
   /* Fixed navbar on mobile */
   @media (max-width: 768px) {
@@ -22,7 +21,7 @@
     right: 0;
     width: 100vw !important;
     overflow: hidden !important;
-    height: 60px; /* Fixed height for mobile */
+    height: 60px;
   }
 
   @media (max-width: 480px) {
@@ -41,7 +40,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px; /* Match navbar height */
+  height: 64px;
   position: relative;
   max-width: 100%;
   overflow: hidden !important;
@@ -59,7 +58,6 @@
   }
 }
 
-/* ... rest of your navigation.scss remains the same ... */
 .nav-brand {
   flex-shrink: 0;
   padding-left: 20px;
@@ -517,5 +515,24 @@
   
   .nav-links {
     transform: none !important;
+  }
+}
+
+/* NEW: Add padding to main content to account for fixed navbar */
+.app-container {
+  main.main-content {
+    padding-top: 64px; /* Match navbar height */
+    
+    @media (max-width: 768px) {
+      padding-top: 60px;
+    }
+    
+    @media (max-width: 480px) {
+      padding-top: 56px;
+    }
+    
+    @media (max-width: 360px) {
+      padding-top: 52px;
+    }
   }
 }

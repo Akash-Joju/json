@@ -27,18 +27,7 @@
             Collapse All
           </button>
         </div>
-        
-        <!-- Color Scheme Selector -->
-        <!-- <div class="color-scheme-selector" *ngIf="viewMode === 'tree'">
-          <label>Colors:</label>
-          <select [(ngModel)]="colorScheme" (change)="changeColorScheme(colorScheme)" class="scheme-select">
-            <option value="default">Default</option>
-            <option value="vibrant">Vibrant</option>
-            <option value="pastel">Pastel</option>
-            <option value="monokai">Monokai</option>
-          </select>
-        </div>
-      </div> -->
+      </div>
       
       <div class="toolbar-right">
         <div class="search-box">
@@ -84,11 +73,11 @@
   <div class="main-content-area">
     <!-- Tree View with Perfect Line Number Alignment -->
     <div class="view-container" *ngIf="viewMode === 'tree' && parsedData">
-      <!-- Tree Content Area (Reduced Width) -->
-      <div class="tree-content-area">
-        <!-- Tree Line Numbers Container -->
+      <!-- Tree Content Area - SINGLE SCROLL CONTAINER -->
+      <div class="tree-content-area" #treeContentArea>
+        <!-- Tree Line Numbers Container - NO SCROLL -->
         <div class="tree-line-numbers-container" *ngIf="showTreeLineNumbers">
-          <div class="tree-line-numbers" #treeLineNumbers>
+          <div class="tree-line-numbers">
             <div *ngFor="let treeLine of treeLines" 
                  class="tree-line-number"
                  [class.hidden]="!treeLine.isVisible"
@@ -98,9 +87,9 @@
           </div>
         </div>
         
-        <!-- XML Tree Content Container -->
+        <!-- XML Tree Content Container - NO SCROLL -->
         <div class="xml-tree-container">
-          <div class="xml-tree" #xmlTree>
+          <div class="xml-tree">
             <div *ngFor="let treeLine of treeLines" 
                  class="tree-line"
                  [class.hidden]="!treeLine.isVisible"
