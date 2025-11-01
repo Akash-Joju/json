@@ -463,3 +463,16 @@ h3 {
 .container-fluid {
   height: 100%;
 }
+
+/* styles.scss */
+html, body {
+  height: 100%;
+  overflow: hidden; // Prevent body scrolling
+  margin: 0;
+  padding: 0;
+}
+
+app-json-viewer {
+  display: block;
+  height: 100vh;
+}

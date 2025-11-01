@@ -26,7 +26,18 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
 
-        <div class="tool-card" routerLink="/json-differ">
+        <div class="tool-card" routerLink="/xml-viewer">
+          <div class="tool-icon">🔧</div>
+          <h3>XML Viewer</h3>
+          <p>Visualize and explore XML data with our interactive tree viewer</p>
+          <div class="tool-features">
+            <span class="feature-tag">Tree View</span>
+            <span class="feature-tag">Syntax Highlight</span>
+            <span class="feature-tag">Validation</span>
+          </div>
+        </div>
+
+        <div class="tool-card coming-soon" routerLink="/json-differ">
           <div class="tool-icon">⚡</div>
           <h3>JSON Differ</h3>
           <p>Compare two JSON objects and find differences with visual highlighting</p>
@@ -50,7 +61,7 @@ import { RouterModule } from '@angular/router';
           </div>
         </div> -->
 
-        <div class="tool-card" routerLink="/xml-viewer">
+        <!-- <div class="tool-card" routerLink="/xml-viewer">
           <div class="tool-icon">🔧</div>
           <h3>XML Viewer</h3>
           <p>Visualize and explore XML data with our interactive tree viewer</p>
@@ -59,9 +70,9 @@ import { RouterModule } from '@angular/router';
             <span class="feature-tag">Syntax Highlight</span>
             <span class="feature-tag">Validation</span>
           </div>
-        </div>
+        </div> -->
 
-        <div class="tool-card" routerLink="/xml-differ">
+        <div class="tool-card coming-soon" routerLink="/xml-differ">
           <div class="tool-icon">🔄</div>
           <h3>XML Differ</h3>
           <p>Compare two XML documents and find differences with visual highlighting</p>

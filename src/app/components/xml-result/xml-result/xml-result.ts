@@ -2,9 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { XmlUtilsService, XmlViewerStats } from '../../../services/xml-utils.service';
+import { XmlUtilsService} from '../../../services/xml-utils.service';
 import { XmlCompareService } from '../../../services/xml-compare/xml-compare.service';
-
+import { XmlViewerStats } from '../../xml-types/xml-types';
 interface Difference {
   description: string;
   leftLine?: number;

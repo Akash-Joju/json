@@ -1,17 +1,28 @@
+// Global fix first
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .json-viewer-container {
   max-width: 100%;
   margin: 0;
   padding: 4px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   background: #f8f9fa;
-  min-height: 100vh;
+  height: 100vh; // Changed from min-height to height
   font-size: 12px;
+  overflow: hidden; // Ensure no overflow
+  display: flex;
+  flex-direction: column; // Use flexbox for proper sizing
 
   .page-header {
     text-align: left;
     margin-bottom: 8px;
     padding-bottom: 6px;
     border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0; // Prevent header from shrinking
     
     h1 {
       color: #2c3e50;
@@ -25,7 +36,10 @@
     display: grid;
     grid-template-columns: 1fr 280px;
     gap: 8px;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 70px); // Adjusted calculation
+    overflow: hidden; // Prevent main content area from scrolling
+    flex: 1;
+    min-height: 0; // Important for flex children
 
     @media (max-width: 1200px) {
       grid-template-columns: 1fr;
@@ -44,7 +58,8 @@
     border: 1px solid #dee2e6;
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden; // Prevent viewer panel from scrolling
+    min-height: 0; // Important for flex children
   }
 
   // Sticky Controls Header
@@ -55,6 +70,7 @@
     background: #f8f9fa;
     padding: 6px 8px;
     border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0; // Prevent controls from shrinking
   }
 
   .viewer-controls {
@@ -200,8 +216,9 @@
 
   .content-area {
     flex: 1;
-    overflow: auto;
+    overflow: auto; // Only inner content area can scroll
     padding: 8px;
+    min-height: 0; // Important for flex children
   }
 
   .search-results-panel {
@@ -213,7 +230,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden;
+    overflow: hidden; // Prevent panel from scrolling
+    min-height: 0; // Important for flex children
 
     @media (max-width: 1200px) {
       display: none;
@@ -226,6 +244,7 @@
       padding: 6px 8px;
       border-bottom: 1px solid #dee2e6;
       background: #f8f9fa;
+      flex-shrink: 0; // Prevent header from shrinking
 
       h3 {
         margin: 0;
@@ -244,10 +263,11 @@
 
     .search-results-container {
       flex: 1;
-      overflow: auto;
+      overflow: auto; // Only search results container can scroll
       display: flex;
       flex-direction: column;
       padding: 0 8px 8px 8px;
+      min-height: 0; // Important for flex children
     }
 
     .results-table {
@@ -267,7 +287,7 @@
 
     .table-body {
       max-height: 400px;
-      overflow-y: auto;
+      overflow-y: auto; // Only table body can scroll
     }
 
     .result-row {
@@ -392,7 +412,8 @@
 
     .json-textarea {
       width: 100%;
-      min-height: 600px; // Increased height for less scrolling
+      min-height: 600px;
+      max-height: calc(100vh - 200px); // Limit max height
       border: 1px solid #ced4da;
       border-radius: 2px;
       padding: 8px;
@@ -670,6 +691,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    min-height: 0; // Important for flex children
   }
 
   .tree-mode {
@@ -677,6 +699,7 @@
     flex-direction: column;
     height: 100%;
     width: 100%;
+    min-height: 0; // Important for flex children
   }
 
   .tree-container {
@@ -685,12 +708,13 @@
     border-radius: 2px;
     padding: 6px;
     background: white;
-    overflow: auto;
+    overflow: auto; // Only tree container can scroll
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 12px;
     line-height: 1.1;
     width: 100%;
     box-sizing: border-box;
+    min-height: 0; // Important for flex children
 
     .json-node {
       .value {
@@ -729,7 +753,8 @@
   }
 }
 
-// Scrollbar styling
+// Scrollbar styling - Only for elements that should scroll
+.content-area,
 .tree-container,
 .search-results-container,
 .table-body {
@@ -748,12 +773,167 @@
   }
 }
 
+// ENHANCED DASHED LINES FOR JSON NODE COMPONENT
+// CORRECTED: Vertical lines positioned under the toggle buttons
+.json-node {
+  position: relative;
+  
+  // Improved dashed lines for tree structure
+  .node-children {
+    position: relative;
+    margin-left: 20px; // Increased margin to accommodate the vertical line
+    
+    // Enhanced vertical connecting line - positioned under the toggle button
+    &::before {
+      content: '';
+      position: absolute;
+      top: -8px; // Start from top of the children container
+      bottom: 0;
+      left: 8px; // Positioned under the center of the toggle button
+      border-left: 2px dashed #adb5bd; // Thicker and more visible
+      opacity: 0.8; // Increased opacity for better visibility
+      z-index: 1;
+    }
+  }
+
+  .node-content {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 1px 0;
+    min-height: 18px;
+    margin-left: 0;
+    
+    // Enhanced horizontal connecting line - connects to vertical line under toggle
+    &::before {
+      content: '';
+      position: absolute;
+      top: 9px; // Center vertically with the text
+      left: -12px; // Position to connect with the vertical line
+      width: 12px; // Extended to reach the vertical line
+      height: 0;
+      border-top: 2px dashed #adb5bd; // Thicker and more visible
+      opacity: 0.8; // Increased opacity for better visibility
+      z-index: 1;
+    }
+  }
+
+  // Improved toggle button styling with proper positioning
+  .toggle-btn {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #6c757d;
+    border-radius: 2px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    color: #495057;
+    flex-shrink: 0;
+    transition: all 0.1s ease;
+    margin-top: 1px;
+    position: relative;
+    z-index: 2; // Ensure toggle button is above the lines
+    
+    &:hover {
+      background: #e9ecef;
+      border-color: #495057;
+    }
+    
+    &.expanded {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+  }
+
+  // Enhanced node key styling
+  .node-key {
+    color: #881391;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  // Enhanced node value styling
+  .node-value {
+    color: #495057;
+    word-break: break-word;
+    
+    &.string {
+      color: #c41a16;
+    }
+    
+    &.number {
+      color: #1c00cf;
+    }
+    
+    &.boolean {
+      color: #0d22aa;
+    }
+    
+    &.null {
+      color: #666;
+      font-style: italic;
+    }
+  }
+
+  // Enhanced search highlighting
+  &.highlighted {
+    background-color: #fff3cd !important;
+    border-radius: 2px;
+    
+    .node-content {
+      &::before {
+        border-top-color: #ffc107; // Highlight the connecting line too
+      }
+    }
+  }
+  
+  &.current-search {
+    background-color: #d4edda !important;
+    border: 1px solid #c3e6cb;
+    border-radius: 2px;
+    
+    .node-content {
+      &::before {
+        border-top-color: #28a745; // Highlight the connecting line too
+      }
+    }
+  }
+}
+
+// Ensure proper spacing for nested levels with corrected line positioning
+.json-node .json-node {
+  margin-left: 20px; // Consistent spacing for nested nodes
+  
+  .node-children::before {
+    left: 8px; // Consistent vertical line positioning
+  }
+  
+  .node-content::before {
+    left: -12px; // Consistent horizontal line positioning
+  }
+}
+
+// Root level nodes should not have connecting lines
+.json-node[level="0"] {
+  .node-content::before {
+    display: none; // No horizontal line for root level
+  }
+}
+
 @media (max-width: 768px) {
   .json-viewer-container {
     padding: 3px;
+    height: 100vh; // Ensure full height on mobile
 
     .main-content-area {
       height: auto;
+      min-height: 0;
     }
 
     .sticky-controls-header {
@@ -810,8 +990,48 @@
     .input-section {
       .json-textarea {
         min-height: 500px;
+        max-height: calc(100vh - 150px); // Adjust for mobile
         padding: 6px;
         font-size: 11px;
+      }
+    }
+
+    // Mobile adjustments for dashed lines
+    .json-node {
+      .node-children {
+        margin-left: 16px;
+        
+        &::before {
+          left: 6px;
+          border-left-width: 1.5px; // Slightly thinner on mobile but still visible
+        }
+      }
+
+      .node-content {
+        &::before {
+          left: -10px;
+          width: 10px;
+          border-top-width: 1.5px; // Slightly thinner on mobile but still visible
+        }
+      }
+
+      .toggle-btn {
+        width: 12px;
+        height: 12px;
+        font-size: 9px;
+      }
+    }
+
+    // Mobile adjustments for nested nodes
+    .json-node .json-node {
+      margin-left: 16px;
+      
+      .node-children::before {
+        left: 6px;
+      }
+      
+      .node-content::before {
+        left: -10px;
       }
     }
   }

@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { XmlUtilsService, XmlViewerStats } from '../../../services/xml-utils.service';
+import { XmlUtilsService} from '../../../services/xml-utils.service';
+import { XmlViewerStats } from '../../xml-types/xml-types';
 import { XmlCompareService } from '../../../services/xml-compare/xml-compare.service';
 
 interface ComparisonOptions {

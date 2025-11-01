@@ -71,6 +71,7 @@ import { JsonNode } from '../../../services/json-utils.service';
       font-size: 0.75rem;
       line-height: 1.1;
       margin: 0;
+      position: relative;
     }
 
     /* Highlight States */
@@ -93,36 +94,49 @@ import { JsonNode } from '../../../services/json-utils.service';
       border: 1px solid transparent;
       min-height: 16px;
       margin: 0;
+      position: relative;
       
       &:hover {
         background: #f8f9fa;
       }
     }
 
-    /* Toggle Section */
+    /* Toggle Section with Square Background */
     .toggle-section {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
-      width: 10px;
-      height: 10px;
+      width: 14px;
+      height: 14px;
       flex-shrink: 0;
-      margin-top: 1px;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 2px;
+      position: relative;
+      z-index: 2;
+      
+      &:hover {
+        background: #e9ecef;
+        border-color: #adb5bd;
+      }
       
       &.placeholder {
         opacity: 0;
+        background: transparent;
+        border: none;
       }
     }
 
     .toggle-icon {
       font-size: 0.6rem;
-      color: #6c757d;
+      color: #495057;
       font-weight: bold;
       width: 8px;
       height: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 1;
     }
 
     .leaf-spacer {
@@ -136,7 +150,7 @@ import { JsonNode } from '../../../services/json-utils.service';
       height: 8px;
       flex-shrink: 0;
       border-radius: 1px;
-      margin-top: 1px;
+      margin-top: 3px;
       
       &.type-object {
         background: #1976d2;
@@ -243,11 +257,45 @@ import { JsonNode } from '../../../services/json-utils.service';
       }
     }
 
-    /* Children Container */
+    /* Children Container with Enhanced Dashed Lines */
+    .children-container {
+      position: relative;
+    }
+
     .children {
-      border-left: 1px solid #e9ecef;
-      margin-left: 6px;
+      position: relative;
+      margin-left: 20px;
       padding-left: 4px;
+      
+      /* Vertical dashed line - positioned under the toggle button */
+      &::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        bottom: 0;
+        left: 8px;
+        border-left: 2px dashed #adb5bd;
+        opacity: 0.8;
+        z-index: 1;
+      }
+    }
+
+    /* Horizontal connecting line for child nodes */
+    .json-node .json-node .node-line::before {
+      content: '';
+      position: absolute;
+      top: 7px;
+      left: -12px;
+      width: 12px;
+      height: 0;
+      border-top: 2px dashed #adb5bd;
+      opacity: 0.8;
+      z-index: 1;
+    }
+
+    /* Remove horizontal line for root level nodes */
+    .json-node[style*="padding-left: 2px"] .node-line::before {
+      display: none;
     }
 
     /* Responsive Design */
@@ -261,12 +309,36 @@ import { JsonNode } from '../../../services/json-utils.service';
         gap: 3px;
       }
       
+      .toggle-section {
+        width: 12px;
+        height: 12px;
+      }
+      
+      .toggle-icon {
+        font-size: 0.55rem;
+      }
+      
       .value {
         font-size: 0.7rem;
       }
       
       .badge {
         font-size: 0.55rem;
+      }
+      
+      .children {
+        margin-left: 16px;
+        
+        &::before {
+          left: 6px;
+          border-left-width: 1.5px;
+        }
+      }
+      
+      .json-node .json-node .node-line::before {
+        left: -10px;
+        width: 10px;
+        border-top-width: 1.5px;
       }
     }
   `]

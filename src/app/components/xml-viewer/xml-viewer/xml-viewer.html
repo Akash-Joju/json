@@ -1,5 +1,138 @@
 <!-- xml-viewer.component.html - WITH INTEGRATED SEARCH RESULTS -->
 <div class="xml-viewer" [class.dark-theme]="theme === 'dark'">
+  <!-- Input Methods Section -->
+  <div class="input-methods">
+    <div class="method-tabs">
+      <button 
+        class="method-tab" 
+        [class.active]="activeInputMethod === 'manual'"
+        (click)="setInputMethod('manual')">
+        Input
+      </button>
+      <button 
+        class="method-tab" 
+        [class.active]="activeInputMethod === 'file'"
+        (click)="setInputMethod('file')">
+        File
+      </button>
+      <button 
+        class="method-tab" 
+        [class.active]="activeInputMethod === 'url'"
+        (click)="setInputMethod('url')">
+        URL
+      </button>
+    </div>
+
+    <!-- Manual Input -->
+    <div class="method-content" *ngIf="activeInputMethod === 'manual'">
+      <div class="input-section">
+        <div class="input-header">
+          <h3>XML Data</h3>
+          <div class="input-actions">
+            <button class="btn btn-sm" (click)="loadSampleXml()">Sample</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Upload -->
+    <div class="method-content" *ngIf="activeInputMethod === 'file'">
+      <div class="file-upload-section">
+        <div class="upload-area" 
+             [class.dragover]="isDragOver"
+             (drop)="onFileDrop($event)"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)">
+          <input 
+            type="file" 
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept=".xml,application/xml,text/xml"
+            class="file-input">
+          
+          <div class="upload-content" *ngIf="!selectedFile">
+            <p>Drop XML file or click to browse</p>
+            <button class="btn btn-primary" (click)="fileInput.click()">
+              Choose File
+            </button>
+          </div>
+
+          <div class="file-info" *ngIf="selectedFile">
+            <div class="file-details">
+              <h4>{{ selectedFile.name }}</h4>
+              <p>{{ selectedFile.size | fileSize }}</p>
+            </div>
+            <div class="file-actions">
+              <button class="btn btn-sm" (click)="loadFile()" [disabled]="fileLoading">
+                {{ fileLoading ? '...' : 'Load' }}
+              </button>
+              <button class="btn btn-sm btn-outline" (click)="clearFile()">×</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-error" *ngIf="fileError">
+          {{ fileError }}
+        </div>
+      </div>
+    </div>
+
+    <!-- URL Load -->
+    <div class="method-content" *ngIf="activeInputMethod === 'url'">
+      <div class="url-load-section">
+        <div class="url-options">
+          <label class="option-label">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="useCorsProxy"
+              class="option-checkbox">
+            Use CORS proxy (if direct loading fails)
+          </label>
+        </div>
+
+        <div class="url-input-group">
+          <input
+            type="url"
+            [(ngModel)]="urlInput"
+            placeholder="https://example.com/data.xml"
+            class="url-input"
+            [class.error]="urlError"
+            [disabled]="urlLoading">
+          <button 
+            class="btn btn-primary" 
+            (click)="loadFromUrl()"
+            [disabled]="!urlInput || urlLoading">
+            {{ urlLoading ? '...' : 'Load' }}
+          </button>
+        </div>
+
+        <div class="url-examples" *ngIf="!urlInput">
+          <p>Try these examples:</p>
+          <div class="example-links">
+            <button 
+              *ngFor="let example of workingExamples" 
+              class="example-link"
+              (click)="loadExample(example)">
+              {{ example }}
+            </button>
+          </div>
+        </div>
+
+        <div class="url-status" *ngIf="urlLoading">
+          Loading XML from URL...
+        </div>
+
+        <div class="url-error" *ngIf="urlError">
+          {{ urlError }}
+        </div>
+
+        <div class="url-success" *ngIf="urlSuccess">
+          XML loaded successfully
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Fixed Header Section -->
   <div class="fixed-header">
     <!-- Enhanced Toolbar with Folding Controls -->
@@ -142,7 +275,10 @@
       <!-- Fixed Node Editor Panel - NO SCROLL -->
       <div class="fixed-node-editor" *ngIf="selectedNode">
         <div class="node-editor-content">
-          <h3>Node Editor</h3>
+          <div class="node-editor-header">
+            <h3>Node Editor</h3>
+            <button class="btn-close-editor" (click)="closeNodeEditor()" title="Close editor">×</button>
+          </div>
           
           <!-- Node Name Editing -->
           <div class="detail-item">
@@ -265,13 +401,13 @@
               >
                 {{ selectedNode.isExpanded ? 'Collapse' : 'Expand' }}
               </button>
-              <button 
+              <!-- <button 
                 (click)="selectedNode.isExpanded = true; expandNode(selectedNode)" 
                 class="btn-action"
                 *ngIf="selectedNode.children.length > 0 && !selectedNode.isExpanded"
               >
                 Expand All Children
-              </button>
+              </button> -->
             </div>
           </div>
         </div>

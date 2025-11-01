@@ -2,6 +2,8 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { XmlUtilsService } from '../../../services/xml-utils.service';
+import { FileSizePipe } from '../../../pipes/file-size.pipe';
 
 export interface XmlNode {
   treeLineNumber: any;
@@ -44,7 +46,7 @@ export interface TreeLine {
 @Component({
   selector: 'app-xml-viewer',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FileSizePipe],
   templateUrl: './xml-viewer.html',
   styleUrls: ['./xml-viewer.scss']
 })
@@ -75,6 +77,18 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   // Mobile detection
   isMobileView: boolean = false;
+
+  // New properties for input methods
+  activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
+  selectedFile: File | null = null;
+  isDragOver = false;
+  fileLoading = false;
+  fileError: string | null = null;
+  urlInput = '';
+  urlLoading = false;
+  urlError: string | null = null;
+  urlSuccess = false;
+  useCorsProxy = false;
 
   // Color themes (same as before)
   colorThemes: { [key: string]: ColorTheme } = {
@@ -196,6 +210,8 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   };
 
   objectKeys = Object.keys;
+
+  constructor(private xmlUtilsService: XmlUtilsService) {}
 
   get currentColors(): ColorTheme {
     const themes = this.theme === 'dark' ? this.darkColorThemes : this.colorThemes;
@@ -501,6 +517,11 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   selectNode(node: XmlNode): void {
     this.selectedNode = node;
+  }
+
+  // NEW METHOD: Close node editor
+  closeNodeEditor(): void {
+    this.selectedNode = null;
   }
 
   onTextAreaScroll(event: Event): void {
@@ -871,5 +892,300 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     } catch (err) {
       this.error = 'Failed to auto-fix XML';
     }
+  }
+
+  // Input Method Methods
+  setInputMethod(method: 'manual' | 'file' | 'url'): void {
+    this.activeInputMethod = method;
+    this.clearFileErrors();
+    this.clearUrlErrors();
+  }
+
+  // File Handling Methods
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      if (this.isValidXmlFile(file)) {
+        this.selectedFile = file;
+        this.fileError = null;
+      } else {
+        this.fileError = 'Please select a valid XML file (.xml, .xsl, .xsd, .rss, .atom)';
+      }
+    }
+  }
+
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+    
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      const file = event.dataTransfer.files[0];
+      if (this.isValidXmlFile(file)) {
+        this.selectedFile = file;
+        this.fileError = null;
+      } else {
+        this.fileError = 'Please select a valid XML file (.xml, .xsl, .xsd, .rss, .atom)';
+      }
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOver = false;
+  }
+
+  isValidXmlFile(file: File): boolean {
+    const validTypes = [
+      'application/xml',
+      'text/xml',
+      'application/xhtml+xml'
+    ];
+    const validExtensions = ['.xml', '.xsl', '.xsd', '.rss', '.atom'];
+    
+    const hasValidType = validTypes.includes(file.type);
+    const hasValidExtension = validExtensions.some(ext => 
+      file.name.toLowerCase().endsWith(ext)
+    );
+    
+    return hasValidType || hasValidExtension || file.type === '';
+  }
+
+  async loadFile(): Promise<void> {
+    if (!this.selectedFile) return;
+
+    this.fileLoading = true;
+    this.fileError = null;
+
+    try {
+      const result = await this.xmlUtilsService.readXmlFromFile(this.selectedFile);
+      
+      if (result.error) {
+        this.fileError = result.error;
+      } else if (result.content) {
+        this.xmlData = result.content;
+        this.onXmlInputChange();
+        this.activeInputMethod = 'manual';
+      }
+    } catch (error) {
+      this.fileError = 'Failed to read file: ' + (error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      this.fileLoading = false;
+    }
+  }
+
+  clearFile(): void {
+    this.selectedFile = null;
+    this.fileError = null;
+    const fileInput = document.querySelector('.file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  clearFileErrors(): void {
+    this.fileError = null;
+  }
+
+  // URL Handling Methods - FIXED VERSION
+  async loadFromUrl(): Promise<void> {
+    if (!this.urlInput.trim()) return;
+
+    this.urlLoading = true;
+    this.urlError = null;
+    this.urlSuccess = false;
+
+    try {
+      const cleanUrl = this.urlInput.trim();
+      
+      // Validate URL format
+      try {
+        new URL(cleanUrl);
+      } catch {
+        this.urlError = 'Invalid URL format. Please enter a valid URL starting with http:// or https://';
+        this.urlLoading = false;
+        return;
+      }
+
+      console.log('Loading XML from URL:', cleanUrl);
+      
+      let result: { content: string; error?: string };
+      
+      if (this.useCorsProxy) {
+        // Use CORS proxy directly
+        const proxyUrl = this.getCorsProxyUrl(cleanUrl);
+        result = await this.fetchWithTimeout(proxyUrl, 15000);
+      } else {
+        // Try direct first, then fallback to proxy
+        result = await this.fetchWithTimeout(cleanUrl, 10000);
+        
+        if (result.error && (result.error.includes('CORS') || result.error.includes('Network'))) {
+          console.log('Direct fetch failed, trying CORS proxy...');
+          const proxyUrl = this.getCorsProxyUrl(cleanUrl);
+          result = await this.fetchWithTimeout(proxyUrl, 15000);
+        }
+      }
+
+      if (result.error) {
+        this.urlError = result.error;
+      } else if (result.content) {
+        const trimmedContent = result.content.trim();
+        const isXml = trimmedContent.startsWith('<?xml') || 
+                     trimmedContent.startsWith('<') ||
+                     /^<\w+[\s>]/.test(trimmedContent);
+
+        if (!isXml) {
+          this.urlError = 'The URL does not contain valid XML content. The response appears to be HTML or other content type.';
+        } else {
+          this.xmlData = result.content;
+          this.onXmlInputChange();
+          this.urlSuccess = true;
+          this.activeInputMethod = 'manual';
+          
+          setTimeout(() => {
+            this.urlSuccess = false;
+          }, 3000);
+        }
+      }
+    } catch (error) {
+      console.error('URL loading error:', error);
+      this.urlError = 'Failed to load from URL: ' + (error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      this.urlLoading = false;
+    }
+  }
+
+  // Enhanced fetch with timeout and better error handling
+  private async fetchWithTimeout(url: string, timeout: number = 10000): Promise<{ content: string; error?: string }> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/xml, text/xml, */*',
+          'User-Agent': 'Mozilla/5.0 (compatible; XMLViewer/1.0)'
+        },
+        mode: 'cors'
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        return {
+          content: '',
+          error: `HTTP ${response.status}: ${response.statusText}`
+        };
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      
+      // Check if content type is XML or if we should try to parse it as XML
+      const isXmlContent = contentType.includes('xml') || 
+                          contentType.includes('text/plain') ||
+                          url.toLowerCase().endsWith('.xml') ||
+                          url.toLowerCase().includes('.xml?');
+
+      if (!isXmlContent) {
+        // Read first few bytes to check for XML declaration
+        const text = await response.text();
+        const firstChars = text.trim().substring(0, 100);
+        
+        if (firstChars.startsWith('<?xml') || firstChars.startsWith('<')) {
+          return { content: text };
+        } else {
+          return {
+            content: '',
+            error: `Server returned ${contentType} content, but XML was expected. First characters: ${firstChars.substring(0, 50)}...`
+          };
+        }
+      }
+
+      const content = await response.text();
+      return { content };
+
+    } catch (error) {
+      console.error('Fetch error:', error);
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          return { content: '', error: 'Request timeout: The server took too long to respond' };
+        } else if (error.name === 'TypeError') {
+          if (error.message.includes('Failed to fetch')) {
+            return { content: '', error: 'Network error: Failed to connect to the server. This may be due to CORS restrictions.' };
+          }
+          return { content: '', error: `Network error: ${error.message}` };
+        }
+        return { content: '', error: error.message };
+      }
+      
+      return { content: '', error: 'Unknown network error occurred' };
+    }
+  }
+
+  // CORS proxy methods
+  private getCorsProxyUrl(originalUrl: string): string {
+    // Try multiple CORS proxies for better reliability
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`,
+      `https://cors-anywhere.herokuapp.com/${originalUrl}`,
+      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(originalUrl)}`,
+      `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`
+    ];
+    
+    // Return a random proxy to distribute load
+    return proxies[Math.floor(Math.random() * proxies.length)];
+  }
+
+  loadExample(url: string): void {
+    this.urlInput = url;
+    this.loadFromUrl();
+  }
+
+  clearUrlErrors(): void {
+    this.urlError = null;
+    this.urlSuccess = false;
+  }
+
+  // Sample XML
+  loadSampleXml(): void {
+    this.xmlData = `<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+  <book id="bk101">
+    <author>Gambardella, Matthew</author>
+    <title>XML Developer's Guide</title>
+    <genre>Computer</genre>
+    <price>44.95</price>
+    <publish_date>2000-10-01</publish_date>
+    <description>An in-depth look at creating applications with XML.</description>
+  </book>
+  <book id="bk102">
+    <author>Ralls, Kim</author>
+    <title>Midnight Rain</title>
+    <genre>Fantasy</genre>
+    <price>5.95</price>
+    <publish_date>2000-12-16</publish_date>
+    <description>A former architect battles corporate zombies.</description>
+  </book>
+</catalog>`;
+    this.onXmlInputChange();
+  }
+
+  get workingExamples(): string[] {
+    return [
+      'https://www.w3schools.com/xml/note.xml',
+      'https://www.w3schools.com/xml/cd_catalog.xml',
+      'https://www.w3schools.com/xml/plant_catalog.xml',
+      'https://feeds.bbci.co.uk/news/rss.xml',
+      'https://blog.google/static/blog/rss/blog.xml',
+      'https://www.nasa.gov/rss/dyn/breaking_news.rss'
+    ];
   }
 }

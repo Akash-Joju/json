@@ -30,6 +30,12 @@ export interface SearchResult {
   providedIn: 'root'
 })
 export class JsonUtilsService {
+  getParentObjectForSearch(jsonData: any, currentSearchResult: SearchResult) {
+    throw new Error('Method not implemented.');
+  }
+  expandPath(jsonTree: JsonNode[], path: string) {
+    throw new Error('Method not implemented.');
+  }
   private http = inject(HttpClient);
   
   // Validate JSON string
