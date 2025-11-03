@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon">🔍</div>
-            <h3>JSON Viewer</h3>
+            <h3>JSON & XML Viewer</h3>
             <p>Visualize and explore your JSON & XML data with our interactive tree viewer</p>
           </div>
           
