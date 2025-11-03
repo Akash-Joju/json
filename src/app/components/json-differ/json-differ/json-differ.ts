@@ -23,162 +23,112 @@ interface ComparisonOptions {
 <div class="json-differ-container">
   <div class="header">
     <h2>JSON Differ</h2>
-    <p>Compare and find differences between two JSON objects</p>
+    <p>Compare two JSON objects</p>
   </div>
 
-  <!-- File & URL Load Section -->
-  <div class="load-section">
-    <div class="load-container">
-      <!-- Left Side Load Options -->
-      <div class="load-options">
-        <h3>Load JSON 1</h3>
-        <div class="load-buttons">
-          <div class="file-upload">
-            <input type="file" #fileInput1 (change)="onFileSelected($event, true)" accept=".json,application/json" class="file-input">
-            <button type="button" class="btn btn--secondary" (click)="fileInput1.click()">
-              📁 Choose File 1
-            </button>
-            <span class="file-name">{{leftFileName || 'No file chosen'}}</span>
-          </div>
-          
-          <div class="url-load">
-            <input type="text" [(ngModel)]="leftUrl" placeholder="Enter URL for JSON 1" class="url-input">
-            <button (click)="loadFromUrl(leftUrl, true)" class="btn btn--secondary" [disabled]="!leftUrl">
-              🌐 Load URL 1
-            </button>
-          </div>
+  <!-- Compact Load Section -->
+  <div class="compact-load-section">
+    <div class="load-row">
+      <div class="json-source">
+        <label>JSON 1 Source:</label>
+        <div class="source-controls">
+          <input type="file" #fileInput1 (change)="onFileSelected($event, true)" accept=".json" class="file-input">
+          <button type="button" class="btn btn--compact" (click)="fileInput1.click()">
+            📁 File
+          </button>
+          <input type="text" [(ngModel)]="leftUrl" placeholder="URL" class="url-input compact">
+          <button (click)="loadFromUrl(leftUrl, true)" class="btn btn--compact" [disabled]="!leftUrl">
+            🌐 Load
+          </button>
         </div>
       </div>
 
-      <!-- Right Side Load Options -->
-      <div class="load-options">
-        <h3>Load JSON 2</h3>
-        <div class="load-buttons">
-          <div class="file-upload">
-            <input type="file" #fileInput2 (change)="onFileSelected($event, false)" accept=".json,application/json" class="file-input">
-            <button type="button" class="btn btn--secondary" (click)="fileInput2.click()">
-              📁 Choose File 2
-            </button>
-            <span class="file-name">{{rightFileName || 'No file chosen'}}</span>
-          </div>
-          
-          <div class="url-load">
-            <input type="text" [(ngModel)]="rightUrl" placeholder="Enter URL for JSON 2" class="url-input">
-            <button (click)="loadFromUrl(rightUrl, false)" class="btn btn--secondary" [disabled]="!rightUrl">
-              🌐 Load URL 2
-            </button>
-          </div>
+      <div class="json-source">
+        <label>JSON 2 Source:</label>
+        <div class="source-controls">
+          <input type="file" #fileInput2 (change)="onFileSelected($event, false)" accept=".json" class="file-input">
+          <button type="button" class="btn btn--compact" (click)="fileInput2.click()">
+            📁 File
+          </button>
+          <input type="text" [(ngModel)]="rightUrl" placeholder="URL" class="url-input compact">
+          <button (click)="loadFromUrl(rightUrl, false)" class="btn btn--compact" [disabled]="!rightUrl">
+            🌐 Load
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Controls -->
-  <div class="controls">
-    <button (click)="compareJson()" class="btn btn--primary">
-      🔍 Compare JSON
+  <!-- Compact Controls -->
+  <div class="compact-controls">
+    <button (click)="compareJson()" class="btn btn--primary compact">
+      🔍 Compare
     </button>
-    <button (click)="clearAll()" class="btn btn--secondary">
-      🗑️ Clear All
+    <button (click)="clearAll()" class="btn btn--compact">
+      🗑️ Clear
     </button>
-    <button (click)="swapJson()" class="btn btn--secondary">
-      🔄 Swap JSON
+    <button (click)="swapJson()" class="btn btn--compact">
+      🔄 Swap
     </button>
-    <button (click)="loadSampleData()" class="btn btn--secondary">
-      📋 Sample Data
+    <button (click)="loadSampleData()" class="btn btn--compact">
+      📋 Sample
     </button>
-    <button (click)="formatBothJson()" class="btn btn--secondary">
-      💫 Format Both
+    <button (click)="formatBothJson()" class="btn btn--compact">
+      💫 Format
     </button>
   </div>
 
-  <!-- Raw JSON Input Areas -->
-  <div class="raw-json-section">
-    <div class="section-header">
-      <h3>JSON Input</h3>
-      <div class="json-stats">
-        <span *ngIf="leftJsonLines > 0">Left: {{leftJsonLines}} lines</span>
-        <span *ngIf="rightJsonLines > 0">Right: {{rightJsonLines}} lines</span>
-      </div>
-    </div>
-    
-    <div class="raw-json-container">
-      <div class="comparison-container">
-        <div class="json-section">
+  <!-- Compact JSON Input Areas -->
+  <div class="compact-json-section">
+    <div class="json-inputs-container">
+      <div class="json-input">
+        <div class="json-header">
           <h4>JSON 1</h4>
-          <textarea
-            [(ngModel)]="leftJson"
-            placeholder="Paste first JSON here or load from file/URL..."
-            class="json-textarea"
-            rows="12"
-            (input)="updateLineCounts()"
-          ></textarea>
+          <span class="line-count">{{leftJsonLines}} lines</span>
         </div>
-        <div class="json-section">
+        <textarea
+          [(ngModel)]="leftJson"
+          placeholder="Paste JSON 1 or load from file/URL"
+          class="json-textarea compact"
+          rows="6"
+          (input)="onJsonInput($event, true)"
+          (blur)="autoFormatJson(true)"
+          (keydown.control.enter)="autoFormatJson(true)"
+          (keydown.meta.enter)="autoFormatJson(true)"
+        ></textarea>
+      </div>
+      
+      <div class="json-input">
+        <div class="json-header">
           <h4>JSON 2</h4>
-          <textarea
-            [(ngModel)]="rightJson"
-            placeholder="Paste second JSON here or load from file/URL..."
-            class="json-textarea"
-            rows="12"
-            (input)="updateLineCounts()"
-          ></textarea>
+          <span class="line-count">{{rightJsonLines}} lines</span>
         </div>
+        <textarea
+          [(ngModel)]="rightJson"
+          placeholder="Paste JSON 2 or load from file/URL"
+          class="json-textarea compact"
+          rows="6"
+          (input)="onJsonInput($event, false)"
+          (blur)="autoFormatJson(false)"
+          (keydown.control.enter)="autoFormatJson(false)"
+          (keydown.meta.enter)="autoFormatJson(false)"
+        ></textarea>
       </div>
     </div>
   </div>
-
-  <!-- Comparison Options Panel -->
-  <!-- <div class="options-section">
-    <div class="options-header">
-      <h3>Comparison Options</h3>
-    </div>
-    
-    <div class="options-grid">
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreArrayOrder">
-        <span class="checkmark"></span>
-        Ignore Array Order
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.caseSensitive" [value]="false">
-        <span class="checkmark"></span>
-        Case Insensitive
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.treatUndefinedAsNull">
-        <span class="checkmark"></span>
-        Treat Undefined as Null
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreEmptyArrays">
-        <span class="checkmark"></span>
-        Ignore Empty Arrays
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreEmptyObjects">
-        <span class="checkmark"></span>
-        Ignore Empty Objects
-      </label>
-    </div>
-    <div class="numeric-option">
-      <label>Numeric Precision:</label>
-      <input type="number" [(ngModel)]="options.numericPrecision" min="0" max="10" class="precision-input">
-      <small>(0 = exact match)</small>
-    </div>
-    <div class="depth-option">
-      <label>Max Depth:</label>
-      <input type="number" [(ngModel)]="options.maxDepth" min="1" max="100" class="depth-input">
-    </div>
-  </div> -->
 
   <!-- Loading & Error Display -->
-  <div *ngIf="loading" class="loading-message">
-    ⏳ Loading JSON data...
+  <div *ngIf="loading" class="compact-message loading">
+    ⏳ Loading...
   </div>
 
-  <div *ngIf="error" class="error-message">
+  <div *ngIf="error" class="compact-message error">
     ❌ {{ error }}
+  </div>
+
+  <!-- Auto-format status -->
+  <div *ngIf="formatStatus" class="compact-message info">
+    {{ formatStatus }}
   </div>
 </div>
   `,
@@ -197,6 +147,7 @@ export class JsonDifferComponent {
   
   error: string = '';
   loading: boolean = false;
+  formatStatus: string = '';
 
   options: ComparisonOptions = {
     ignoreArrayOrder: false,
@@ -208,13 +159,15 @@ export class JsonDifferComponent {
     maxDepth: 50
   };
 
+  private formatTimeout: any = null;
+
   constructor(
     private http: HttpClient,
     private router: Router,
     private jsonCompareService: JsonCompareService
   ) {}
 
-  // File selection handler
+  // File selection handler with auto-format
   onFileSelected(event: any, isLeft: boolean): void {
     const file: File = event.target.files[0];
     if (file) {
@@ -238,6 +191,7 @@ export class JsonDifferComponent {
           }
           this.updateLineCounts();
           this.error = '';
+          this.showFormatStatus('File loaded and formatted');
         } catch (err) {
           this.error = `Invalid JSON file: ${(err as Error).message}`;
         }
@@ -246,7 +200,7 @@ export class JsonDifferComponent {
     }
   }
 
-  // Load JSON from URL
+  // Load JSON from URL with auto-format
   async loadFromUrl(url: string, isLeft: boolean): Promise<void> {
     if (!url) return;
 
@@ -272,6 +226,7 @@ export class JsonDifferComponent {
         this.rightJson = formatted;
       }
       this.updateLineCounts();
+      this.showFormatStatus('URL data loaded and formatted');
     } catch (err) {
       this.error = `Failed to load from URL: ${(err as Error).message}`;
     } finally {
@@ -279,9 +234,66 @@ export class JsonDifferComponent {
     }
   }
 
+  // Handle JSON input with auto-format on blur and Ctrl/Cmd+Enter
+  onJsonInput(event: any, isLeft: boolean): void {
+    this.updateLineCounts();
+    
+    // Clear any existing timeout
+    if (this.formatTimeout) {
+      clearTimeout(this.formatTimeout);
+    }
+
+    // Set a timeout to auto-format after user stops typing (1.5 seconds)
+    this.formatTimeout = setTimeout(() => {
+      this.autoFormatJson(isLeft);
+    }, 1500);
+  }
+
+  // Auto-format JSON with validation
+  autoFormatJson(isLeft: boolean): void {
+    const jsonString = isLeft ? this.leftJson : this.rightJson;
+    
+    if (!jsonString.trim()) {
+      return;
+    }
+
+    try {
+      // Try to parse and format
+      const parsed = JSON.parse(jsonString);
+      const formatted = JSON.stringify(parsed, null, 2);
+      
+      if (isLeft) {
+        this.leftJson = formatted;
+      } else {
+        this.rightJson = formatted;
+      }
+      
+      this.updateLineCounts();
+      this.error = '';
+      this.showFormatStatus('JSON auto-formatted');
+    } catch (err) {
+      // Don't show error for partial input, only set error if it's a complete invalid JSON
+      if (jsonString.trim().length > 10) { // Only show error for substantial input
+        this.error = `Invalid JSON format: ${(err as Error).message}`;
+      }
+    }
+  }
+
+  // Show temporary format status message
+  private showFormatStatus(message: string): void {
+    this.formatStatus = message;
+    setTimeout(() => {
+      this.formatStatus = '';
+    }, 2000);
+  }
+
   compareJson(): void {
     try {
       this.error = '';
+      
+      // Auto-format both JSONs before comparison
+      this.autoFormatJson(true);
+      this.autoFormatJson(false);
       
       const leftObj = this.leftJson.trim() ? JSON.parse(this.leftJson) : {};
       const rightObj = this.rightJson.trim() ? JSON.parse(this.rightJson) : {};
@@ -318,23 +330,13 @@ export class JsonDifferComponent {
     this.leftJsonLines = 0;
     this.rightJsonLines = 0;
     this.error = '';
+    this.formatStatus = '';
   }
 
   formatBothJson(): void {
-    try {
-      if (this.leftJson.trim()) {
-        const obj = JSON.parse(this.leftJson);
-        this.leftJson = JSON.stringify(obj, null, 2);
-      }
-      if (this.rightJson.trim()) {
-        const obj = JSON.parse(this.rightJson);
-        this.rightJson = JSON.stringify(obj, null, 2);
-      }
-      this.updateLineCounts();
-      this.error = '';
-    } catch (err) {
-      this.error = `Cannot format invalid JSON: ${(err as Error).message}`;
-    }
+    this.autoFormatJson(true);
+    this.autoFormatJson(false);
+    this.showFormatStatus('Both JSONs formatted');
   }
 
   swapJson(): void {
@@ -342,6 +344,7 @@ export class JsonDifferComponent {
     [this.leftFileName, this.rightFileName] = [this.rightFileName, this.leftFileName];
     [this.leftUrl, this.rightUrl] = [this.rightUrl, this.leftUrl];
     this.updateLineCounts();
+    this.showFormatStatus('JSONs swapped');
   }
 
   loadSampleData(): void {
@@ -380,5 +383,6 @@ export class JsonDifferComponent {
     this.leftFileName = 'sample1.json';
     this.rightFileName = 'sample2.json';
     this.updateLineCounts();
+    this.showFormatStatus('Sample data loaded');
   }
 }

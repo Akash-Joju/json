@@ -24,172 +24,132 @@ interface ComparisonOptions {
 <div class="xml-differ-container">
   <div class="header">
     <h2>XML Differ</h2>
-    <p>Compare and find differences between two XML documents</p>
+    <p>Compare two XML documents</p>
   </div>
 
-  <!-- File & URL Load Section -->
-  <div class="load-section">
-    <div class="load-container">
-      <!-- Left Side Load Options -->
-      <div class="load-options">
-        <h3>Load XML 1</h3>
-        <div class="load-buttons">
-          <div class="file-upload">
-            <input type="file" #fileInput1 (change)="onFileSelected($event, true)" accept=".xml,application/xml,text/xml" class="file-input">
-            <button type="button" class="btn btn--secondary" (click)="fileInput1.click()">
-              📁 Choose File 1
-            </button>
-            <span class="file-name">{{leftFileName || 'No file chosen'}}</span>
-          </div>
-          
-          <div class="url-load">
-            <input type="text" [(ngModel)]="leftUrl" placeholder="Enter URL for XML 1" class="url-input">
-            <button (click)="loadFromUrl(leftUrl, true)" class="btn btn--secondary" [disabled]="!leftUrl">
-              🌐 Load URL 1
-            </button>
-          </div>
+  <!-- Compact Load Section -->
+  <div class="compact-load-section">
+    <div class="load-row">
+      <div class="xml-source">
+        <label>XML 1 Source:</label>
+        <div class="source-controls">
+          <input type="file" #fileInput1 (change)="onFileSelected($event, true)" accept=".xml,application/xml,text/xml" class="file-input">
+          <button type="button" class="btn btn--compact" (click)="fileInput1.click()">
+            📁 File
+          </button>
+          <input type="text" [(ngModel)]="leftUrl" placeholder="URL" class="url-input compact">
+          <button (click)="loadFromUrl(leftUrl, true)" class="btn btn--compact" [disabled]="!leftUrl">
+            🌐 Load
+          </button>
         </div>
       </div>
 
-      <!-- Right Side Load Options -->
-      <div class="load-options">
-        <h3>Load XML 2</h3>
-        <div class="load-buttons">
-          <div class="file-upload">
-            <input type="file" #fileInput2 (change)="onFileSelected($event, false)" accept=".xml,application/xml,text/xml" class="file-input">
-            <button type="button" class="btn btn--secondary" (click)="fileInput2.click()">
-              📁 Choose File 2
-            </button>
-            <span class="file-name">{{rightFileName || 'No file chosen'}}</span>
-          </div>
-          
-          <div class="url-load">
-            <input type="text" [(ngModel)]="rightUrl" placeholder="Enter URL for XML 2" class="url-input">
-            <button (click)="loadFromUrl(rightUrl, false)" class="btn btn--secondary" [disabled]="!rightUrl">
-              🌐 Load URL 2
-            </button>
-          </div>
+      <div class="xml-source">
+        <label>XML 2 Source:</label>
+        <div class="source-controls">
+          <input type="file" #fileInput2 (change)="onFileSelected($event, false)" accept=".xml,application/xml,text/xml" class="file-input">
+          <button type="button" class="btn btn--compact" (click)="fileInput2.click()">
+            📁 File
+          </button>
+          <input type="text" [(ngModel)]="rightUrl" placeholder="URL" class="url-input compact">
+          <button (click)="loadFromUrl(rightUrl, false)" class="btn btn--compact" [disabled]="!rightUrl">
+            🌐 Load
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Controls -->
-  <div class="controls">
-    <button (click)="compareXml()" class="btn btn--primary">
-      🔍 Compare XML
+  <!-- Compact Controls -->
+  <div class="compact-controls">
+    <button (click)="compareXml()" class="btn btn--primary compact">
+      🔍 Compare
     </button>
-    <button (click)="clearAll()" class="btn btn--secondary">
-      🗑️ Clear All
+    <button (click)="clearAll()" class="btn btn--compact">
+      🗑️ Clear
     </button>
-    <button (click)="swapXml()" class="btn btn--secondary">
-      🔄 Swap XML
+    <button (click)="swapXml()" class="btn btn--compact">
+      🔄 Swap
     </button>
-    <button (click)="loadSampleData()" class="btn btn--secondary">
-      📋 Sample Data
+    <button (click)="loadSampleData()" class="btn btn--compact">
+      📋 Sample
     </button>
-    <button (click)="formatBothXml()" class="btn btn--secondary">
-      💫 Format Both
+    <button (click)="formatBothXml()" class="btn btn--compact">
+      💫 Format
     </button>
   </div>
 
-  <!-- Raw XML Input Areas -->
-  <div class="raw-xml-section">
-    <div class="section-header">
-      <h3>XML Input</h3>
-      <div class="xml-stats">
-        <span *ngIf="leftXmlLines > 0">Left: {{leftXmlLines}} lines</span>
-        <span *ngIf="rightXmlLines > 0">Right: {{rightXmlLines}} lines</span>
-      </div>
-    </div>
-    
-    <div class="raw-xml-container">
-      <div class="comparison-container">
-        <div class="xml-section">
+  <!-- Compact XML Input Areas -->
+  <div class="compact-xml-section">
+    <div class="xml-inputs-container">
+      <div class="xml-input">
+        <div class="xml-header">
           <h4>XML 1</h4>
-          <textarea
-            [(ngModel)]="leftXml"
-            placeholder="Paste first XML here or load from file/URL..."
-            class="xml-textarea"
-            (input)="updateLineCounts()"
-          ></textarea>
-          <div class="xml-stats" *ngIf="leftStats">
-            <span>Nodes: {{leftStats.totalNodes}}</span>
-            <span>Depth: {{leftStats.maxDepth}}</span>
-            <span>Attributes: {{leftStats.totalAttributes}}</span>
-            <span [class.valid]="leftStats.isValid" [class.invalid]="!leftStats.isValid">
-              {{leftStats.isValid ? '✓ Valid' : '✗ Invalid'}}
+          <div class="header-stats">
+            <span class="line-count">{{leftXmlLines}} lines</span>
+            <span *ngIf="leftStats" class="stats-badge" [class.valid]="leftStats.isValid" [class.invalid]="!leftStats.isValid">
+              {{leftStats.isValid ? '✓' : '✗'}}
             </span>
           </div>
         </div>
-        <div class="xml-section">
+        <textarea
+          [(ngModel)]="leftXml"
+          placeholder="Paste XML 1 or load from file/URL"
+          class="xml-textarea compact"
+          rows="6"
+          (input)="onXmlInput($event, true)"
+          (blur)="autoFormatXml(true)"
+          (keydown.control.enter)="autoFormatXml(true)"
+          (keydown.meta.enter)="autoFormatXml(true)"
+        ></textarea>
+        <div class="xml-stats" *ngIf="leftStats">
+          <span>Nodes: {{leftStats.totalNodes}}</span>
+          <span>Depth: {{leftStats.maxDepth}}</span>
+          <span>Attrs: {{leftStats.totalAttributes}}</span>
+        </div>
+      </div>
+      
+      <div class="xml-input">
+        <div class="xml-header">
           <h4>XML 2</h4>
-          <textarea
-            [(ngModel)]="rightXml"
-            placeholder="Paste second XML here or load from file/URL..."
-            class="xml-textarea"
-            (input)="updateLineCounts()"
-          ></textarea>
-          <div class="xml-stats" *ngIf="rightStats">
-            <span>Nodes: {{rightStats.totalNodes}}</span>
-            <span>Depth: {{rightStats.maxDepth}}</span>
-            <span>Attributes: {{rightStats.totalAttributes}}</span>
-            <span [class.valid]="rightStats.isValid" [class.invalid]="!rightStats.isValid">
-              {{rightStats.isValid ? '✓ Valid' : '✗ Invalid'}}
+          <div class="header-stats">
+            <span class="line-count">{{rightXmlLines}} lines</span>
+            <span *ngIf="rightStats" class="stats-badge" [class.valid]="rightStats.isValid" [class.invalid]="!rightStats.isValid">
+              {{rightStats.isValid ? '✓' : '✗'}}
             </span>
           </div>
+        </div>
+        <textarea
+          [(ngModel)]="rightXml"
+          placeholder="Paste XML 2 or load from file/URL"
+          class="xml-textarea compact"
+          rows="6"
+          (input)="onXmlInput($event, false)"
+          (blur)="autoFormatXml(false)"
+          (keydown.control.enter)="autoFormatXml(false)"
+          (keydown.meta.enter)="autoFormatXml(false)"
+        ></textarea>
+        <div class="xml-stats" *ngIf="rightStats">
+          <span>Nodes: {{rightStats.totalNodes}}</span>
+          <span>Depth: {{rightStats.maxDepth}}</span>
+          <span>Attrs: {{rightStats.totalAttributes}}</span>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Comparison Options Panel -->
-  <!-- <div class="options-section">
-    <div class="options-header">
-      <h3>Comparison Options</h3>
-    </div> -->
-    
-    <!-- <div class="options-grid">
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreWhitespace">
-        <span class="checkmark"></span>
-        Ignore Whitespace
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreComments">
-        <span class="checkmark"></span>
-        Ignore Comments
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreProcessingInstructions">
-        <span class="checkmark"></span>
-        Ignore Processing Instructions
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.ignoreElementOrder">
-        <span class="checkmark"></span>
-        Ignore Element Order
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [ngModel]="!options.caseSensitive" (change)="options.caseSensitive = !options.caseSensitive">
-        <span class="checkmark"></span>
-        Case Insensitive
-      </label>
-      <label class="option-checkbox">
-        <input type="checkbox" [(ngModel)]="options.normalizeText">
-        <span class="checkmark"></span>
-        Normalize Text Content
-      </label>
-    </div>
-  </div> -->
 
   <!-- Loading & Error Display -->
-  <div *ngIf="loading" class="loading-message">
-    ⏳ Loading XML data...
+  <div *ngIf="loading" class="compact-message loading">
+    ⏳ Loading...
   </div>
 
-  <div *ngIf="error" class="error-message">
+  <div *ngIf="error" class="compact-message error">
     ❌ {{ error }}
+  </div>
+
+  <!-- Auto-format status -->
+  <div *ngIf="formatStatus" class="compact-message info">
+    {{ formatStatus }}
   </div>
 </div>
   `,
@@ -210,6 +170,7 @@ export class XmlDifferComponent {
   
   error: string = '';
   loading: boolean = false;
+  formatStatus: string = '';
 
   options: ComparisonOptions = {
     ignoreWhitespace: true,
@@ -220,6 +181,8 @@ export class XmlDifferComponent {
     normalizeText: true
   };
 
+  private formatTimeout: any = null;
+
   constructor(
     private http: HttpClient,
     private xmlUtils: XmlUtilsService,
@@ -227,7 +190,7 @@ export class XmlDifferComponent {
     private xmlCompareService: XmlCompareService
   ) {}
 
-  // File selection handler
+  // File selection handler with auto-format
   onFileSelected(event: any, isLeft: boolean): void {
     const file: File = event.target.files[0];
     if (file) {
@@ -252,11 +215,12 @@ export class XmlDifferComponent {
         }
         this.updateLineCounts();
         this.error = '';
+        this.showFormatStatus('File loaded and formatted');
       });
     }
   }
 
-  // Load XML from URL
+  // Load XML from URL with auto-format
   async loadFromUrl(url: string, isLeft: boolean): Promise<void> {
     if (!url) return;
 
@@ -288,6 +252,7 @@ export class XmlDifferComponent {
         this.updateRightStats();
       }
       this.updateLineCounts();
+      this.showFormatStatus('URL data loaded and formatted');
     } catch (err) {
       this.error = `Failed to load from URL: ${(err as Error).message}`;
     } finally {
@@ -295,10 +260,75 @@ export class XmlDifferComponent {
     }
   }
 
+  // Handle XML input with auto-format on blur and Ctrl/Cmd+Enter
+  onXmlInput(event: any, isLeft: boolean): void {
+    this.updateLineCounts();
+    
+    // Update stats in real-time
+    if (isLeft) {
+      this.updateLeftStats();
+    } else {
+      this.updateRightStats();
+    }
+    
+    // Clear any existing timeout
+    if (this.formatTimeout) {
+      clearTimeout(this.formatTimeout);
+    }
+
+    // Set a timeout to auto-format after user stops typing (1.5 seconds)
+    this.formatTimeout = setTimeout(() => {
+      this.autoFormatXml(isLeft);
+    }, 1500);
+  }
+
+  // Auto-format XML with validation
+  autoFormatXml(isLeft: boolean): void {
+    const xmlString = isLeft ? this.leftXml : this.rightXml;
+    
+    if (!xmlString.trim()) {
+      return;
+    }
+
+    try {
+      // Format the XML
+      const formatted = this.xmlUtils.formatXml(xmlString);
+      
+      if (isLeft) {
+        this.leftXml = formatted;
+        this.updateLeftStats();
+      } else {
+        this.rightXml = formatted;
+        this.updateRightStats();
+      }
+      
+      this.updateLineCounts();
+      this.error = '';
+      this.showFormatStatus('XML auto-formatted');
+    } catch (err) {
+      // Don't show error for partial input, only set error if it's a complete invalid XML
+      if (xmlString.trim().length > 10) {
+        this.error = `Invalid XML format: ${(err as Error).message}`;
+      }
+    }
+  }
+
+  // Show temporary format status message
+  private showFormatStatus(message: string): void {
+    this.formatStatus = message;
+    setTimeout(() => {
+      this.formatStatus = '';
+    }, 2000);
+  }
+
   compareXml(): void {
     try {
       this.error = '';
-
+      
+      // Auto-format both XMLs before comparison
+      this.autoFormatXml(true);
+      this.autoFormatXml(false);
+      
       // Update stats for both XMLs
       this.updateLeftStats();
       this.updateRightStats();
@@ -334,7 +364,10 @@ export class XmlDifferComponent {
       const result = this.xmlUtils.parseXml(this.leftXml);
       this.leftStats = result.stats;
       if (result.error) {
-        this.error = 'Left XML error: ' + result.error;
+        // Don't show error for partial input
+        if (this.leftXml.trim().length > 10) {
+          this.error = 'Left XML error: ' + result.error;
+        }
       }
     } else {
       this.leftStats = null;
@@ -346,7 +379,10 @@ export class XmlDifferComponent {
       const result = this.xmlUtils.parseXml(this.rightXml);
       this.rightStats = result.stats;
       if (result.error) {
-        this.error = 'Right XML error: ' + result.error;
+        // Don't show error for partial input
+        if (this.rightXml.trim().length > 10) {
+          this.error = 'Right XML error: ' + result.error;
+        }
       }
     } else {
       this.rightStats = null;
@@ -410,18 +446,13 @@ export class XmlDifferComponent {
     this.leftStats = null;
     this.rightStats = null;
     this.error = '';
+    this.formatStatus = '';
   }
 
   formatBothXml(): void {
-    if (this.leftXml.trim()) {
-      this.leftXml = this.xmlUtils.formatXml(this.leftXml);
-      this.updateLeftStats();
-    }
-    if (this.rightXml.trim()) {
-      this.rightXml = this.xmlUtils.formatXml(this.rightXml);
-      this.updateRightStats();
-    }
-    this.updateLineCounts();
+    this.autoFormatXml(true);
+    this.autoFormatXml(false);
+    this.showFormatStatus('Both XMLs formatted');
   }
 
   swapXml(): void {
@@ -430,6 +461,7 @@ export class XmlDifferComponent {
     [this.leftUrl, this.rightUrl] = [this.rightUrl, this.leftUrl];
     [this.leftStats, this.rightStats] = [this.rightStats, this.leftStats];
     this.updateLineCounts();
+    this.showFormatStatus('XMLs swapped');
   }
 
   loadSampleData(): void {
@@ -476,5 +508,6 @@ export class XmlDifferComponent {
     this.updateLeftStats();
     this.updateRightStats();
     this.updateLineCounts();
+    this.showFormatStatus('Sample data loaded');
   }
 }

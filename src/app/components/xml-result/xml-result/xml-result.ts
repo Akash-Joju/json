@@ -42,9 +42,9 @@ interface ComparisonOptions {
   <!-- Header with Back Button -->
   <div class="results-header">
     <div class="header-content">
-      <button (click)="createNewDifference()" class="btn btn--primary back-btn">
+      <!-- <button (click)="createNewDifference()" class="btn btn--primary back-btn">
         ← Create New Difference
-      </button>
+      </button> -->
       <h2>XML Comparison Results</h2>
       <div class="header-actions">
         <button (click)="toggleOptionsPanel()" class="btn btn--secondary">
@@ -165,7 +165,7 @@ interface ComparisonOptions {
       </div>
     </div>
   </div>
-<button (click)="createNewDifference()" class="btn btn--primary back-btn">
+<button (click)="createNewDifference()" class="btn btn--blue">
         ← Create New Difference
       </button>
   <!-- XML Viewers -->

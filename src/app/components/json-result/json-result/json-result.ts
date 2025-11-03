@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Add this import
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { JsonCompareService } from '../../../services/json-compare/json-compare.service';
 
@@ -18,6 +18,9 @@ interface Difference {
   path: string;
   leftValue?: any;
   rightValue?: any;
+  details?: string;
+  leftContent?: string;
+  rightContent?: string;
 }
 
 interface JsonLine {
@@ -25,6 +28,7 @@ interface JsonLine {
   lineNumber: number;
   isHighlighted: boolean;
   diffType?: 'added' | 'removed' | 'modified';
+  originalContent: string;
 }
 
 interface ComparisonOptions {
@@ -40,15 +44,12 @@ interface ComparisonOptions {
 @Component({
   selector: 'app-json-results',
   standalone: true,
-  imports: [CommonModule, FormsModule], // Add FormsModule here
+  imports: [CommonModule, FormsModule],
   template: `
 <div class="json-results-container">
   <!-- Header with Back Button -->
   <div class="results-header">
     <div class="header-content">
-      <button (click)="createNewDifference()" class="btn btn--primary back-btn">
-        ← Create New Difference
-      </button>
       <h2>JSON Comparison Results</h2>
       <div class="header-actions">
         <button (click)="toggleOptionsPanel()" class="btn btn--secondary">
@@ -60,10 +61,6 @@ interface ComparisonOptions {
 
   <!-- Summary Card -->
   <div class="summary-card">
-    <!-- <div class="summary-item">
-      <span class="summary-label">Total Differences:</span>
-      <span class="summary-value" [class.no-diff]="differences.length === 0">{{differences.length}}</span>
-    </div> -->
     <div class="summary-item">
       <span class="summary-label">JSON 1 Lines:</span>
       <span class="summary-value">{{leftJsonLines.length}}</span>
@@ -153,7 +150,6 @@ interface ComparisonOptions {
         </button>
       </div>
     </div>
-   
     
     <div class="difference-description">
       <div class="diff-type-badge" [class]="'badge-' + differences[currentDiffIndex]?.type">
@@ -161,6 +157,9 @@ interface ComparisonOptions {
       </div>
       <p>{{differences[currentDiffIndex]?.description}}</p>
       <small class="diff-path">Path: {{differences[currentDiffIndex]?.path}}</small>
+      <small class="diff-details" *ngIf="differences[currentDiffIndex]?.details">
+        {{differences[currentDiffIndex]?.details}}
+      </small>
       <div class="diff-values" *ngIf="differences[currentDiffIndex]?.leftValue !== undefined || differences[currentDiffIndex]?.rightValue !== undefined">
         <span class="value-left" *ngIf="differences[currentDiffIndex]?.leftValue !== undefined">
           Left: {{formatValue(differences[currentDiffIndex]?.leftValue)}}
@@ -171,9 +170,10 @@ interface ComparisonOptions {
       </div>
     </div>
   </div>
-    <button (click)="createNewDifference()" class="btn btn--primary back-btn">
-        ← Create New Difference
-      </button>
+
+  <button (click)="createNewDifference()" class="btn btn--blue">
+    ← Create New Difference
+  </button>
 
   <!-- JSON Viewers -->
   <div *ngIf="differences.length > 0" class="comparison-container">
@@ -310,7 +310,8 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
     return lines.map((content, index) => ({
       content: this.escapeHtml(content),
       lineNumber: index + 1,
-      isHighlighted: false
+      isHighlighted: false,
+      originalContent: content.trim()
     }));
   }
 
@@ -562,7 +563,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
     const path = diff.path.toLowerCase();
     
     this.leftJsonLines.forEach(line => {
-      const content = line.content.toLowerCase();
+      const content = line.originalContent.toLowerCase();
       if (content.includes(path) || this.lineContainsDifference(content, diff, 'left')) {
         line.isHighlighted = true;
         line.diffType = diff.type;
@@ -570,7 +571,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
     });
 
     this.rightJsonLines.forEach(line => {
-      const content = line.content.toLowerCase();
+      const content = line.originalContent.toLowerCase();
       if (content.includes(path) || this.lineContainsDifference(content, diff, 'right')) {
         line.isHighlighted = true;
         line.diffType = diff.type;

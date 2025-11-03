@@ -37,7 +37,7 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
 
-        <div class="tool-card coming-soon" routerLink="/json-differ">
+        <div class="tool-card " routerLink="/json-differ">
           <div class="tool-icon">⚡</div>
           <h3>JSON Differ</h3>
           <p>Compare two JSON objects and find differences with visual highlighting</p>
@@ -72,7 +72,7 @@ import { RouterModule } from '@angular/router';
           </div>
         </div> -->
 
-        <div class="tool-card coming-soon" routerLink="/xml-differ">
+        <div class="tool-card " routerLink="/xml-differ">
           <div class="tool-icon">🔄</div>
           <h3>XML Differ</h3>
           <p>Compare two XML documents and find differences with visual highlighting</p>

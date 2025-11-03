@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="home-container">
       <div class="hero-section">
-        <h1>Welcome to JSON Tools</h1>
-        <p class="subtitle">Your all-in-one solution for working with JSON data</p>
+        <h1>Welcome to Xonify Tools</h1>
+        <p class="subtitle">Your all-in-one solution for working with JSON & XML data</p>
         
         <div class="cta-buttons">
           <button routerLink="/viewer" class="cta-btn primary">
@@ -28,19 +28,19 @@ import { CommonModule } from '@angular/common';
           <div class="feature-card">
             <div class="feature-icon">🔍</div>
             <h3>JSON Viewer</h3>
-            <p>Visualize and explore your JSON data with our interactive tree viewer</p>
+            <p>Visualize and explore your JSON & XML data with our interactive tree viewer</p>
           </div>
           
           <div class="feature-card">
             <div class="feature-icon">⚡</div>
             <h3>Fast Validation</h3>
-            <p>Real-time JSON validation with detailed error messages</p>
+            <p>Real-time JSON & XML validation with detailed error messages</p>
           </div>
           
           <div class="feature-card">
             <div class="feature-icon">🎨</div>
             <h3>Format & Minify</h3>
-            <p>Beautiful formatting and minification for your JSON data</p>
+            <p>Beautiful formatting and minification for your JSON & XML data</p>
           </div>
           
           <div class="feature-card">
