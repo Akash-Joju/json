@@ -1,15 +1,15 @@
-// xml-viewer.component.scss - PROPORTIONAL MOBILE SCALING
+// xml-viewer.component.scss - SINGLE SCROLLBAR APPROACH
 .xml-viewer {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 14px;
   border: 1px solid #e1e1e1;
   border-radius: 6px;
   background: white;
-  height: calc(100vh - 64px); // Subtract navbar height
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  height: 100%;
 
   &.dark-theme {
     background: #1e1e1e;
@@ -841,15 +841,14 @@
     }
   }
 
-  // Main Content Area - FIXED HEIGHT CALCULATION
+  // Main Content Area - SINGLE SCROLL CONTAINER
   .main-content-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: auto; // This becomes the single scroll container
     position: relative;
     min-height: 0;
-    height: calc(100vh - 184px); // Reserve space for toolbar, error panel AND navbar
   }
 
   .view-container {
@@ -857,69 +856,27 @@
     flex: 1;
     min-height: 0;
     position: relative;
-    overflow: hidden;
-    height: 100%;
+    overflow: visible; // No overflow - parent handles scrolling
+    height: auto;
   }
 
-  // Tree Content Area - SINGLE SCROLLING CONTAINER
+  // Tree Content Area - NO SCROLLING (parent handles it)
   .tree-content-area {
     display: flex;
     flex: 1;
     min-height: 0;
     position: relative;
-    overflow-y: auto;
-    overflow-x: auto;
-    height: 100%;
-    
-    &::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 6px;
-      
-      .dark-theme & {
-        background: #2d2d30;
-      }
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 6px;
-      border: 2px solid #f1f1f1;
-      
-      .dark-theme & {
-        background: #555;
-        border-color: #2d2d30;
-      }
-    }
-    
-    &::-webkit-scrollbar-thumb:hover {
-      background: #a8a8a8;
-      
-      .dark-theme & {
-        background: #777;
-      }
-    }
-    
-    scrollbar-width: thin;
-    scrollbar-color: #c1c1c1 #f1f1f1;
-    
-    .dark-theme & {
-      scrollbar-color: #555 #2d2d30;
-    }
+    overflow: visible; // No scrolling here
+    height: auto;
   }
 
   .tree-line-numbers-container {
     flex-shrink: 0;
     background: #f8f9fa;
     border-right: 1px solid #e1e1e1;
-    overflow: hidden;
+    overflow: visible; // No overflow
     position: relative;
-    height: fit-content;
-    min-height: 100%;
+    height: auto;
     
     .dark-theme & {
       background: #1e1e1e;
@@ -953,17 +910,16 @@
 
   .xml-tree-container {
     flex: 1;
-    overflow: hidden;
+    overflow: visible; // No overflow
     position: relative;
-    height: fit-content;
-    min-height: 100%;
+    height: auto;
   }
 
   .xml-tree {
     padding: 8px 12px 8px 8px;
     line-height: 20px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    min-height: min-content;
+    height: auto;
     
     .tree-line {
       height: 20px;
@@ -1117,16 +1073,15 @@
     }
   }
 
-  // Fixed Node Editor Panel - ALWAYS VISIBLE WITH PROPER HEIGHT
+  // Fixed Node Editor Panel - NO SCROLLING
   .fixed-node-editor {
     flex-shrink: 0;
     background: #f9fafb;
     border-left: 1px solid #e1e1e1;
-    overflow: hidden;
+    overflow: visible; // No overflow
     display: flex;
     flex-direction: column;
-    height: 100%;
-    max-height: 100%;
+    height: auto;
 
     .dark-theme & {
       background: #252526;
@@ -1137,20 +1092,17 @@
     .node-editor-content {
       padding: 12px;
       flex: 1;
-      overflow-y: auto;
-      max-height: 100%;
-      
-      // Add styles for the new header
+      overflow: visible; // No overflow
+      height: auto;
+
       .node-editor-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 12px;
-        position: sticky;
-        top: 0;
+        position: relative;
         background: #f9fafb;
         padding: 8px 0;
-        z-index: 1;
 
         .dark-theme & {
           background: #252526;
@@ -1193,43 +1145,6 @@
             }
           }
         }
-      }
-      
-      &::-webkit-scrollbar {
-        width: 6px;
-      }
-      
-      &::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-        
-        .dark-theme & {
-          background: #2d2d30;
-        }
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
-        
-        .dark-theme & {
-          background: #555;
-        }
-      }
-      
-      &::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-        
-        .dark-theme & {
-          background: #777;
-        }
-      }
-      
-      scrollbar-width: thin;
-      scrollbar-color: #c1c1c1 #f1f1f1;
-      
-      .dark-theme & {
-        scrollbar-color: #555 #2d2d30;
       }
     }
 
@@ -1452,95 +1367,96 @@
     }
   }
 
- .raw-editor {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-
-  .editor-container {
-    display: flex;
-    min-height: min-content;
-    background: white;
-    position: relative;
-
-    .dark-theme & {
-      background: #1e1e1e;
-    }
-  }
-
-  .line-numbers {
-    background: #f8f9fa;
-    padding: 8px 4px 8px 12px;
-    border-right: 1px solid #e1e1e1;
-    text-align: right;
-    font-size: 13px;
-    color: #6b7280;
-    user-select: none;
-    min-width: 48px;
-    overflow: visible;
-    line-height: 21px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    flex-shrink: 0;
-    height: auto;
-
-    .dark-theme & {
-      background: #1e1e1e;
-      color: #858585;
-      border-color: #3e3e3e;
-    }
-
-    .line-number {
-      height: 21px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-right: 8px;
-      font-variant-numeric: tabular-nums;
-    }
-  }
-
-  .textarea-container {
+  // Raw Editor - NO SCROLLING (parent handles it)
+  .raw-editor {
     flex: 1;
-    position: relative;
-    overflow: visible;
-    min-height: min-content;
-  }
+    display: flex;
+    flex-direction: column;
+    overflow: visible; // No overflow
 
-  .xml-textarea {
-    width: 100%;
-    min-height: 100%;
-    border: none;
-    padding: 8px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 13px;
-    line-height: 21px;
-    resize: none;
-    outline: none;
-    background: transparent;
-    color: #1f2937;
-    tab-size: 2;
-    white-space: pre;
-    overflow-wrap: normal;
-    overflow: visible;
-    margin: 0;
-    box-sizing: border-box;
-    display: block;
-
-    .dark-theme & {
-      background: transparent;
-      color: #d4d4d4;
-    }
-
-    &:read-only {
-      background: #f9fafb;
+    .editor-container {
+      display: flex;
+      height: auto;
+      background: white;
+      position: relative;
 
       .dark-theme & {
-        background: #2d2d30;
+        background: #1e1e1e;
+      }
+    }
+
+    .line-numbers {
+      background: #f8f9fa;
+      padding: 8px 4px 8px 12px;
+      border-right: 1px solid #e1e1e1;
+      text-align: right;
+      font-size: 13px;
+      color: #6b7280;
+      user-select: none;
+      min-width: 48px;
+      overflow: visible;
+      line-height: 21px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      flex-shrink: 0;
+      height: auto;
+
+      .dark-theme & {
+        background: #1e1e1e;
+        color: #858585;
+        border-color: #3e3e3e;
+      }
+
+      .line-number {
+        height: 21px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 8px;
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    .textarea-container {
+      flex: 1;
+      position: relative;
+      overflow: visible;
+      height: auto;
+    }
+
+    .xml-textarea {
+      width: 100%;
+      min-height: 100%;
+      border: none;
+      padding: 8px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 13px;
+      line-height: 21px;
+      resize: none;
+      outline: none;
+      background: transparent;
+      color: #1f2937;
+      tab-size: 2;
+      white-space: pre;
+      overflow-wrap: normal;
+      overflow: visible; // No overflow - parent handles scrolling
+      margin: 0;
+      box-sizing: border-box;
+      display: block;
+
+      .dark-theme & {
+        background: transparent;
+        color: #d4d4d4;
+      }
+
+      &:read-only {
+        background: #f9fafb;
+
+        .dark-theme & {
+          background: #2d2d30;
+        }
       }
     }
   }
-}
 
   .empty-state {
     display: flex;
@@ -1590,16 +1506,11 @@
   }
 }
 
-// Mobile Responsive Styles - PROPORTIONAL SCALING (Same layout, smaller sizes)
+// Mobile Responsive Styles
 @media (max-width: 768px) {
   .xml-viewer {
-    height: calc(100vh - 56px); // Slightly smaller navbar height
-    font-size: 12px; // Base font size reduction
+    font-size: 12px;
     
-    .main-content-area {
-      height: calc(100vh - 140px); // Proportional height adjustment
-    }
-
     .input-methods {
       .method-tabs {
         .method-tab {
@@ -1645,11 +1556,11 @@
     }
 
     .toolbar {
-      padding: 6px 10px; // Smaller padding
+      padding: 6px 10px;
       
       .btn {
-        padding: 4px 8px; // Smaller buttons
-        font-size: 10px; // Smaller font
+        padding: 4px 8px;
+        font-size: 10px;
       }
       
       .folding-controls .btn {
@@ -1660,7 +1571,7 @@
 
     .search-box {
       .search-input {
-        width: 150px; // Smaller search box
+        width: 150px;
         padding: 4px 8px;
         font-size: 10px;
       }
@@ -1675,9 +1586,9 @@
       font-size: 10px;
     }
 
-    // Tree View - Proportional scaling
+    // Tree View - Mobile scaling
     .tree-line-numbers-container {
-      min-width: 35px; // Slightly smaller line numbers area
+      min-width: 35px;
     }
 
     .tree-line-numbers {
@@ -1727,13 +1638,9 @@
 
     .line-text {
       font-size: 11px;
-      
-      .tag-name, .attr-name, .attr-value, .tag-punctuation, .text-content {
-        font-size: inherit; // Inherit scaled font size
-      }
     }
 
-    // Node Editor - Proportional scaling
+    // Node Editor - Mobile scaling
     .fixed-node-editor {
       .node-editor-content {
         padding: 8px;
@@ -1809,7 +1716,7 @@
       }
     }
 
-    // Raw Editor - Proportional scaling
+    // Raw Editor - Mobile scaling
     .raw-editor {
       .line-numbers {
         padding: 6px 2px 6px 8px;
@@ -1830,7 +1737,7 @@
       }
     }
 
-    // Empty State - Proportional scaling
+    // Empty State - Mobile scaling
     .empty-state {
       padding: 40px 15px;
       
@@ -1858,7 +1765,7 @@
 // Extra small mobile devices
 @media (max-width: 480px) {
   .xml-viewer {
-    font-size: 11px; // Even smaller base font
+    font-size: 11px;
     
     .toolbar {
       padding: 4px 8px;
@@ -1902,13 +1809,12 @@
 
 :host {
   display: block;
-  height: calc(100vh - 64px);
+  height: 100%;
   min-height: 400px;
 }
 
 @media (max-width: 768px) {
   :host {
-    height: calc(100vh - 56px);
     min-height: 300px;
   }
 }

@@ -11,7 +11,8 @@ import { JsonNode } from '../../../services/json-utils.service';
          [class.highlighted]="isNodeHighlighted" 
          [class.current-search]="isNodeCurrentSearch"
          [class.expanded]="node.expanded"
-         [class.collapsed]="!node.expanded && hasChildren">
+         [class.collapsed]="!node.expanded && hasChildren"
+         [class.dark-mode]="isDarkMode">
       
       <!-- Main Node Line -->
       <div class="node-line" (click)="toggle()" [style.padding-left.px]="getIndentation()">
@@ -59,7 +60,8 @@ import { JsonNode } from '../../../services/json-utils.service';
             [isHighlighted]="isHighlighted"
             [isCurrentSearch]="isCurrentSearch"
             [searchTerm]="searchTerm"
-            [currentSearchPath]="currentSearchPath">
+            [currentSearchPath]="currentSearchPath"
+            [isDarkMode]="isDarkMode">
           </app-json-node>
         </div>
       </div>
@@ -72,6 +74,114 @@ import { JsonNode } from '../../../services/json-utils.service';
       line-height: 1.1;
       margin: 0;
       position: relative;
+    }
+
+    /* Dark mode styles */
+    .json-node.dark-mode {
+      .node-line {
+        &:hover {
+          background: #3d3d3d !important;
+        }
+      }
+
+      .toggle-section {
+        background: #444;
+        border-color: #666;
+        
+        &:hover {
+          background: #555;
+          border-color: #888;
+        }
+      }
+
+      .toggle-icon {
+        color: #e9ecef;
+      }
+
+      .type-square {
+        &.type-object {
+          background: #3b82f6;
+        }
+        
+        &.type-array {
+          background: #8b5cf6;
+        }
+        
+        &.type-string {
+          background: #10b981;
+        }
+        
+        &.type-number {
+          background: #f59e0b;
+        }
+        
+        &.type-boolean {
+          background: #0ea5e9;
+        }
+        
+        &.type-null {
+          background: #9ca3af;
+        }
+      }
+
+      .key {
+        color: #d946ef;
+      }
+
+      .colon {
+        color: #9ca3af;
+      }
+
+      .value {
+        color: #e9ecef;
+        
+        &.string {
+          color: #f87171;
+        }
+        
+        &.number {
+          color: #60a5fa;
+        }
+        
+        &.boolean {
+          color: #a78bfa;
+        }
+        
+        &.null {
+          color: #9ca3af;
+        }
+        
+        &.object,
+        &.array {
+          color: #d1d5db;
+        }
+      }
+
+      .badge {
+        &.badge-object {
+          color: #3b82f6;
+        }
+        
+        &.badge-array {
+          color: #8b5cf6;
+        }
+      }
+
+      .children::before {
+        border-left-color: #666;
+      }
+
+      .json-node .json-node .node-line::before {
+        border-top-color: #666;
+      }
+
+      &.highlighted .node-line {
+        background: #3d2e0f !important;
+      }
+
+      &.current-search .node-line {
+        background: #1e3a2e !important;
+      }
     }
 
     /* Highlight States */
@@ -350,6 +460,7 @@ export class JsonNodeComponent implements OnChanges {
   @Input() isCurrentSearch: boolean = false;
   @Input() searchTerm: string = '';
   @Input() currentSearchPath: string = '';
+  @Input() isDarkMode: boolean = false;
 
   isNodeHighlighted: boolean = false;
   isNodeCurrentSearch: boolean = false;
@@ -400,7 +511,6 @@ export class JsonNodeComponent implements OnChanges {
     switch (this.node.type) {
       case 'string':
         const str = this.node.value as string;
-        // Remove truncation - show full content
         return `"${str}"`;
       case 'null':
         return 'null';

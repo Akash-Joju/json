@@ -42,9 +42,6 @@ interface ComparisonOptions {
   <!-- Header with Back Button -->
   <div class="results-header">
     <div class="header-content">
-      <!-- <button (click)="createNewDifference()" class="btn btn--primary back-btn">
-        ← Create New Difference
-      </button> -->
       <h2>XML Comparison Results</h2>
       <div class="header-actions">
         <button (click)="toggleOptionsPanel()" class="btn btn--secondary">
@@ -56,10 +53,6 @@ interface ComparisonOptions {
 
   <!-- Summary Card -->
   <div class="summary-card">
-    <!-- <div class="summary-item">
-      <span class="summary-label">Total Differences:</span>
-      <span class="summary-value" [class.no-diff]="differences.length === 0">{{differences.length}}</span>
-    </div> -->
     <div class="summary-item">
       <span class="summary-label">XML 1 Lines:</span>
       <span class="summary-value">{{leftXmlLines.length}}</span>
@@ -68,9 +61,11 @@ interface ComparisonOptions {
       <span class="summary-label">XML 2 Lines:</span>
       <span class="summary-value">{{rightXmlLines.length}}</span>
     </div>
-    <div class="summary-item" *ngIf="differences.length === 0">
+    <div class="summary-item" [class.success]="differences.length === 0" [class.warning]="differences.length > 0">
       <span class="summary-label">Status:</span>
-      <span class="summary-value success">Identical</span>
+      <span class="summary-value" [class.success]="differences.length === 0" [class.warning]="differences.length > 0">
+        {{differences.length === 0 ? 'Identical' : differences.length + ' differences'}}
+      </span>
     </div>
   </div>
 
@@ -165,11 +160,13 @@ interface ComparisonOptions {
       </div>
     </div>
   </div>
-<button (click)="createNewDifference()" class="btn btn--blue">
-        ← Create New Difference
-      </button>
-  <!-- XML Viewers -->
-  <div *ngIf="differences.length > 0" class="comparison-container">
+
+  <button (click)="createNewDifference()" class="btn btn--blue">
+    ← Create New Difference
+  </button>
+
+  <!-- XML Viewers - Always show when we have data -->
+  <div *ngIf="hasData" class="comparison-container">
     <!-- Left XML Viewer -->
     <div class="xml-section">
       <h3>XML 1 Viewer</h3>
@@ -222,6 +219,7 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
   differences: Difference[] = [];
   currentDiffIndex: number = 0;
   showOptionsPanel: boolean = false;
+  hasData: boolean = false;
 
   options: ComparisonOptions = {
     ignoreWhitespace: true,
@@ -248,6 +246,7 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
     this.leftXml = data.leftXml;
     this.rightXml = data.rightXml;
     this.options = { ...data.options };
+    this.hasData = !!(this.leftXml || this.rightXml);
 
     this.performComparison(data.leftDoc, data.rightDoc);
   }
@@ -265,7 +264,7 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
     // Find differences
     this.findDifferences(leftDoc, rightDoc);
 
-    // Highlight first difference
+    // Highlight first difference if there are differences
     if (this.differences.length > 0) {
       this.highlightDifference(this.currentDiffIndex);
     }

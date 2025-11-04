@@ -69,9 +69,11 @@ interface ComparisonOptions {
       <span class="summary-label">JSON 2 Lines:</span>
       <span class="summary-value">{{rightJsonLines.length}}</span>
     </div>
-    <div class="summary-item" *ngIf="differences.length === 0">
+    <div class="summary-item" [class.success]="differences.length === 0" [class.warning]="differences.length > 0">
       <span class="summary-label">Status:</span>
-      <span class="summary-value success">Identical</span>
+      <span class="summary-value" [class.success]="differences.length === 0" [class.warning]="differences.length > 0">
+        {{differences.length === 0 ? 'Identical' : differences.length + ' differences'}}
+      </span>
     </div>
   </div>
 
@@ -123,7 +125,7 @@ interface ComparisonOptions {
   </div>
 
   <!-- No Differences Message -->
-  <div *ngIf="differences.length === 0" class="no-differences">
+  <div *ngIf="differences.length === 0 && hasData" class="no-differences">
     <div class="no-diff-content">
       <span class="no-diff-icon">✅</span>
       <h3>No Differences Found</h3>
@@ -175,8 +177,8 @@ interface ComparisonOptions {
     ← Create New Difference
   </button>
 
-  <!-- JSON Viewers -->
-  <div *ngIf="differences.length > 0" class="comparison-container">
+  <!-- JSON Viewers - Always show when we have data -->
+  <div *ngIf="hasData" class="comparison-container">
     <!-- Left JSON Viewer -->
     <div class="json-section">
       <h3>JSON 1 Viewer</h3>
@@ -229,6 +231,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   differences: Difference[] = [];
   currentDiffIndex: number = 0;
   showOptionsPanel: boolean = false;
+  hasData: boolean = false;
 
   options: ComparisonOptions = {
     ignoreArrayOrder: false,
@@ -241,6 +244,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   };
 
   private visited: WeakSet<object> = new WeakSet();
+  private lineToPathMap: Map<number, string[]> = new Map();
 
   constructor(
     private router: Router,
@@ -257,29 +261,36 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
     this.leftJson = data.leftJson;
     this.rightJson = data.rightJson;
     this.options = { ...data.options };
+    this.hasData = !!(this.leftJson || this.rightJson);
 
     this.performComparison(data.leftObject, data.rightObject);
   }
 
   ngOnDestroy(): void {
     this.visited = new WeakSet();
+    this.lineToPathMap.clear();
   }
 
   private performComparison(leftObj: any, rightObj: any): void {
     this.differences = [];
     this.currentDiffIndex = 0;
+    this.lineToPathMap.clear();
     
     // Reset visited set for circular reference detection
     this.visited = new WeakSet();
 
-    // Parse JSON into lines for display
-    this.leftJsonLines = this.parseJsonToLines(this.leftJson);
-    this.rightJsonLines = this.parseJsonToLines(this.rightJson);
+    // Parse JSON into lines for display and build line-to-path mapping
+    this.leftJsonLines = this.parseJsonToLines(this.leftJson, leftObj);
+    this.rightJsonLines = this.parseJsonToLines(this.rightJson, rightObj);
+
+    // Build line-to-path mapping for both JSONs
+    this.buildLineToPathMapping(this.leftJsonLines, leftObj, 'left');
+    this.buildLineToPathMapping(this.rightJsonLines, rightObj, 'right');
 
     // Find differences
     this.findDifferences(leftObj, rightObj);
 
-    // Highlight first difference
+    // Highlight first difference if there are differences
     if (this.differences.length > 0) {
       this.highlightDifference(this.currentDiffIndex);
     }
@@ -303,7 +314,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
     this.showOptionsPanel = !this.showOptionsPanel;
   }
 
-  private parseJsonToLines(jsonString: string): JsonLine[] {
+  private parseJsonToLines(jsonString: string, jsonObj: any): JsonLine[] {
     if (!jsonString.trim()) return [];
     
     const lines = jsonString.split('\n');
@@ -311,8 +322,39 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
       content: this.escapeHtml(content),
       lineNumber: index + 1,
       isHighlighted: false,
-      originalContent: content.trim()
+      originalContent: content
     }));
+  }
+
+  private buildLineToPathMapping(lines: JsonLine[], jsonObj: any, side: 'left' | 'right'): void {
+    // This is a simplified approach - in a real implementation, you'd want to 
+    // parse the JSON and map each line to its corresponding path
+    // For now, we'll use a heuristic approach based on the content
+    
+    lines.forEach((line, index) => {
+      const paths = this.extractPathsFromLine(line.originalContent, jsonObj);
+      if (paths.length > 0) {
+        this.lineToPathMap.set(this.getLineKey(side, index + 1), paths);
+      }
+    });
+  }
+
+  private getLineKey(side: 'left' | 'right', lineNumber: number): number {
+    // Create a unique key for each line (left: positive, right: negative)
+    return side === 'left' ? lineNumber : -lineNumber;
+  }
+
+  private extractPathsFromLine(lineContent: string, jsonObj: any): string[] {
+    const paths: string[] = [];
+    
+    // Simple heuristic: look for property patterns like "property": value
+    const propertyMatch = lineContent.match(/"([^"]+)"\s*:/);
+    if (propertyMatch) {
+      const propertyName = propertyMatch[1];
+      paths.push(propertyName);
+    }
+    
+    return paths;
   }
 
   private findDifferences(leftObj: any, rightObj: any, path: string = '', depth: number = 0): void {
@@ -546,6 +588,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   }
 
   private highlightDifference(index: number): void {
+    // Reset all highlights
     this.leftJsonLines.forEach(line => {
       line.isHighlighted = false;
       line.diffType = undefined;
@@ -556,32 +599,71 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
     });
 
     const diff = this.differences[index];
-    this.highlightLinesForDifference(diff);
+    if (diff) {
+      this.highlightLinesForDifference(diff);
+    }
   }
 
   private highlightLinesForDifference(diff: Difference): void {
-    const path = diff.path.toLowerCase();
+    const path = diff.path;
     
-    this.leftJsonLines.forEach(line => {
-      const content = line.originalContent.toLowerCase();
-      if (content.includes(path) || this.lineContainsDifference(content, diff, 'left')) {
-        line.isHighlighted = true;
-        line.diffType = diff.type;
-      }
-    });
+    // Find and highlight lines in both JSON viewers
+    this.findAndHighlightLines(this.leftJsonLines, path, diff.type, 'left');
+    this.findAndHighlightLines(this.rightJsonLines, path, diff.type, 'right');
+  }
 
-    this.rightJsonLines.forEach(line => {
-      const content = line.originalContent.toLowerCase();
-      if (content.includes(path) || this.lineContainsDifference(content, diff, 'right')) {
+  private findAndHighlightLines(lines: JsonLine[], path: string, diffType: 'added' | 'removed' | 'modified', side: 'left' | 'right'): void {
+    // Extract the property name from the path
+    const pathParts = path.split('.');
+    const lastPart = pathParts[pathParts.length - 1];
+    
+    // Clean the property name (remove array indices etc.)
+    const propertyName = this.cleanPropertyName(lastPart);
+    
+    lines.forEach(line => {
+      // Check if this line contains the property we're looking for
+      if (this.lineContainsProperty(line.originalContent, propertyName, path)) {
         line.isHighlighted = true;
-        line.diffType = diff.type;
+        line.diffType = diffType;
       }
     });
   }
 
-  private lineContainsDifference(content: string, diff: Difference, side: 'left' | 'right'): boolean {
-    const searchTerms = diff.path.split(/[\.\[\]]/).filter(term => term && term !== '*');
-    return searchTerms.some(term => content.includes(term.toLowerCase()));
+  private cleanPropertyName(property: string): string {
+    // Remove array indices and other non-property characters
+    return property.replace(/\[\d+\]/g, '').replace(/\['([^']+)'\]/g, '.$1').replace(/\["([^"]+)"\]/g, '.$1');
+  }
+
+  private lineContainsProperty(lineContent: string, propertyName: string, fullPath: string): boolean {
+    if (!lineContent || !propertyName) return false;
+
+    // Create a more precise pattern to match the property
+    // Look for patterns like: "propertyName": 
+    const exactPattern = new RegExp(`"${this.escapeRegExp(propertyName)}"\\s*:`, 'i');
+    
+    // Also check for the property in context (for nested objects)
+    const contextPattern = new RegExp(this.escapeRegExp(propertyName), 'i');
+    
+    // For root level properties or when we have simple matches
+    if (exactPattern.test(lineContent)) {
+      return true;
+    }
+    
+    // For more complex cases, check if the line contains key parts of the full path
+    const pathSegments = fullPath.split('.').filter(seg => seg && seg !== 'root');
+    if (pathSegments.length > 0) {
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      const cleanSegment = this.cleanPropertyName(lastSegment);
+      if (lineContent.includes(`"${cleanSegment}"`)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  private escapeRegExp(string: string): string {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   nextDifference(): void {

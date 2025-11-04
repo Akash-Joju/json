@@ -1,0 +1,263 @@
+<!-- json-csv-converter.component.html -->
+<div class="json-csv-container">
+  <div class="page-header">
+    <h1>JSON to CSV Converter</h1>
+    <div class="auto-detection" *ngIf="autoDetectedRootPath">
+      <span class="detection-info">📊 Auto-detected: {{ autoDetectedRootPath }}</span>
+    </div>
+  </div>
+
+  <div class="main-content-area">
+    <section class="input-panel">
+      <div class="sticky-controls-header">
+        <div class="converter-controls">
+          <div class="input-method-tabs">
+            <button 
+              class="method-tab" 
+              [class.active]="activeInputMethod === 'manual'"
+              (click)="setInputMethod('manual')">
+              Input
+            </button>
+            <button 
+              class="method-tab" 
+              [class.active]="activeInputMethod === 'file'"
+              (click)="setInputMethod('file')">
+              File
+            </button>
+            <button 
+              class="method-tab" 
+              [class.active]="activeInputMethod === 'url'"
+              (click)="setInputMethod('url')">
+              URL
+            </button>
+          </div>
+
+          <div class="action-buttons">
+            <button 
+              (click)="convertToCsv()" 
+              [disabled]="!isValid || !jsonInput.trim()"
+              class="btn btn-convert">
+              Convert to CSV
+            </button>
+            <button 
+              (click)="formatJson()" 
+              [disabled]="!jsonInput.trim()"
+              class="btn btn-format">
+              Format
+            </button>
+            <button 
+              (click)="clearAll()" 
+              class="btn btn-clear">
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="method-content" *ngIf="activeInputMethod === 'manual'">
+          <div class="input-section">
+            <div class="input-header">
+              <h3>JSON Input</h3>
+              <div class="input-actions">
+                <button class="btn btn-sm" (click)="loadSampleJson()">Sample</button>
+              </div>
+            </div>
+
+            <div class="textarea-container">
+              <textarea
+                class="json-textarea"
+                [(ngModel)]="jsonInput"
+                (ngModelChange)="onJsonInputChange()"
+                placeholder='Paste your JSON here...'
+                spellcheck="false"
+                [class.error]="!isValid && jsonInput.trim() !== ''">
+              </textarea>
+            </div>
+
+            <div class="input-info">
+              <span class="char-count">{{ jsonInput?.length || 0 }} chars</span>
+              <span class="error-count" *ngIf="!isValid && jsonInput.trim() !== ''">⚠️ Invalid JSON</span>
+              <span class="success-count" *ngIf="isValid && jsonInput.trim() !== ''">✓ Valid JSON</span>
+            </div>
+
+            <div *ngIf="errorMessage" class="error-message">
+              {{ errorMessage }}
+            </div>
+          </div>
+        </div>
+
+        <div class="method-content" *ngIf="activeInputMethod === 'file'">
+          <div class="file-upload-section">
+            <div class="upload-area" 
+                 [class.dragover]="isDragOver"
+                 (drop)="onFileDrop($event)"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)">
+              <input 
+                type="file" 
+                #fileInput
+                (change)="onFileSelected($event)"
+                accept=".json,application/json"
+                class="file-input">
+              
+              <div class="upload-content" *ngIf="!selectedFile">
+                <p>Drop JSON file or click to browse</p>
+                <button class="btn btn-primary" (click)="fileInput.click()">
+                  Choose File
+                </button>
+              </div>
+
+              <div class="file-info" *ngIf="selectedFile">
+                <div class="file-details">
+                  <h4>{{ selectedFile.name }}</h4>
+                  <p>{{ selectedFile.size | fileSize }}</p>
+                </div>
+                <div class="file-actions">
+                  <button class="btn btn-sm" (click)="loadFile()" [disabled]="fileLoading">
+                    {{ fileLoading ? '...' : 'Load' }}
+                  </button>
+                  <button class="btn btn-sm btn-outline" (click)="clearFile()">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="upload-error" *ngIf="fileError">
+              {{ fileError }}
+            </div>
+          </div>
+        </div>
+
+        <div class="method-content" *ngIf="activeInputMethod === 'url'">
+          <div class="url-load-section">
+            <div class="url-input-group">
+              <input
+                type="url"
+                [(ngModel)]="urlInput"
+                placeholder="https://example.com/data.json"
+                class="url-input"
+                [class.error]="urlError"
+                [disabled]="urlLoading">
+              <button 
+                class="btn btn-primary" 
+                (click)="loadFromUrl()"
+                [disabled]="!urlInput || urlLoading">
+                {{ urlLoading ? '...' : 'Load' }}
+              </button>
+            </div>
+
+            <div class="url-status" *ngIf="urlLoading">
+              Loading...
+            </div>
+
+            <div class="url-error" *ngIf="urlError">
+              {{ urlError }}
+            </div>
+
+            <div class="url-success" *ngIf="urlSuccess">
+              Loaded successfully
+            </div>
+          </div>
+        </div>
+
+        <div class="conversion-options" *ngIf="isValid && jsonInput.trim()">
+          <h4>Conversion Options</h4>
+          <div class="options-grid">
+            <label class="option-checkbox">
+              <input type="checkbox" [(ngModel)]="conversionOptions.includeHeaders">
+              <span>Include Headers</span>
+            </label>
+            <label class="option-checkbox">
+              <input type="checkbox" [(ngModel)]="conversionOptions.flattenObjects">
+              <span>Flatten Objects</span>
+            </label>
+            <label class="option-checkbox">
+              <input type="checkbox" [(ngModel)]="conversionOptions.flattenArrays">
+              <span>Flatten Arrays</span>
+            </label>
+            <div class="option-select">
+              <label>Delimiter:</label>
+              <select [(ngModel)]="conversionOptions.delimiter">
+                <option value=",">Comma (,)</option>
+                <option value=";">Semicolon (;)</option>
+                <option value="\t">Tab</option>
+              </select>
+            </div>
+            <div class="option-select">
+              <label>Array Handling:</label>
+              <select [(ngModel)]="conversionOptions.arrayHandling">
+                <option value="expand">Expand Arrays</option>
+                <option value="stringify">Stringify Arrays</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="output-panel" [class.active]="isConverted">
+      <div class="output-header">
+        <h3>CSV Output</h3>
+        <div class="output-actions" *ngIf="isConverted && csvOutput">
+          <button class="btn btn-sm" (click)="copyCsvToClipboard()">Copy</button>
+          <button class="btn btn-sm btn-primary" (click)="downloadCsv()">Download</button>
+        </div>
+      </div>
+
+      <div class="output-content">
+        <div *ngIf="!isConverted" class="output-placeholder">
+          <p>Converted CSV will appear here</p>
+        </div>
+
+        <div *ngIf="isConverted && csvOutput" class="csv-output-container">
+          <textarea
+            class="csv-textarea"
+            [value]="csvOutput"
+            readonly
+            placeholder="CSV output will appear here after conversion"
+            spellcheck="false">
+          </textarea>
+          
+          <div class="output-info">
+            <span class="row-count">{{ csvTableData.rows.length }} rows</span>
+            <span class="char-count">{{ csvOutput.length }} chars</span>
+            <span class="column-count">{{ csvTableData.headers.length }} columns</span>
+          </div>
+
+          <div class="csv-table-container" *ngIf="csvTableData.headers.length > 0">
+            <h4>Table View ({{ csvTableData.rows.length }} rows × {{ csvTableData.headers.length }} columns)</h4>
+            <div class="table-wrapper">
+              <table class="csv-table">
+                <thead>
+                  <tr>
+                    <th *ngFor="let header of csvTableData.headers; let i = index" 
+                        class="header-cell"
+                        [title]="header">
+                      {{ header }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of csvTableData.rows; let i = index" 
+                      class="data-row"
+                      [class.even]="i % 2 === 0"
+                      [class.odd]="i % 2 === 1">
+                    <td *ngFor="let cell of row; let j = index" 
+                        class="data-cell"
+                        [title]="cell">
+                      {{ cell }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="conversionError" class="error-message">
+          {{ conversionError }}
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

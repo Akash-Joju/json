@@ -9,6 +9,7 @@ import { XmlDifferComponent } from './components/xml-differ/xml-differ/xml-diffe
 import { JsonResultsComponent } from './components/json-result/json-result/json-result';// Add this import
 import { XmlResultsComponent } from './components/xml-result/xml-result/xml-result';
 import { XmlCodeEditorComponent } from './components/xml-code/xml-code/xml-code';
+import { JsonCsvConverterComponent } from './components/json-csv/json-csv/json-csv';
 export const routes: Routes = [
   { path: '', component: HomeComponent, title: 'Xonify Tools' },
   { path: 'viewer', component: JsonViewerComponent, title: 'Xonify Tools-JSON Viewer' },
@@ -19,6 +20,7 @@ export const routes: Routes = [
   { path: 'xml-code', component: XmlCodeEditorComponent, title: 'Xonify Tools-XML code' },
   { path: 'xml-differ', component: XmlDifferComponent, title: 'Xonify Tools-XML Differ' }, // Add this route
   { path: 'xml-results', component: XmlResultsComponent, title: 'Xonify Tools-XML Result' },
+   { path: 'json-csv', component: JsonCsvConverterComponent, title: 'Json-CSV' },
   { path: 'about', component: AboutComponent, title: 'About' },
   { path: '**', redirectTo: '' } // Redirect unknown routes to home
 ];

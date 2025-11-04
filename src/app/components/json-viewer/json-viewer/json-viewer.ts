@@ -10,10 +10,15 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, JsonNodeComponent, FileSizePipe],
   template: `
-    <div class="json-viewer-container">
+    <div class="json-viewer-container" [class.dark-mode]="isDarkMode">
       <!-- Ultra Compact Header -->
       <div class="page-header">
         <h1>JSON Viewer</h1>
+        <div class="theme-toggle">
+          <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+            {{ isDarkMode ? '☀️' : '🌙' }}
+          </button>
+        </div>
       </div>
 
       <!-- Main Content Area -->
@@ -121,9 +126,10 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
             </div>
           </div>
 
-          <!-- Content Area -->
+          <!-- UNIFIED CONTENT AREA - Same container for both modes -->
           <div class="content-area">
-            <!-- Input Methods -->
+            
+            <!-- Input Methods - Only show when in input mode -->
             <div class="input-methods" *ngIf="currentMode === 'input'">
               <div class="method-tabs">
                 <button 
@@ -257,8 +263,8 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
               </div>
             </div>
 
-            <!-- View Area (for Tree Mode) -->
-            <div class="view-area" *ngIf="currentMode === 'tree'">
+            <!-- Tree View - Only show when in tree mode -->
+            <div class="tree-view-area" *ngIf="currentMode === 'tree'">
               <div class="tree-mode">
                 <div #treeContainer class="tree-container">
                   <app-json-node 
@@ -268,7 +274,8 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
                     [isHighlighted]="isNodeHighlighted(node)"
                     [isCurrentSearch]="isCurrentSearchNode(node)"
                     [searchTerm]="searchTerm"
-                    [currentSearchPath]="currentSearchResult?.path || ''">
+                    [currentSearchPath]="currentSearchResult?.path || ''"
+                    [isDarkMode]="isDarkMode">
                   </app-json-node>
 
                   <!-- Empty State -->
@@ -327,6 +334,9 @@ export class JsonViewerComponent {
   @ViewChild('treeContainer') treeContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
 
+  // Theme management
+  isDarkMode: boolean = false;
+
   // Input methods
   activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
   
@@ -367,7 +377,20 @@ export class JsonViewerComponent {
   constructor(
     private jsonUtils: JsonUtilsService,
     private cdRef: ChangeDetectorRef
-  ) {}
+  ) {
+    // Load theme preference from localStorage
+    const savedTheme = localStorage.getItem('json-viewer-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
+
+  // Theme toggle method
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    // Save preference to localStorage
+    localStorage.setItem('json-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   // Input method management
   setInputMethod(method: 'manual' | 'file' | 'url'): void {

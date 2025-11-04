@@ -11,6 +11,8 @@ $text-muted: #666;
 $added-bg: #e6ffed;
 $removed-bg: #ffecec;
 $modified-bg: #fff8e1;
+$success-color: #28a745;
+$warning-color: #ffc107;
 
 // Buttons
 @mixin button($bg, $hover) {
@@ -108,7 +110,6 @@ $modified-bg: #fff8e1;
     flex: 1 1 120px;
     background: #fafafa;
     border: 1px solid $border;
-    border-left: 3px solid $primary;
     border-radius: 4px;
     text-align: center;
     padding: 8px;
@@ -127,7 +128,27 @@ $modified-bg: #fff8e1;
     }
 
     .success {
-      color: #28a745;
+      color: $success-color;
+    }
+
+    .warning {
+      color: $warning-color;
+    }
+  }
+
+  .summary-item.success {
+    border-left: 3px solid $success-color;
+    
+    .summary-value {
+      color: $success-color;
+    }
+  }
+
+  .summary-item.warning {
+    border-left: 3px solid $warning-color;
+    
+    .summary-value {
+      color: $warning-color;
     }
   }
 }
@@ -283,70 +304,109 @@ $modified-bg: #fff8e1;
 }
 
 // ==========================
-// XML Viewers
+// XML Viewers - FIXED LAYOUT
 // ==========================
 .comparison-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr 1fr; // Always two columns
+  gap: 15px;
+  margin-top: 15px;
+  width: 100%;
 
-  @media (max-width: 768px) {
+  // For very small screens, stack vertically but maintain visibility
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
+    gap: 10px;
+    
+    .xml-section {
+      min-height: 300px; // Ensure both are visible
+    }
+  }
+
+  // For medium screens and up, always show side by side
+  @media (min-width: 481px) {
+    grid-template-columns: 1fr 1fr;
+    
+    .xml-section {
+      min-height: 400px;
+    }
+  }
+
+  // For large screens, increase height
+  @media (min-width: 1024px) {
+    .xml-section {
+      min-height: 600px;
+    }
   }
 
   .xml-section {
     border: 1px solid $border;
     border-radius: 6px;
     background: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px; // Ensure minimum height
 
     h3 {
       font-size: 0.85rem;
       font-weight: 600;
       background: #f8f9fa;
-      padding: 5px 8px;
+      padding: 8px 12px;
       border-bottom: 1px solid $border;
       margin: 0;
+      flex-shrink: 0; // Prevent header from shrinking
     }
 
     .xml-viewer {
-      max-height: 65vh;
+      flex: 1; // Take remaining space
       overflow-y: auto;
+      overflow-x: auto;
       font-family: "Consolas", "Courier New", monospace;
       font-size: 11.5px;
-      padding: 5px;
       line-height: 1.3;
+      min-height: 200px; // Ensure minimum content height
 
-      .xml-line {
-        display: flex;
-        align-items: flex-start;
-        gap: 6px;
-        padding: 1px 4px;
-        border-radius: 3px;
-        transition: background 0.1s ease;
+      .xml-lines {
+        min-height: 100%;
+        padding: 5px;
 
-        .line-number {
-          width: 40px;
-          text-align: right;
-          color: #999;
-          user-select: none;
-        }
+        .xml-line {
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          padding: 1px 4px;
+          border-radius: 3px;
+          transition: background 0.1s ease;
+          min-height: 16px; // Ensure consistent line height
 
-        .line-content {
-          flex: 1;
-          white-space: pre;
-        }
+          .line-number {
+            width: 40px;
+            text-align: right;
+            color: #999;
+            user-select: none;
+            flex-shrink: 0; // Prevent line numbers from shrinking
+          }
 
-        &.diff-added {
-          background: $added-bg;
-        }
-        &.diff-removed {
-          background: $removed-bg;
-        }
-        &.diff-modified {
-          background: $modified-bg;
-        }
-        &.highlighted {
-          outline: 1px solid $primary;
+          .line-content {
+            flex: 1;
+            white-space: pre-wrap; // Allow wrapping for long lines
+            word-break: break-all; // Break long words
+            min-width: 0; // Allow shrinking
+          }
+
+          &.diff-added {
+            background: $added-bg;
+          }
+          &.diff-removed {
+            background: $removed-bg;
+          }
+          &.diff-modified {
+            background: $modified-bg;
+          }
+          &.highlighted {
+            outline: 2px solid $primary;
+            background: rgba($primary, 0.05);
+          }
         }
       }
     }
@@ -384,9 +444,10 @@ $modified-bg: #fff8e1;
     font-size: 12px;
   }
 }
+
 /* Blue Primary Button for "Create New Difference" */
 .btn--blue {
-  background-color: #0d6efd; /* Bootstrap primary blue */
+  background-color: #0d6efd;
   color: #ffffff;
   border: 1px solid #0d6efd;
   font-size: 12px;
@@ -397,7 +458,7 @@ $modified-bg: #fff8e1;
   transition: background-color 0.2s ease, transform 0.1s ease;
 
   &:hover {
-    background-color: #0b5ed7; /* Darker blue on hover */
+    background-color: #0b5ed7;
   }
 
   &:active {
@@ -408,5 +469,48 @@ $modified-bg: #fff8e1;
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+}
+
+// ==========================
+// Responsive Improvements
+// ==========================
+
+// Ensure both XML viewers are always properly sized
+@media (max-width: 768px) {
+  .comparison-container {
+    gap: 10px;
+    
+    .xml-section {
+      .xml-viewer {
+        font-size: 11px; // Slightly smaller font on mobile
+      }
+    }
+  }
+}
+
+// Very small screen adjustments
+@media (max-width: 360px) {
+  .xml-results-container {
+    padding: 8px 5px;
+  }
+  
+  .comparison-container {
+    gap: 8px;
+    
+    .xml-section {
+      min-height: 250px;
+      
+      .xml-viewer {
+        font-size: 10px;
+        
+        .xml-line {
+          .line-number {
+            width: 30px;
+            font-size: 10px;
+          }
+        }
+      }
+    }
   }
 }

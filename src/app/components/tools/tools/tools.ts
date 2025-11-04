@@ -83,10 +83,22 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
 
-        <div class="tool-card coming-soon">
+        <div class="tool-card" routerLink="/json-csv">
           <div class="tool-icon">🔐</div>
           <h3>JSON Convertor</h3>
           <p>Converting JSON (Coming Soon)</p>
+          <div class="tool-features">
+            <span class="feature-tag">Conversion</span>
+            <span class="feature-tag">Batch Processing</span>
+          </div>
+        </div>
+
+
+
+         <div class="tool-card coming-soon">
+          <div class="tool-icon">🔐</div>
+          <h3>XML Convertor</h3>
+          <p>Converting XML (Coming Soon)</p>
           <div class="tool-features">
             <span class="feature-tag">Conversion</span>
             <span class="feature-tag">Batch Processing</span>
