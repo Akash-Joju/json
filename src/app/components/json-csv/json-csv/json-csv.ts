@@ -145,7 +145,7 @@ export class JsonCsvConverterComponent {
     if (typeof obj === 'object' && obj !== null) {
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
-          const newPath = currentPath ? `${currentPath}/${key}` : key;
+          const newPath = currentPath ? `${currentPath}.${key}` : key;
           const result = this.findRootArrayPath(obj[key], newPath);
           if (result) return result;
         }
@@ -159,21 +159,8 @@ export class JsonCsvConverterComponent {
     let rows: string[] = [];
     let tableData: CsvTableData = { headers: [], rows: [] };
     
-    const rootPath = this.findRootArrayPath(data);
-    let rootData = data;
-    
-    if (rootPath) {
-      rootData = this.getValueByPath(data, rootPath);
-      this.autoDetectedRootPath = rootPath;
-    }
-    
-    if (!Array.isArray(rootData)) {
-      if (rootData && typeof rootData === 'object') {
-        rootData = [rootData];
-      } else {
-        throw new Error('No array found in JSON data for CSV conversion');
-      }
-    }
+    // Always wrap data in array for processing
+    let rootData = Array.isArray(data) ? data : [data];
     
     if (rootData.length === 0) {
       return { csv: '', tableData: { headers: [], rows: [] } };
@@ -231,8 +218,9 @@ export class JsonCsvConverterComponent {
     
     if (Array.isArray(obj)) {
       if (this.conversionOptions.flattenArrays && this.conversionOptions.arrayHandling === 'expand') {
+        // STRATEGY 2: Always use array indices for ALL arrays
         for (let i = 0; i < obj.length; i++) {
-          const newPath = currentPath ? `${currentPath}/${i}` : `${i}`;
+          const newPath = currentPath ? `${currentPath}.${i}` : `${i}`;
           const nestedPaths = this.extractAllPathsInOrder(obj[i], newPath);
           paths.push(...nestedPaths);
         }
@@ -242,7 +230,7 @@ export class JsonCsvConverterComponent {
     } else if (this.conversionOptions.flattenObjects) {
       const keys = Object.keys(obj);
       for (const key of keys) {
-        const newPath = currentPath ? `${currentPath}/${key}` : key;
+        const newPath = currentPath ? `${currentPath}.${key}` : key;
         const nestedPaths = this.extractAllPathsInOrder(obj[key], newPath);
         paths.push(...nestedPaths);
       }
@@ -256,7 +244,8 @@ export class JsonCsvConverterComponent {
   private getValueByPath(obj: any, path: string): any {
     if (!path || !obj) return '';
     
-    const parts = path.split('/').filter(part => part !== '');
+    // Handle dot notation for the new path format
+    const parts = path.split('.').filter(part => part !== '');
     let current = obj;
     
     for (const part of parts) {
@@ -264,29 +253,45 @@ export class JsonCsvConverterComponent {
         return '';
       }
       
-      if (Array.isArray(current)) {
-        const index = parseInt(part, 10);
-        if (!isNaN(index) && index >= 0 && index < current.length) {
+      // Check if part is an array index
+      const index = parseInt(part, 10);
+      if (!isNaN(index) && Array.isArray(current)) {
+        if (index >= 0 && index < current.length) {
           current = current[index];
         } else {
           return '';
         }
-      } else if (typeof current === 'object') {
+      } else if (typeof current === 'object' && current !== null) {
+        // For objects, access by key
         current = current[part];
       } else {
         return '';
       }
+      
+      if (current === undefined) return '';
     }
     
     if (current === null || current === undefined) {
       return '';
     }
     
-    if (typeof current === 'object' && !Array.isArray(current)) {
+    // Return primitive values directly
+    if (typeof current !== 'object') {
+      return current;
+    }
+    
+    // For objects and arrays that aren't being flattened, stringify them
+    if (Array.isArray(current)) {
+      if (this.conversionOptions.arrayHandling === 'stringify' || !this.conversionOptions.flattenArrays) {
+        return JSON.stringify(current);
+      }
+    } else if (!this.conversionOptions.flattenObjects) {
       return JSON.stringify(current);
     }
     
-    return current;
+    // If we reach here, it means we have an object that should be flattened further
+    // but we're at a leaf node in the path, so return empty string
+    return '';
   }
 
   private escapeCsvValue(value: any): string {
@@ -439,56 +444,39 @@ export class JsonCsvConverterComponent {
 
   loadSampleJson(): void {
     this.jsonInput = `{
-  "orders": [
+  "links": [
     {
-      "orderId": "PO_32436",
-      "orderDate": "2025-09-30",
-      "vendor": "320",
-      "customerOrderNumber": "FAO-324097",
-      "isDropShip": true,
-      "shipping": {
-        "name": "John Mcaffee",
-        "address1": "19688 W 57th Pl",
-        "city": "Golden",
-        "state": "CO",
-        "postalCode": "80403",
-        "country": "US",
-        "contact": {
-          "phone": "+13039996810",
-          "email": "jrmcaffee@gmail.com"
-        }
-      },
-      "carrier": {
-        "serviceLevelCode": "CE"
-      },
-      "items": [
-        {
-          "lineNumber": 1,
-          "vendorPartNumber": "878",
-          "ean": "3474230008780",
-          "qty": 1,
-          "uom": "EA",
-          "purchasePrice": 110.25,
-          "retailPrice": 210,
-          "description": "Ride-On SPEEDSTER PLANE Silver"
-        }
-      ],
-      "summary": {
-        "totalAmount": 110.25,
-        "totalLineItemNumber": 1
-      },
-      "notes": [
-        {
-          "code": "GEN",
-          "message": "Acceptance of a purchase order and shipment of that merchandise constitutes acceptance of each term contained in this guide."
-        },
-        {
-          "code": "GFT",
-          "message": "Love Nonna and Papa"
-        }
-      ]
+      "rel": "self",
+      "href": "https://4636482-sb3.suitetalk.api.netsuite.com/services/rest/record/v1/itemFulfillment/511528?expandSubResources=true"
     }
-  ]
+  ],
+  "createdDate": "2025-11-05T14:09:00Z",
+  "createdFrom": {
+    "links": [],
+    "id": "511427",
+    "refName": "Transfer Order #TO0000160"
+  },
+  "custbody_gc_asn_by_spring": false,
+  "item": {
+    "links": [
+      {
+        "rel": "self",
+        "href": "https://4636482-sb3.suitetalk.api.netsuite.com/services/rest/record/v1/itemfulfillment/511528/item"
+      }
+    ],
+    "items": [
+      {
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://4636482-sb3.suitetalk.api.netsuite.com/services/rest/record/v1/itemfulfillment/511528/item/2"
+          }
+        ],
+        "itemName": "MSP21B48-001-L",
+        "quantity": 5
+      }
+    ]
+  }
 }`;
     this.onJsonInputChange();
   }

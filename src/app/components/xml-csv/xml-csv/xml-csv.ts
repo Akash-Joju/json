@@ -289,34 +289,83 @@ export class XmlCsvConverterComponent {
   private extractDataRows(rootElement: Element): any[] {
     const dataRows: any[] = [];
     
+    // STRATEGY 2: Extract the entire document structure, not just repeating elements
+    const documentData = this.elementToDataObject(rootElement);
+    
+    // If we have repeating elements at root level, create multiple rows
     const repeatingElements = this.findAllRepeatingElements(rootElement);
     
     if (repeatingElements.length > 0) {
+      // Multiple rows based on repeating elements
       repeatingElements.forEach(element => {
-        const rowData = this.elementToDataObject(element);
-        // Add ID attribute if present
-        if (element.hasAttribute('id')) {
-          rowData['_id'] = element.getAttribute('id');
-        }
+        const rowData = this.mergeDocumentData(documentData, element);
         dataRows.push(rowData);
       });
     } else {
-      const rowData = this.elementToDataObject(rootElement);
-      if (rootElement.hasAttribute('id')) {
-        rowData['_id'] = rootElement.getAttribute('id');
-      }
-      dataRows.push(rowData);
+      // Single row with complete document data
+      dataRows.push(documentData);
     }
     
     return dataRows;
   }
 
+  private mergeDocumentData(documentData: any, repeatingElement: Element): any {
+    // Create a deep copy of the document data
+    const mergedData = JSON.parse(JSON.stringify(documentData));
+    
+    // Find the path to the repeating element and replace it with the current instance
+    const repeatingPath = this.findElementPathInData(documentData, repeatingElement.tagName);
+    if (repeatingPath) {
+      this.setValueByPath(mergedData, repeatingPath, this.elementToDataObject(repeatingElement));
+    }
+    
+    return mergedData;
+  }
+
+  private findElementPathInData(data: any, tagName: string, currentPath: string = ''): string | null {
+    if (typeof data !== 'object' || data === null) {
+      return null;
+    }
+    
+    for (const key in data) {
+      if (key === tagName) {
+        return currentPath ? `${currentPath}.${key}` : key;
+      }
+      
+      if (typeof data[key] === 'object') {
+        const path = this.findElementPathInData(data[key], tagName, currentPath ? `${currentPath}.${key}` : key);
+        if (path) return path;
+      }
+    }
+    
+    return null;
+  }
+
+  private setValueByPath(obj: any, path: string, value: any): void {
+    const parts = path.split('.').filter(part => part !== '');
+    let current = obj;
+    
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i];
+      if (current[part] === undefined) {
+        current[part] = {};
+      }
+      current = current[part];
+    }
+    
+    const lastPart = parts[parts.length - 1];
+    current[lastPart] = value;
+  }
+
   private findAllRepeatingElements(element: Element): Element[] {
     const results: Element[] = [];
+    
+    // First, check direct children for repeating elements
+    const childElements = Array.from(element.children);
     const elementCounts = new Map<string, number>();
     const elementGroups = new Map<string, Element[]>();
     
-    Array.from(element.children).forEach(child => {
+    childElements.forEach(child => {
       const count = elementCounts.get(child.tagName) || 0;
       elementCounts.set(child.tagName, count + 1);
       
@@ -325,13 +374,15 @@ export class XmlCsvConverterComponent {
       elementGroups.set(child.tagName, group);
     });
     
+    // Return the first set of repeating elements found
     for (const [tagName, count] of elementCounts) {
       if (count > 1) {
         return elementGroups.get(tagName) || [];
       }
     }
     
-    for (const child of element.children) {
+    // If no repeating elements at this level, check deeper levels
+    for (const child of childElements) {
       const childResults = this.findAllRepeatingElements(child);
       if (childResults.length > 0) {
         return childResults;
@@ -452,6 +503,7 @@ export class XmlCsvConverterComponent {
     const paths: string[] = [];
     
     if (obj === null || obj === undefined) {
+      if (currentPath) paths.push(currentPath);
       return paths;
     }
     
@@ -462,33 +514,11 @@ export class XmlCsvConverterComponent {
     
     if (Array.isArray(obj)) {
       if (this.conversionOptions.arrayHandling === 'expand') {
-        // For expand mode, find maximum array length across all rows
-        let maxLength = 0;
-        if (Array.isArray(obj)) {
-          maxLength = Math.max(maxLength, obj.length);
-        }
-        
-        // Create paths for each possible array element
-        for (let i = 0; i < maxLength; i++) {
-          const arrayPath = currentPath ? `${currentPath}/${i}` : `${i}`;
-          
-          // Check if this array index exists in any object
-          if (i < obj.length) {
-            const item = obj[i];
-            if (item !== null && typeof item === 'object') {
-              paths.push(...this.extractAllPaths(item, arrayPath));
-            } else {
-              paths.push(arrayPath);
-            }
-          } else {
-            // Add path for missing array elements to maintain structure
-            paths.push(arrayPath);
-          }
-        }
-        
-        // Also add the array itself for stringify fallback
-        if (currentPath && obj.length > 0) {
-          paths.push(currentPath);
+        // STRATEGY 2: Always use array indices for ALL arrays
+        for (let i = 0; i < obj.length; i++) {
+          const newPath = currentPath ? `${currentPath}.${i}` : `${i}`;
+          const nestedPaths = this.extractAllPaths(obj[i], newPath);
+          paths.push(...nestedPaths);
         }
       } else {
         // Stringify mode - just add the array path
@@ -497,24 +527,12 @@ export class XmlCsvConverterComponent {
       return paths;
     }
     
-    const keys = Object.keys(obj).filter(key => 
-      key !== '_element' && !key.startsWith('@') && key !== '_text' && key !== '_value'
-    );
+    // Extract all keys including special ones
+    const allKeys = Object.keys(obj);
     
-    const attributeKeys = Object.keys(obj).filter(key => key.startsWith('@'));
-    const specialKeys = Object.keys(obj).filter(key => 
-      key === '_text' || key === '_value' || key === '_id'
-    );
-    
-    // Add attributes first
-    attributeKeys.forEach(key => {
-      const newPath = currentPath ? `${currentPath}/${key}` : key;
-      paths.push(newPath);
-    });
-    
-    // Add regular element paths in order
-    keys.forEach(key => {
-      const newPath = currentPath ? `${currentPath}/${key}` : key;
+    // Process each key
+    allKeys.forEach(key => {
+      const newPath = currentPath ? `${currentPath}.${key}` : key;
       
       if (obj[key] === null || obj[key] === undefined) {
         paths.push(newPath);
@@ -525,19 +543,14 @@ export class XmlCsvConverterComponent {
       }
     });
     
-    // Add special keys last
-    specialKeys.forEach(key => {
-      const newPath = currentPath ? `${currentPath}/${key}` : key;
-      paths.push(newPath);
-    });
-    
     return paths;
   }
 
   private getValueFromData(data: any, path: string): any {
     if (!path || !data) return '';
     
-    const parts = path.split('/').filter(part => part !== '');
+    // Handle dot notation for the new path format
+    const parts = path.split('.').filter(part => part !== '');
     let current = data;
     
     for (const part of parts) {
@@ -546,55 +559,34 @@ export class XmlCsvConverterComponent {
       }
       
       // Handle array indices
-      if (!isNaN(Number(part))) {
-        const index = parseInt(part, 10);
-        if (Array.isArray(current) && index >= 0 && index < current.length) {
+      const index = parseInt(part, 10);
+      if (!isNaN(index) && Array.isArray(current)) {
+        if (index >= 0 && index < current.length) {
           current = current[index];
         } else {
           return '';
         }
-      } else if (typeof current === 'object' && !Array.isArray(current)) {
+      } else if (typeof current === 'object' && current !== null) {
+        // For objects, access by key
         current = current[part];
       } else {
         return '';
       }
+      
+      if (current === undefined) return '';
     }
     
     if (current === null || current === undefined) {
       return '';
     }
     
-    // Extract final value
-    if (typeof current === 'object') {
-      if (Array.isArray(current)) {
-        if (this.conversionOptions.arrayHandling === 'stringify') {
-          if (current.length === 0) return '';
-          
-          // For arrays of primitives, join them
-          if (current.every(item => typeof item !== 'object')) {
-            return current.join('; ');
-          }
-          
-          // For arrays of objects, extract meaningful content
-          const arrayContent = current.map(item => {
-            if (typeof item === 'object') {
-              return this.extractObjectContent(item);
-            }
-            return item;
-          }).filter(item => item !== '');
-          
-          return arrayContent.join('; ');
-        } else {
-          // Expand mode should not reach here for leaf arrays
-          return JSON.stringify(current);
-        }
-      } else {
-        // Object at leaf level
-        return this.extractObjectContent(current);
-      }
+    // Return primitive values directly
+    if (typeof current !== 'object') {
+      return current;
     }
     
-    return current;
+    // For objects, try to extract meaningful content
+    return this.extractObjectContent(current);
   }
 
   private extractObjectContent(obj: any): string {
@@ -781,51 +773,96 @@ export class XmlCsvConverterComponent {
   }
 
   loadSampleXml(): void {
-    this.xmlInput = `<?xml version="1.0" encoding="UTF-8"?>
-<catalog>
-  <product id="1">
-    <name>Laptop</name>
-    <price>999.99</price>
-    <category>Electronics</category>
-    <specifications>
-      <processor>Intel i7</processor>
-      <ram>16GB</ram>
-      <storage>512GB SSD</storage>
-    </specifications>
-    <tags>
-      <tag>gaming</tag>
-      <tag>portable</tag>
-    </tags>
-  </product>
-  <product id="2">
-    <name>Smartphone</name>
-    <price>699.99</price>
-    <category>Electronics</category>
-    <specifications>
-      <processor>Snapdragon 888</processor>
-      <ram>8GB</ram>
-      <storage>128GB</storage>
-    </specifications>
-    <tags>
-      <tag>android</tag>
-      <tag>5g</tag>
-    </tags>
-  </product>
-  <product id="3">
-    <name>Tablet</name>
-    <price>499.99</price>
-    <category>Electronics</category>
-    <specifications>
-      <processor>Apple A14</processor>
-      <ram>6GB</ram>
-      <storage>256GB</storage>
-    </specifications>
-    <tags>
-      <tag>ios</tag>
-      <tag>portable</tag>
-    </tags>
-  </product>
-</catalog>`;
+    this.xmlInput = `<?xml version="1.0" encoding="utf-8"?>
+<Orders xmlns="http://www.spscommerce.com/RSX">
+  <Order>
+    <Meta>
+      <IsDropShip>true</IsDropShip>
+    </Meta>
+    <Header>
+      <OrderHeader>
+        <TradingPartnerId>7NEALLVICIENTER</TradingPartnerId>
+        <PurchaseOrderNumber>PO_33042</PurchaseOrderNumber>
+        <TsetPurposeCode>00</TsetPurposeCode>
+        <PrimaryPOTypeCode>DS</PrimaryPOTypeCode>
+        <PurchaseOrderDate>2025-10-19</PurchaseOrderDate>
+        <Vendor>320</Vendor>
+        <CustomerOrderNumber>FAO-327264</CustomerOrderNumber>
+      </OrderHeader>
+      <Dates>
+        <DateTimeQualifier>010</DateTimeQualifier>
+        <Date>2025-10-19</Date>
+      </Dates>
+      <Dates>
+        <DateTimeQualifier>001</DateTimeQualifier>
+        <Date>2025-10-21</Date>
+      </Dates>
+      <Address>
+        <AddressTypeCode>ST</AddressTypeCode>
+        <AddressName>Vivian Mroz</AddressName>
+        <Address1>191 Grand Ave</Address1>
+        <City>Lafayette</City>
+        <State>LA</State>
+        <PostalCode>70503</PostalCode>
+        <Country>US</Country>
+        <Contacts>
+          <ContactTypeCode>IC</ContactTypeCode>
+          <PrimaryPhone>+17208793000</PrimaryPhone>
+          <PrimaryEmail>viviandog@gmail.com</PrimaryEmail>
+        </Contacts>
+      </Address>
+      <CarrierInformation>
+        <ServiceLevelCodes>
+          <ServiceLevelCode>SG</ServiceLevelCode>
+        </ServiceLevelCodes>
+      </CarrierInformation>
+      <Notes>
+        <NoteCode>GEN</NoteCode>
+        <Note>Acceptance of a purchase order and shipment of that merchandise constitutes acceptance of each term contained in this guide.</Note>
+      </Notes>
+    </Header>
+    <LineItem>
+      <OrderLine>
+        <LineSequenceNumber>1</LineSequenceNumber>
+        <VendorPartNumber>24182608</VendorPartNumber>
+        <EAN>8719066017205</EAN>
+        <OrderQty>1</OrderQty>
+        <OrderQtyUOM>EA</OrderQtyUOM>
+        <PurchasePrice>13.75</PurchasePrice>
+      </OrderLine>
+      <PriceInformation>
+        <PriceTypeIDCode>RTL</PriceTypeIDCode>
+        <UnitPrice>33</UnitPrice>
+      </PriceInformation>
+      <ProductOrItemDescription>
+        <ProductCharacteristicCode>08</ProductCharacteristicCode>
+        <ProductDescription>Plush MIFFY ECO Corduroy Green 9''</ProductDescription>
+      </ProductOrItemDescription>
+    </LineItem>
+    <LineItem>
+      <OrderLine>
+        <LineSequenceNumber>2</LineSequenceNumber>
+        <VendorPartNumber>24182619</VendorPartNumber>
+        <EAN>8719066017311</EAN>
+        <OrderQty>1</OrderQty>
+        <OrderQtyUOM>EA</OrderQtyUOM>
+        <PurchasePrice>13.75</PurchasePrice>
+      </OrderLine>
+      <PriceInformation>
+        <PriceTypeIDCode>RTL</PriceTypeIDCode>
+        <UnitPrice>33</UnitPrice>
+      </PriceInformation>
+      <ProductOrItemDescription>
+        <ProductCharacteristicCode>08</ProductCharacteristicCode>
+        <ProductDescription>Plush MIFFY ECO Corduroy Ice Blue 9''</ProductDescription>
+      </ProductOrItemDescription>
+    </LineItem>
+    <Summary>
+      <TotalAmount>27.5</TotalAmount>
+      <TotalLineItemNumber>2</TotalLineItemNumber>
+    </Summary>
+  </Order>
+</Orders>`;
     this.onXmlInputChange();
   }
 
