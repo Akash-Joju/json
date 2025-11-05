@@ -43,6 +43,9 @@ export class JsonCsvConverterComponent {
   csvTableData: CsvTableData = { headers: [], rows: [] };
   autoDetectedRootPath: string = '';
   
+  // Dark theme properties
+  isDarkMode: boolean = false;
+
   conversionOptions: ConversionOptions = {
     flattenObjects: true,
     flattenArrays: true,
@@ -57,7 +60,18 @@ export class JsonCsvConverterComponent {
     'https://jsonplaceholder.typicode.com/todos'
   ];
 
-  constructor(private cdRef: ChangeDetectorRef) {}
+  constructor(private cdRef: ChangeDetectorRef) {
+    const savedTheme = localStorage.getItem('xml-viewer-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
+
+  // Dark theme toggle method
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   setInputMethod(method: 'manual' | 'file' | 'url'): void {
     this.activeInputMethod = method;

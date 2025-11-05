@@ -10,17 +10,19 @@ import { JsonResultsComponent } from './components/json-result/json-result/json-
 import { XmlResultsComponent } from './components/xml-result/xml-result/xml-result';
 import { XmlCodeEditorComponent } from './components/xml-code/xml-code/xml-code';
 import { JsonCsvConverterComponent } from './components/json-csv/json-csv/json-csv';
+import { XmlCsvConverterComponent } from './components/xml-csv/xml-csv/xml-csv';
 export const routes: Routes = [
-  { path: '', component: HomeComponent, title: 'Xonify Tools' },
-  { path: 'viewer', component: JsonViewerComponent, title: 'Xonify Tools-JSON Viewer' },
-  { path: 'tools', component: ToolsComponent, title: 'Xonify Tools' },
-  { path: 'json-differ', component: JsonDifferComponent, title: 'Xonify Tools-JSON Differ' },
-  { path: 'results', component: JsonResultsComponent, title: 'Xonify Tools-JSON Result' },
-  { path: 'xml-viewer', component: XmlViewerComponent, title: 'Xonify Tools-XML Viewer' },
-  { path: 'xml-code', component: XmlCodeEditorComponent, title: 'Xonify Tools-XML code' },
-  { path: 'xml-differ', component: XmlDifferComponent, title: 'Xonify Tools-XML Differ' }, // Add this route
-  { path: 'xml-results', component: XmlResultsComponent, title: 'Xonify Tools-XML Result' },
-   { path: 'json-csv', component: JsonCsvConverterComponent, title: 'Json-CSV' },
+  { path: '', component: HomeComponent, title: 'AWCS Labs' },
+  { path: 'viewer', component: JsonViewerComponent, title: 'AWCS Labs-JSON Viewer' },
+  { path: 'tools', component: ToolsComponent, title: 'AWCS Labs-Tools' },
+  { path: 'json-differ', component: JsonDifferComponent, title: 'AWCS Labs-JSON Differ' },
+  { path: 'results', component: JsonResultsComponent, title: 'AWCS Labs-JSON Result' },
+  { path: 'xml-viewer', component: XmlViewerComponent, title: 'AWCS Labs-XML Viewer' },
+  { path: 'xml-code', component: XmlCodeEditorComponent, title: 'AWCS Labs-XML code' },
+  { path: 'xml-differ', component: XmlDifferComponent, title: 'AWCS Labs-XML Differ' }, // Add this route
+  { path: 'xml-results', component: XmlResultsComponent, title: 'AWCS Labs-XML Result' },
+   { path: 'json-csv', component: JsonCsvConverterComponent, title: 'AWCS Labs-Json-CSV' },
+   { path: 'xml-csv', component: XmlCsvConverterComponent, title: 'AWCS Labs-XML-CSV' },
   { path: 'about', component: AboutComponent, title: 'About' },
   { path: '**', redirectTo: '' } // Redirect unknown routes to home
 ];

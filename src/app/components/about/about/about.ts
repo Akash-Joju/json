@@ -7,59 +7,122 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="about-container">
-      <div class="about-header">
-        <h1>About JSON Tools</h1>
-        <p class="subtitle">Learn more about our application and its features</p>
-      </div>
-
-      <div class="about-content">
-        <section class="about-section">
-          <h2>🚀 What is JSON Tools?</h2>
-          <p>
-            JSON Tools is a comprehensive web application designed to make working with JSON data 
-            easier and more efficient. Whether you're a developer, data analyst, or student, 
-            our tools help you visualize, validate, and manipulate JSON data with ease.
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <div class="hero-content">
+          <div class="hero-badge">🚀 Powerful JSON & XML Tools</div>
+          <h1 class="hero-title">Transform Your Data Workflow</h1>
+          <p class="hero-subtitle">
+            Experience the ultimate suite of JSON & XML processing tools designed for developers, 
+            data analysts, and professionals who demand precision and efficiency.
           </p>
-        </section>
-
-        <section class="about-section">
-          <h2>🎯 Our Mission</h2>
-          <p>
-            To provide free, accessible, and powerful JSON processing tools that help developers 
-            and data professionals work more efficiently with JSON data formats.
-          </p>
-        </section>
-
-        <section class="about-section">
-          <h2>🛠️ Technologies Used</h2>
-          <div class="tech-grid">
-            <div class="tech-item">
-              <h3>Angular</h3>
-              <p>Modern frontend framework</p>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-number">5+</div>
+              <div class="stat-label">Powerful Tools</div>
             </div>
-            <div class="tech-item">
-              <h3>TypeScript</h3>
-              <p>Type-safe JavaScript</p>
+            <div class="stat">
+              <div class="stat-number">100%</div>
+              <div class="stat-label">Free & Open</div>
             </div>
-            <div class="tech-item">
-              <h3>SCSS</h3>
-              <p>Advanced styling</p>
-            </div>
-            <div class="tech-item">
-              <h3>HTML5</h3>
-              <p>Modern web standards</p>
+            <div class="stat">
+              <div class="stat-number">⚡</div>
+              <div class="stat-label">Lightning Fast</div>
             </div>
           </div>
-        </section>
-
-        <section class="about-section">
-          <h2>📞 Contact & Support</h2>
-          <p>
-            Have questions or suggestions? We'd love to hear from you! 
-            This is a learning project, so your feedback helps us improve.
-          </p>
-        </section>
+        </div>
+        <div class="hero-visual">
+          <div class="floating-card card-1">📊</div>
+          <div class="floating-card card-2">🔧</div>
+          <div class="floating-card card-3">🎯</div>
+          <div class="floating-card card-4">⚡</div>
+        </div>
       </div>
+
+      <!-- Features Grid -->
+      <section class="features-section">
+        <h2 class="section-title">Why Choose Our Tools?</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <h3>Beautiful Interface</h3>
+            <p>Clean, intuitive design that makes data processing a pleasure</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Lightning Fast</h3>
+            <p>Process large datasets instantly with optimized algorithms</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Privacy First</h3>
+            <p>Your data never leaves your browser - complete privacy guaranteed</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3>Responsive</h3>
+            <p>Works perfectly on desktop and tablets</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Precision Tools</h3>
+            <p>Accurate conversions and validations you can trust</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🚀</div>
+            <h3>No Setup Required</h3>
+            <p>Start using immediately in your browser - zero installation</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mission Section -->
+      <section class="mission-section">
+        <div class="mission-content">
+          <div class="mission-text">
+            <h2>Our Vision</h2>
+            <p>
+              We believe that powerful data tools should be accessible to everyone. 
+              Our mission is to break down barriers in data processing by providing 
+              professional-grade tools that are completely free and easy to use.
+            </p>
+            <div class="mission-highlights">
+              <div class="highlight">
+                <span class="highlight-icon">💝</span>
+                <span>Always Free</span>
+              </div>
+              <div class="highlight">
+                <span class="highlight-icon">🌍</span>
+                <span>Accessible Worldwide</span>
+              </div>
+              <div class="highlight">
+                <span class="highlight-icon">🔓</span>
+                <span>No Restrictions</span>
+              </div>
+            </div>
+          </div>
+          <div class="mission-visual">
+            <div class="visual-element globe">🌐</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact CTA -->
+      <section class="contact-section">
+        <div class="contact-card">
+          <div class="contact-content">
+            <h2>Ready to Transform Your Workflow?</h2>
+            <p>Start using our powerful JSON tools today and experience the difference</p>
+            <div class="cta-buttons">
+              <button class="cta-primary" routerLink="/">Get Started Now</button>
+              <button class="cta-secondary">Learn More</button>
+            </div>
+          </div>
+          <div class="contact-visual">
+            <div class="rocket">🚀</div>
+          </div>
+        </div>
+      </section>
     </div>
   `,
   styleUrls: ['./about.scss']

@@ -1,4 +1,4 @@
-// xml-viewer.component.scss - SINGLE SCROLLBAR APPROACH
+// xml-viewer.component.scss - WITH DARK THEME
 .xml-viewer {
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 14px;
@@ -11,13 +11,492 @@
   overflow: hidden;
   height: 100%;
 
-  &.dark-theme {
-    background: #1e1e1e;
-    color: #d4d4d4;
-    border-color: #3e3e3e;
+  // COMPLETE DARK MODE STYLES - NEW
+  &.dark-mode {
+    background: #1a1a1a;
+    color: #e9ecef;
+    border-color: #444;
+
+    // Main content area
+    .main-content-area {
+      background: transparent;
+    }
+
+    // Page header
+    .page-header {
+      border-bottom-color: #444;
+      
+      h1 {
+        color: #e9ecef;
+      }
+    }
+
+    // Input methods
+    .input-methods {
+      background: #2d2d2d;
+      border-color: #444;
+
+      .method-tabs {
+        background: #2d2d2d;
+        border-color: #444;
+        
+        .method-tab {
+          color: #aaa;
+          background: #2d2d2d;
+          
+          &:hover {
+            background: #3d3d3d;
+            color: #e9ecef;
+          }
+          
+          &.active {
+            color: #007bff;
+            background: #1a1a1a;
+            border-bottom-color: #007bff;
+          }
+        }
+      }
+
+      .method-content {
+        background: #2d2d2d;
+      }
+    }
+
+    // Fixed header
+    .fixed-header {
+      background: #1a1a1a;
+      border-color: #444;
+    }
+
+    // Toolbar
+    .toolbar {
+      background: #2d2d2d;
+
+      .btn {
+        background: #444;
+        color: #e9ecef;
+        border-color: #666;
+        
+        &:hover:not(:disabled) {
+          background: #555;
+          color: #e9ecef;
+        }
+        
+        &:disabled {
+          background: #333;
+          color: #777;
+          border-color: #555;
+        }
+        
+        // Toggle View Mode Button - GREEN
+        &:first-child {
+          background: #10b981;
+          color: white;
+          border-color: #10b981;
+
+          &:hover {
+            background: #059669;
+            border-color: #059669;
+          }
+        }
+
+        // Format Button - BLUE
+        &:nth-child(2) {
+          background: #3b82f6;
+          color: white;
+          border-color: #3b82f6;
+
+          &:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+          }
+        }
+
+        // Minify Button - VIOLET
+        &:nth-child(3) {
+          background: #8b5cf6;
+          color: white;
+          border-color: #8b5cf6;
+
+          &:hover {
+            background: #7c3aed;
+            border-color: #7c3aed;
+          }
+        }
+
+        // Download Button - GRAY
+        &:nth-child(4) {
+          background: #6b7280;
+          color: white;
+          border-color: #6b7280;
+
+          &:hover {
+            background: #4b5563;
+            border-color: #4b5563;
+          }
+        }
+      }
+
+      .folding-controls .btn {
+        background: #f97316;
+        color: white;
+        border-color: #f97316;
+
+        &:hover {
+          background: #ea580c;
+          border-color: #ea580c;
+        }
+      }
+
+      .search-box {
+        .search-input {
+          background: #444;
+          color: #e9ecef;
+          border-color: #666;
+          
+          &:focus {
+            border-color: #007bff;
+            background: #555;
+          }
+          
+          &::placeholder {
+            color: #aaa;
+          }
+        }
+
+        .search-results-dropdown {
+          background: #2d2d2d;
+          border-color: #444;
+          
+          .search-results-header {
+            border-color: #444;
+            
+            h4 {
+              color: #e9ecef;
+            }
+          }
+
+          .search-result-item {
+            &:hover {
+              background: #3d3d3d;
+            }
+            
+            &.selected {
+              background: #1e3a5f;
+            }
+          }
+        }
+      }
+    }
+
+    // Error panel
+    .error-panel {
+      background: #2d1d1d;
+      color: #f8a5a5;
+      border-color: #5c1c1c;
+    }
+
+    // Tree line numbers
+    .tree-line-numbers-container {
+      background: #1a1a1a;
+      border-color: #444;
+    }
+
+    // XML tree
+    .xml-tree-container {
+      background: #1a1a1a;
+    }
+
+    .xml-tree {
+      .tree-line {
+        &:hover {
+          background: #3d3d3d;
+        }
+        
+        &.selected {
+          background: #04395e;
+        }
+      }
+    }
+
+    // Node editor
+    .fixed-node-editor {
+      background: #2d2d2d;
+      border-color: #444;
+      
+      .node-editor-content {
+        .node-editor-header {
+          background: #2d2d2d;
+          
+          h3 {
+            color: #e9ecef;
+          }
+        }
+
+        .detail-item {
+          label {
+            color: #9ca3af;
+          }
+
+          .edit-control {
+            .edit-input, .edit-textarea {
+              background: #1a1a1a;
+              color: #e9ecef;
+              border-color: #444;
+              
+              &:focus {
+                border-color: #007bff;
+              }
+              
+              &:read-only {
+                background: #2d2d2d;
+                color: #9ca3af;
+              }
+            }
+          }
+
+          .attributes-list .attribute-editor {
+            .attr-key-input, .attr-value-input {
+              background: #1a1a1a;
+              color: #e9ecef;
+              border-color: #444;
+              
+              &:focus {
+                border-color: #007bff;
+              }
+              
+              &:read-only {
+                background: #2d2d2d;
+                color: #9ca3af;
+              }
+            }
+          }
+
+          .add-attribute-control {
+            .attr-key-input, .attr-value-input {
+              background: #1a1a1a;
+              color: #e9ecef;
+              border-color: #444;
+              
+              &:focus {
+                border-color: #007bff;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Raw editor
+    .raw-editor {
+      .editor-container {
+        background: #1a1a1a;
+      }
+
+      .line-numbers {
+        background: #1a1a1a;
+        color: #9ca3af;
+        border-color: #444;
+      }
+
+      .xml-textarea {
+        background: transparent;
+        color: #e9ecef;
+        
+        &:read-only {
+          background: #2d2d2d;
+        }
+      }
+    }
+
+    // Empty state
+    .empty-state {
+      color: #9ca3af;
+      
+      h3 {
+        color: #e9ecef;
+      }
+    }
+
+    // File upload section
+    .file-upload-section {
+      .upload-area {
+        background: #2d2d2d !important;
+        border-color: #444 !important;
+        color: #e9ecef;
+        
+        &.dragover {
+          background: #1e2a3a !important;
+          border-color: #007bff !important;
+        }
+        
+        p {
+          color: #aaa;
+        }
+      }
+      
+      .file-info {
+        background: #1a1a1a;
+        border-color: #444;
+        
+        h4 {
+          color: #e9ecef;
+        }
+        
+        p {
+          color: #aaa;
+        }
+      }
+      
+      .upload-error {
+        background: #2d1d1d;
+        border-color: #5c1c1c;
+        color: #f8d7da;
+      }
+    }
+
+    // URL load section
+    .url-load-section {
+      .url-input {
+        background: #1a1a1a !important;
+        color: #e9ecef !important;
+        border-color: #444 !important;
+        
+        &:focus {
+          border-color: #007bff !important;
+          background: #1a1a1a !important;
+          color: #e9ecef !important;
+        }
+        
+        &.error {
+          border-color: #dc3545 !important;
+          background: #2d1d1d !important;
+        }
+
+        &:disabled {
+          background: #2d2d2d !important;
+          color: #777 !important;
+        }
+
+        &::placeholder {
+          color: #666 !important;
+        }
+      }
+      
+      .url-status {
+        background: #1e2a3a;
+        border-color: #2a3a4a;
+        color: #b3d9ff;
+      }
+      
+      .url-error {
+        background: #2d1d1d;
+        border-color: #5c1c1c;
+        color: #f8d7da;
+      }
+      
+      .url-success {
+        background: #1d2d1d;
+        border-color: #2d4a2d;
+        color: #d4edda;
+      }
+    }
+
+    // All buttons
+    .btn {
+      background: #444;
+      color: #e9ecef;
+      border-color: #666;
+      
+      &:hover:not(:disabled) {
+        background: #555;
+        color: #e9ecef;
+      }
+      
+      &:disabled {
+        background: #333;
+        color: #777;
+        border-color: #555;
+      }
+      
+      &.btn-primary {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+        
+        &:hover:not(:disabled) {
+          background: #0056b3;
+          border-color: #0056b3;
+        }
+      }
+      
+      &.btn-outline {
+        background: transparent;
+        color: #007bff;
+        border-color: #007bff;
+        
+        &:hover:not(:disabled) {
+          background: #007bff;
+          color: white;
+        }
+      }
+      
+      &-sm {
+        padding: 2px 4px;
+        font-size: 10px;
+      }
+    }
   }
 
-  // Input Methods Styles
+  // Page Header with Theme Toggle - NEW
+  .page-header {
+    text-align: left;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    h1 {
+      color: #2c3e50;
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .theme-toggle {
+      .theme-toggle-btn {
+        background: none;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: #e9ecef;
+        }
+      }
+    }
+  }
+
+  .dark-mode .page-header .theme-toggle .theme-toggle-btn {
+    border-color: #666;
+    color: #e9ecef;
+    
+    &:hover {
+      background: #444;
+      color: #e9ecef;
+    }
+  }
+
+  // Rest of the original styles remain exactly the same...
+  // ... (all the existing SCSS code from your original xml-viewer.scss)
+  // I'm including the key parts that need to be preserved:
+
   .input-methods {
     background: white;
     border-radius: 3px;
@@ -26,21 +505,11 @@
     width: 100%;
     border: 1px solid #e1e1e1;
 
-    .dark-theme & {
-      background: #2d2d30;
-      border-color: #3e3e3e;
-    }
-
     .method-tabs {
       display: flex;
       background: #f8f9fa;
       border-bottom: 1px solid #dee2e6;
       width: 100%;
-      
-      .dark-theme & {
-        background: #252526;
-        border-color: #3e3e3e;
-      }
       
       .method-tab {
         flex: 1;
@@ -55,30 +524,15 @@
         color: #6b7280;
         text-align: center;
         
-        .dark-theme & {
-          color: #9ca3af;
-        }
-        
         &:hover {
           background: #e9ecef;
           color: #495057;
-          
-          .dark-theme & {
-            background: #37373d;
-            color: #d4d4d4;
-          }
         }
         
         &.active {
           color: #007bff;
           border-bottom-color: #007bff;
           background: white;
-          
-          .dark-theme & {
-            color: #3794ff;
-            border-bottom-color: #3794ff;
-            background: #1e1e1e;
-          }
         }
       }
     }
@@ -106,10 +560,6 @@
         color: #495057;
         font-size: 14px;
         font-weight: 600;
-        
-        .dark-theme & {
-          color: #d4d4d4;
-        }
       }
     }
     
@@ -132,19 +582,9 @@
       width: 100%;
       box-sizing: border-box;
       
-      .dark-theme & {
-        border-color: #4a5568;
-        background: #2d3748;
-      }
-      
       &.dragover {
         border-color: #007bff;
         background: #f0f8ff;
-        
-        .dark-theme & {
-          border-color: #3794ff;
-          background: #1a365d;
-        }
       }
     }
     
@@ -157,10 +597,6 @@
         margin: 0 0 12px 0;
         color: #6b7280;
         font-size: 14px;
-        
-        .dark-theme & {
-          color: #9ca3af;
-        }
       }
     }
     
@@ -176,11 +612,6 @@
       width: 100%;
       box-sizing: border-box;
       
-      .dark-theme & {
-        background: #374151;
-        border-color: #4b5563;
-      }
-      
       .file-details {
         flex: 1;
         
@@ -189,20 +620,12 @@
           color: #495057;
           font-size: 14px;
           font-weight: 600;
-          
-          .dark-theme & {
-            color: #d4d4d4;
-          }
         }
         
         p {
           margin: 0;
           color: #6b7280;
           font-size: 12px;
-          
-          .dark-theme & {
-            color: #9ca3af;
-          }
         }
       }
       
@@ -222,12 +645,6 @@
       width: 100%;
       box-sizing: border-box;
       font-size: 12px;
-      
-      .dark-theme & {
-        background: #422;
-        border-color: #7f1d1d;
-        color: #fca5a5;
-      }
     }
   }
 
@@ -245,10 +662,6 @@
         font-size: 12px;
         color: #6b7280;
         cursor: pointer;
-        
-        .dark-theme & {
-          color: #9ca3af;
-        }
         
         .option-checkbox {
           margin: 0;
@@ -273,19 +686,9 @@
         box-sizing: border-box;
         font-family: inherit;
         
-        .dark-theme & {
-          background: #3c3c3c;
-          color: #d4d4d4;
-          border-color: #5a5a5a;
-        }
-        
         &:focus {
           outline: none;
           border-color: #007bff;
-          
-          .dark-theme & {
-            border-color: #3794ff;
-          }
         }
         
         &.error {
@@ -295,11 +698,6 @@
         &:disabled {
           background: #e9ecef;
           cursor: not-allowed;
-          
-          .dark-theme & {
-            background: #4a5568;
-            color: #a0aec0;
-          }
         }
       }
     }
@@ -311,10 +709,6 @@
         margin: 0 0 8px 0;
         color: #6b7280;
         font-size: 12px;
-        
-        .dark-theme & {
-          color: #9ca3af;
-        }
       }
       
       .example-links {
@@ -333,16 +727,8 @@
         padding: 4px 0;
         text-decoration: underline;
         
-        .dark-theme & {
-          color: #3794ff;
-        }
-        
         &:hover {
           color: #0056b3;
-          
-          .dark-theme & {
-            color: #1a6bc7;
-          }
         }
       }
     }
@@ -360,40 +746,21 @@
       background: #e7f3ff;
       border: 1px solid #b3d9ff;
       color: #0066cc;
-      
-      .dark-theme & {
-        background: #1a365d;
-        border-color: #2d4a80;
-        color: #90cdf4;
-      }
     }
     
     .url-error {
       background: #f8d7da;
       border: 1px solid #f5c6cb;
       color: #721c24;
-      
-      .dark-theme & {
-        background: #422;
-        border-color: #7f1d1d;
-        color: #fca5a5;
-      }
     }
     
     .url-success {
       background: #d4edda;
       border: 1px solid #c3e6cb;
       color: #155724;
-      
-      .dark-theme & {
-        background: #1a3a2a;
-        border-color: #2d5a3d;
-        color: #9ae6b4;
-      }
     }
   }
 
-  // Button styles for input methods
   .btn {
     padding: 6px 12px;
     border: 1px solid #d1d5db;
@@ -410,18 +777,8 @@
     color: #495057;
     font-family: inherit;
     
-    .dark-theme & {
-      background: #3c3c3c;
-      color: #d4d4d4;
-      border-color: #5a5a5a;
-    }
-    
     &:hover:not(:disabled) {
       background: #f3f4f6;
-      
-      .dark-theme & {
-        background: #4a4a4a;
-      }
     }
     
     &:disabled {
@@ -434,17 +791,8 @@
       color: white;
       border-color: #007bff;
       
-      .dark-theme & {
-        background: #3794ff;
-        border-color: #3794ff;
-      }
-      
       &:hover:not(:disabled) {
         background: #0056b3;
-        
-        .dark-theme & {
-          background: #1a6bc7;
-        }
       }
     }
     
@@ -453,18 +801,9 @@
       color: #007bff;
       border-color: #007bff;
       
-      .dark-theme & {
-        color: #3794ff;
-        border-color: #3794ff;
-      }
-      
       &:hover:not(:disabled) {
         background: #007bff;
         color: white;
-        
-        .dark-theme & {
-          background: #3794ff;
-        }
       }
     }
     
@@ -484,11 +823,6 @@
     background: white;
     border-bottom: 1px solid #e1e1e1;
     flex-shrink: 0;
-
-    .dark-theme & {
-      background: #1e1e1e;
-      border-color: #3e3e3e;
-    }
   }
 
   .toolbar {
@@ -498,10 +832,6 @@
     padding: 8px 12px;
     background: #f8f9fa;
     flex-shrink: 0;
-
-    .dark-theme & {
-      background: #2d2d30;
-    }
 
     .toolbar-left, .toolbar-right {
       display: flex;
@@ -532,16 +862,6 @@
           background: #059669;
           border-color: #059669;
         }
-
-        .dark-theme & {
-          background: #059669;
-          border-color: #059669;
-
-          &:hover {
-            background: #047857;
-            border-color: #047857;
-          }
-        }
       }
 
       // Format Button - BLUE
@@ -553,16 +873,6 @@
         &:hover {
           background: #2563eb;
           border-color: #2563eb;
-        }
-
-        .dark-theme & {
-          background: #2563eb;
-          border-color: #2563eb;
-
-          &:hover {
-            background: #1d4ed8;
-            border-color: #1d4ed8;
-          }
         }
       }
 
@@ -576,16 +886,6 @@
           background: #7c3aed;
           border-color: #7c3aed;
         }
-
-        .dark-theme & {
-          background: #7c3aed;
-          border-color: #7c3aed;
-
-          &:hover {
-            background: #6d28d9;
-            border-color: #6d28d9;
-          }
-        }
       }
 
       // Download Button - GRAY
@@ -597,26 +897,6 @@
         &:hover {
           background: #4b5563;
           border-color: #4b5563;
-        }
-
-        .dark-theme & {
-          background: #4b5563;
-          border-color: #4b5563;
-
-          &:hover {
-            background: #374151;
-            border-color: #374151;
-          }
-        }
-      }
-
-      .dark-theme & {
-        background: #3c3c3c;
-        color: #d4d4d4;
-        border-color: #5a5a5a;
-
-        &:hover {
-          background: #4a4a4a;
         }
       }
     }
@@ -638,16 +918,6 @@
           background: #ea580c;
           border-color: #ea580c;
         }
-
-        .dark-theme & {
-          background: #ea580c;
-          border-color: #ea580c;
-
-          &:hover {
-            background: #c2410c;
-            border-color: #c2410c;
-          }
-        }
       }
     }
 
@@ -668,12 +938,6 @@
         border-radius: 4px;
         background: white;
         font-size: 12px;
-        
-        .dark-theme & {
-          background: #3c3c3c;
-          color: #d4d4d4;
-          border-color: #5a5a5a;
-        }
       }
     }
 
@@ -688,12 +952,6 @@
         border-radius: 4px;
         width: 200px;
         font-size: 12px;
-
-        .dark-theme & {
-          background: #3c3c3c;
-          color: #d4d4d4;
-          border-color: #5a5a5a;
-        }
       }
 
       .search-results {
@@ -715,11 +973,6 @@
         max-height: 300px;
         overflow: hidden;
         margin-top: 4px;
-        
-        .dark-theme & {
-          background: #2d2d30;
-          border-color: #3e3e3e;
-        }
 
         .search-results-header {
           display: flex;
@@ -732,10 +985,6 @@
             margin: 0;
             font-size: 12px;
             color: #374151;
-
-            .dark-theme & {
-              color: #d4d4d4;
-            }
           }
 
           .btn-close {
@@ -747,14 +996,6 @@
 
             &:hover {
               color: #374151;
-            }
-
-            .dark-theme & {
-              color: #9ca3af;
-              
-              &:hover {
-                color: #d4d4d4;
-              }
             }
           }
         }
@@ -774,18 +1015,10 @@
 
             &:hover {
               background: #e5e7eb;
-
-              .dark-theme & {
-                background: #374151;
-              }
             }
 
             &.selected {
               background: #dbeafe;
-
-              .dark-theme & {
-                background: #1e3a5f;
-              }
             }
 
             .result-name {
@@ -796,20 +1029,12 @@
               overflow: hidden;
               text-overflow: ellipsis;
               max-width: 120px;
-
-              .dark-theme & {
-                color: #34d399;
-              }
             }
 
             .result-line {
               font-size: 11px;
               color: #6b7280;
               flex-shrink: 0;
-
-              .dark-theme & {
-                color: #9ca3af;
-              }
             }
           }
         }
@@ -825,12 +1050,6 @@
     color: #dc2626;
     border-bottom: 1px solid #fecaca;
     flex-shrink: 0;
-
-    .dark-theme & {
-      background: #422;
-      color: #fca5a5;
-      border-color: #7f1d1d;
-    }
 
     .error-icon {
       margin-right: 8px;
@@ -877,11 +1096,6 @@
     overflow: visible; // No overflow
     position: relative;
     height: auto;
-    
-    .dark-theme & {
-      background: #1e1e1e;
-      border-color: #3e3e3e;
-    }
   }
 
   .tree-line-numbers {
@@ -944,18 +1158,10 @@
       
       &:hover {
         background: #f3f4f6;
-        
-        .dark-theme & {
-          background: #2a2d2e;
-        }
       }
       
       &.selected {
         background: #dbeafe;
-        
-        .dark-theme & {
-          background: #04395e;
-        }
       }
     }
   }
@@ -1031,45 +1237,25 @@
     .tag-name {
       color: #e11d48 !important;
       font-weight: 500;
-      
-      .dark-theme & {
-        color: #f87171 !important;
-      }
     }
     
     .attr-name {
       color: #3b82f6 !important;
       margin-left: 4px;
-      
-      .dark-theme & {
-        color: #60a5fa !important;
-      }
     }
     
     .attr-value {
       color: #ea580c !important;
       margin-left: 2px;
-      
-      .dark-theme & {
-        color: #fb923c !important;
-      }
     }
     
     .tag-punctuation {
       color: #1f2937 !important;
-      
-      .dark-theme & {
-        color: #d4d4d4 !important;
-      }
     }
     
     .text-content {
       color: #16a34a !important;
       font-style: italic;
-      
-      .dark-theme & {
-        color: #4ade80 !important;
-      }
     }
   }
 
@@ -1082,12 +1268,6 @@
     display: flex;
     flex-direction: column;
     height: auto;
-
-    .dark-theme & {
-      background: #252526;
-      border-color: #3e3e3e;
-      color: #d4d4d4;
-    }
 
     .node-editor-content {
       padding: 12px;
@@ -1104,18 +1284,10 @@
         background: #f9fafb;
         padding: 8px 0;
 
-        .dark-theme & {
-          background: #252526;
-        }
-
         h3 {
           margin: 0;
           font-size: 14px;
           color: #374151;
-
-          .dark-theme & {
-            color: #d4d4d4;
-          }
         }
 
         .btn-close-editor {
@@ -1136,14 +1308,6 @@
           &:hover {
             background: #dc2626;
           }
-
-          .dark-theme & {
-            background: #dc2626;
-            
-            &:hover {
-              background: #b91c1c;
-            }
-          }
         }
       }
     }
@@ -1157,10 +1321,6 @@
         font-size: 11px;
         color: #6b7280;
         margin-bottom: 4px;
-
-        .dark-theme & {
-          color: #9ca3af;
-        }
       }
 
       .detail-value {
@@ -1179,29 +1339,14 @@
           font-family: inherit;
           font-size: 12px;
           
-          .dark-theme & {
-            background: #3c3c3c;
-            color: #d4d4d4;
-            border-color: #5a5a5a;
-          }
-          
           &:focus {
             outline: none;
             border-color: #3b82f6;
-            
-            .dark-theme & {
-              border-color: #60a5fa;
-            }
           }
           
           &:read-only {
             background: #f9fafb;
             color: #6b7280;
-            
-            .dark-theme & {
-              background: #2d2d30;
-              color: #9ca3af;
-            }
           }
         }
         
@@ -1230,29 +1375,14 @@
             font-family: inherit;
             font-size: 11px;
             
-            .dark-theme & {
-              background: #3c3c3c;
-              color: #d4d4d4;
-              border-color: #5a5a5a;
-            }
-            
             &:focus {
               outline: none;
               border-color: #3b82f6;
-              
-              .dark-theme & {
-                border-color: #60a5fa;
-              }
             }
             
             &:read-only {
               background: #f9fafb;
               color: #6b7280;
-              
-              .dark-theme & {
-                background: #2d2d30;
-                color: #9ca3af;
-              }
             }
           }
           
@@ -1297,19 +1427,9 @@
           font-family: inherit;
           font-size: 12px;
           
-          .dark-theme & {
-            background: #3c3c3c;
-            color: #d4d4d4;
-            border-color: #5a5a5a;
-          }
-          
           &:focus {
             outline: none;
             border-color: #3b82f6;
-            
-            .dark-theme & {
-              border-color: #60a5fa;
-            }
           }
         }
         
@@ -1353,14 +1473,6 @@
             &:hover {
               background: #4b5563;
             }
-            
-            .dark-theme & {
-              background: #4b5563;
-              
-              &:hover {
-                background: #374151;
-              }
-            }
           }
         }
       }
@@ -1379,10 +1491,6 @@
       height: auto;
       background: white;
       position: relative;
-
-      .dark-theme & {
-        background: #1e1e1e;
-      }
     }
 
     .line-numbers {
@@ -1399,12 +1507,6 @@
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
       flex-shrink: 0;
       height: auto;
-
-      .dark-theme & {
-        background: #1e1e1e;
-        color: #858585;
-        border-color: #3e3e3e;
-      }
 
       .line-number {
         height: 21px;
@@ -1443,17 +1545,8 @@
       box-sizing: border-box;
       display: block;
 
-      .dark-theme & {
-        background: transparent;
-        color: #d4d4d4;
-      }
-
       &:read-only {
         background: #f9fafb;
-
-        .dark-theme & {
-          background: #2d2d30;
-        }
       }
     }
   }
@@ -1468,10 +1561,6 @@
     color: #6b7280;
     flex: 1;
 
-    .dark-theme & {
-      color: #9ca3af;
-    }
-
     .empty-icon {
       font-size: 48px;
       margin-bottom: 16px;
@@ -1480,10 +1569,6 @@
     h3 {
       margin: 0 0 8px 0;
       color: #374151;
-
-      .dark-theme & {
-        color: #d4d4d4;
-      }
     }
 
     p {

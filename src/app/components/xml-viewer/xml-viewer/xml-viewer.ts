@@ -1,4 +1,4 @@
-// xml-viewer.component.ts - WITH IMPROVED XML VALIDATION AND MOBILE SUPPORT
+// xml-viewer.component.ts - WITH FIXED NODE SELECTION AFTER EXPAND ALL
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -63,6 +63,8 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   @ViewChild('lineNumbers') lineNumbers!: ElementRef<HTMLDivElement>;
   @ViewChild('treeContentArea') treeContentArea!: ElementRef<HTMLDivElement>;
 
+  isDarkMode: boolean = false;
+
   parsedData: XmlNode | null = null;
   error: string = '';
   viewMode: 'tree' | 'raw' = 'tree';
@@ -75,10 +77,8 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   treeLines: TreeLine[] = [];
   private nextDisplayLineNumber: number = 1;
 
-  // Mobile detection
   isMobileView: boolean = false;
 
-  // New properties for input methods
   activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
   selectedFile: File | null = null;
   isDragOver = false;
@@ -90,7 +90,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   urlSuccess = false;
   useCorsProxy = false;
 
-  // Color themes (same as before)
   colorThemes: { [key: string]: ColorTheme } = {
     default: {
       tagName: '#e11d48',
@@ -211,10 +210,22 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   objectKeys = Object.keys;
 
-  constructor(private xmlUtilsService: XmlUtilsService) {}
+  private selectedNodePath: string | null = null;
+
+  constructor(private xmlUtilsService: XmlUtilsService) {
+    const savedTheme = localStorage.getItem('xml-viewer-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   get currentColors(): ColorTheme {
-    const themes = this.theme === 'dark' ? this.darkColorThemes : this.colorThemes;
+    const themes = this.isDarkMode ? this.darkColorThemes : this.colorThemes;
     return themes[this.colorScheme] || themes['default'];
   }
 
@@ -246,31 +257,7 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     setTimeout(() => this.synchronizeHeights(), 0);
   }
 
-  private setupScrollSync(): void {
-    // Setup sync for raw editor - bidirectional sync between textarea and line numbers
-    // if (this.xmlTextArea && this.lineNumbers) {
-    //   const textArea = this.xmlTextArea.nativeElement;
-    //   const lineNumbers = this.lineNumbers.nativeElement;
-
-    //   // Sync from textarea to line numbers
-    //   textArea.addEventListener('scroll', () => {
-    //     if (!this.isSyncingScroll) {
-    //       this.isSyncingScroll = true;
-    //       lineNumbers.scrollTop = textArea.scrollTop;
-    //       setTimeout(() => this.isSyncingScroll = false, 10);
-    //     }
-    //   });
-
-    //   // Sync from line numbers to textarea
-    //   lineNumbers.addEventListener('scroll', () => {
-    //     if (!this.isSyncingScroll) {
-    //       this.isSyncingScroll = true;
-    //       textArea.scrollTop = lineNumbers.scrollTop;
-    //       setTimeout(() => this.isSyncingScroll = false, 10);
-    //     }
-    //   });
-    // }
-  }
+  private setupScrollSync(): void {}
 
   private synchronizeHeights(): void {
     if (!this.xmlTextArea || !this.lineNumbers) return;
@@ -280,10 +267,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
     const textAreaStyle = window.getComputedStyle(textArea);
     const lineHeight = parseInt(textAreaStyle.lineHeight) || 21;
-
-    // For raw view, we don't need to set explicit heights
-    // The containers will naturally fill the available space
-    // and the main scrollbar will handle scrolling
     
     const lineNumberElements = lineNumbers.querySelectorAll('.line-number');
     lineNumberElements.forEach((lineEl: any) => {
@@ -307,13 +290,13 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       this.parsedData = null;
       this.error = '';
       this.treeLines = [];
+      this.selectedNode = null;
+      this.selectedNodePath = null;
       return;
     }
 
     try {
-      // Pre-process XML to escape special characters
       const processedXml = this.preprocessXml(this.xmlData);
-      
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(processedXml, 'text/xml');
       
@@ -333,6 +316,8 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
         this.error = detailedError;
         this.parsedData = null;
         this.treeLines = [];
+        this.selectedNode = null;
+        this.selectedNodePath = null;
         return;
       }
 
@@ -343,11 +328,12 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       this.error = err instanceof Error ? err.message : 'Failed to parse XML';
       this.parsedData = null;
       this.treeLines = [];
+      this.selectedNode = null;
+      this.selectedNodePath = null;
     }
   }
 
   private preprocessXml(xml: string): string {
-    // Replace unescaped ampersands that are not part of valid entities
     return xml.replace(/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#x[0-9a-fA-F]+;)/g, '&amp;');
   }
 
@@ -420,6 +406,8 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     if (this.parsedData) {
       this.generateNodeLines(this.parsedData);
     }
+    
+    this.preserveSelection();
   }
 
   private generateNodeLines(node: XmlNode): void {
@@ -466,6 +454,81 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     }
   }
 
+  private preserveSelection(): void {
+    if (!this.selectedNode || !this.parsedData) {
+      this.selectedNodePath = null;
+      return;
+    }
+    
+    this.selectedNodePath = this.getNodePath(this.selectedNode);
+    
+    const preservedNode = this.findNodeByPath(this.parsedData, this.selectedNodePath);
+    
+    if (preservedNode) {
+      this.selectedNode = preservedNode;
+    } else {
+      this.selectedNode = null;
+      this.selectedNodePath = null;
+    }
+  }
+
+  private getNodePath(node: XmlNode): string {
+    const path: string[] = [];
+    let currentNode: XmlNode | undefined = node;
+    
+    while (currentNode && currentNode !== this.parsedData) {
+      const nodeId = `${currentNode.name}|${currentNode.level}|${currentNode.textContent || ''}|${JSON.stringify(currentNode.attributes)}`;
+      path.unshift(nodeId);
+      currentNode = currentNode.parent;
+    }
+    
+    if (this.parsedData) {
+      const rootId = `${this.parsedData.name}|${this.parsedData.level}|${this.parsedData.textContent || ''}|${JSON.stringify(this.parsedData.attributes)}`;
+      path.unshift(rootId);
+    }
+    
+    return path.join('->');
+  }
+
+  private findNodeByPath(startNode: XmlNode, path: string): XmlNode | null {
+    const pathSegments = path.split('->');
+    
+    const findNode = (currentNode: XmlNode, depth: number): XmlNode | null => {
+      if (depth >= pathSegments.length) return null;
+      
+      const currentPath = this.getNodePath(currentNode);
+      if (currentPath === path) {
+        return currentNode;
+      }
+      
+      const currentNodeId = `${currentNode.name}|${currentNode.level}|${currentNode.textContent || ''}|${JSON.stringify(currentNode.attributes)}`;
+      if (currentNodeId === pathSegments[depth]) {
+        for (const child of currentNode.children) {
+          const found = findNode(child, depth + 1);
+          if (found) return found;
+        }
+        
+        if (depth === pathSegments.length - 1) {
+          return currentNode;
+        }
+      }
+      
+      return null;
+    };
+    
+    return findNode(startNode, 0);
+  }
+
+  private areNodesEqual(node1: XmlNode, node2: XmlNode): boolean {
+    if (!node1 || !node2) return false;
+    
+    return node1.name === node2.name &&
+           node1.level === node2.level &&
+           node1.textContent === node2.textContent &&
+           JSON.stringify(node1.attributes) === JSON.stringify(node2.attributes) &&
+           node1.nodeType === node2.nodeType;
+  }
+
   toggleNode(node: XmlNode): void {
     node.isExpanded = !node.isExpanded;
     this.updateNodeVisibility(node);
@@ -484,11 +547,13 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   collapseAll(): void {
     this.collapseNode(this.parsedData);
     this.generateTreeLines();
+    this.preserveSelection();
   }
 
   expandAll(): void {
     this.expandNode(this.parsedData);
     this.generateTreeLines();
+    this.preserveSelection();
   }
 
   public collapseNode(node: XmlNode | null): void {
@@ -517,25 +582,15 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   selectNode(node: XmlNode): void {
     this.selectedNode = node;
+    this.selectedNodePath = this.getNodePath(node);
   }
 
-  // NEW METHOD: Close node editor
   closeNodeEditor(): void {
     this.selectedNode = null;
+    this.selectedNodePath = null;
   }
 
-  onTextAreaScroll(event: Event): void {
-    // if (this.isSyncingScroll) return;
-    
-    // this.isSyncingScroll = true;
-    // const textArea = event.target as HTMLTextAreaElement;
-    
-    // if (this.lineNumbers) {
-    //   this.lineNumbers.nativeElement.scrollTop = textArea.scrollTop;
-    // }
-    
-    // setTimeout(() => this.isSyncingScroll = false, 10);
-  }
+  onTextAreaScroll(event: Event): void {}
 
   onTextAreaKeyup(): void {
     this.updateLineCount();
@@ -628,7 +683,35 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   }
 
   onTreeLineClick(treeLine: TreeLine): void {
-    this.selectNode(treeLine.node);
+    const clickedNode = treeLine.node;
+    
+    if (this.parsedData) {
+      const exactNode = this.findExactNode(this.parsedData, clickedNode);
+      if (exactNode) {
+        this.selectNode(exactNode);
+      } else {
+        this.selectNode(clickedNode);
+      }
+    } else {
+      this.selectNode(clickedNode);
+    }
+  }
+
+  private findExactNode(currentNode: XmlNode, targetNode: XmlNode): XmlNode | null {
+    if (this.areNodesEqual(currentNode, targetNode)) {
+      return currentNode;
+    }
+    
+    for (const child of currentNode.children) {
+      const found = this.findExactNode(child, targetNode);
+      if (found) return found;
+    }
+    
+    return null;
+  }
+
+  onToggleClick(treeLine: TreeLine, event: Event): void {
+    event.stopPropagation();
     
     if ((treeLine.type === 'open' || treeLine.type === 'self-closing') && 
         treeLine.node.children.length > 0) {
@@ -642,9 +725,7 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   formatXml(): void {
     try {
-      // Pre-process XML to escape special characters before formatting
       const processedXml = this.preprocessXml(this.xmlData);
-      
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(processedXml, 'text/xml');
       const serializer = new XMLSerializer();
@@ -874,13 +955,9 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     this.updateAttributeKey(node, oldKey, target.value);
   }
 
-  // New method to auto-fix common XML issues
   autoFixXml(): void {
     try {
-      // Fix unescaped ampersands
       this.xmlData = this.preprocessXml(this.xmlData);
-      
-      // Fix other common issues
       this.xmlData = this.xmlData
         .replace(/&(?!(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -894,14 +971,12 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  // Input Method Methods
   setInputMethod(method: 'manual' | 'file' | 'url'): void {
     this.activeInputMethod = method;
     this.clearFileErrors();
     this.clearUrlErrors();
   }
 
-  // File Handling Methods
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -992,7 +1067,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     this.fileError = null;
   }
 
-  // URL Handling Methods - FIXED VERSION
   async loadFromUrl(): Promise<void> {
     if (!this.urlInput.trim()) return;
 
@@ -1003,7 +1077,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     try {
       const cleanUrl = this.urlInput.trim();
       
-      // Validate URL format
       try {
         new URL(cleanUrl);
       } catch {
@@ -1012,20 +1085,15 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
         return;
       }
 
-      console.log('Loading XML from URL:', cleanUrl);
-      
       let result: { content: string; error?: string };
       
       if (this.useCorsProxy) {
-        // Use CORS proxy directly
         const proxyUrl = this.getCorsProxyUrl(cleanUrl);
         result = await this.fetchWithTimeout(proxyUrl, 15000);
       } else {
-        // Try direct first, then fallback to proxy
         result = await this.fetchWithTimeout(cleanUrl, 10000);
         
         if (result.error && (result.error.includes('CORS') || result.error.includes('Network'))) {
-          console.log('Direct fetch failed, trying CORS proxy...');
           const proxyUrl = this.getCorsProxyUrl(cleanUrl);
           result = await this.fetchWithTimeout(proxyUrl, 15000);
         }
@@ -1053,14 +1121,12 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
         }
       }
     } catch (error) {
-      console.error('URL loading error:', error);
       this.urlError = 'Failed to load from URL: ' + (error instanceof Error ? error.message : 'Unknown error');
     } finally {
       this.urlLoading = false;
     }
   }
 
-  // Enhanced fetch with timeout and better error handling
   private async fetchWithTimeout(url: string, timeout: number = 10000): Promise<{ content: string; error?: string }> {
     try {
       const controller = new AbortController();
@@ -1086,15 +1152,12 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       }
 
       const contentType = response.headers.get('content-type') || '';
-      
-      // Check if content type is XML or if we should try to parse it as XML
       const isXmlContent = contentType.includes('xml') || 
                           contentType.includes('text/plain') ||
                           url.toLowerCase().endsWith('.xml') ||
                           url.toLowerCase().includes('.xml?');
 
       if (!isXmlContent) {
-        // Read first few bytes to check for XML declaration
         const text = await response.text();
         const firstChars = text.trim().substring(0, 100);
         
@@ -1112,8 +1175,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       return { content };
 
     } catch (error) {
-      console.error('Fetch error:', error);
-      
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           return { content: '', error: 'Request timeout: The server took too long to respond' };
@@ -1130,9 +1191,7 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  // CORS proxy methods
   private getCorsProxyUrl(originalUrl: string): string {
-    // Try multiple CORS proxies for better reliability
     const proxies = [
       `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`,
       `https://cors-anywhere.herokuapp.com/${originalUrl}`,
@@ -1140,7 +1199,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
       `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`
     ];
     
-    // Return a random proxy to distribute load
     return proxies[Math.floor(Math.random() * proxies.length)];
   }
 
@@ -1154,7 +1212,6 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
     this.urlSuccess = false;
   }
 
-  // Sample XML
   loadSampleXml(): void {
     this.xmlData = `<?xml version="1.0" encoding="UTF-8"?>
 <catalog>

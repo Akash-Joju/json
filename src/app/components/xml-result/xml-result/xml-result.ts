@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { XmlUtilsService} from '../../../services/xml-utils.service';
 import { XmlCompareService } from '../../../services/xml-compare/xml-compare.service';
 import { XmlViewerStats } from '../../xml-types/xml-types';
+
 interface Difference {
   description: string;
   leftLine?: number;
@@ -38,16 +39,14 @@ interface ComparisonOptions {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-<div class="xml-results-container">
-  <!-- Header with Back Button -->
-  <div class="results-header">
-    <div class="header-content">
-      <h2>XML Comparison Results</h2>
-      <div class="header-actions">
-        <button (click)="toggleOptionsPanel()" class="btn btn--secondary">
-          ⚙️ {{showOptionsPanel ? 'Hide' : 'Show'}} Options
-        </button>
-      </div>
+<div class="xml-results-container" [class.dark-mode]="isDarkMode">
+  <!-- Header with Theme Toggle -->
+  <div class="page-header">
+    <h2>XML Comparison Results</h2>
+    <div class="theme-toggle">
+      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        {{ isDarkMode ? '☀️' : '🌙' }}
+      </button>
     </div>
   </div>
 
@@ -221,6 +220,9 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
   showOptionsPanel: boolean = false;
   hasData: boolean = false;
 
+  // Dark theme properties
+  isDarkMode: boolean = false;
+
   options: ComparisonOptions = {
     ignoreWhitespace: true,
     ignoreComments: true,
@@ -234,7 +236,12 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
     private router: Router,
     private xmlUtils: XmlUtilsService,
     private xmlCompareService: XmlCompareService
-  ) {}
+  ) {
+    const savedTheme = localStorage.getItem('xml-viewer-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
 
   ngOnInit(): void {
     const data = this.xmlCompareService.getComparisonData();
@@ -252,6 +259,12 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {}
+
+  // Dark theme toggle method
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   private performComparison(leftDoc: Document | null, rightDoc: Document | null): void {
     this.differences = [];

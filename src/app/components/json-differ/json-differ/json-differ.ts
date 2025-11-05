@@ -20,11 +20,16 @@ interface ComparisonOptions {
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
-<div class="json-differ-container">
-  <div class="header">
+<div class="json-differ-container" [class.dark-mode]="isDarkMode">
+  <!-- Theme Toggle Button -->
+  <div class="theme-toggle-header">
     <h2>JSON Differ</h2>
-    <p>Compare two JSON objects</p>
+    <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      {{ isDarkMode ? '☀️' : '🌙' }}
+    </button>
   </div>
+  
+  <p>Compare two JSON objects</p>
 
   <!-- Compact Load Section -->
   <div class="compact-load-section">
@@ -92,9 +97,9 @@ interface ComparisonOptions {
           class="json-textarea compact"
           rows="6"
           (input)="onJsonInput($event, true)"
-          (blur)="autoFormatJson(true)"
-          (keydown.control.enter)="autoFormatJson(true)"
-          (keydown.meta.enter)="autoFormatJson(true)"
+          (blur)="formatJsonImmediately(true)"
+          (keydown.control.enter)="formatJsonImmediately(true)"
+          (keydown.meta.enter)="formatJsonImmediately(true)"
         ></textarea>
       </div>
       
@@ -109,9 +114,9 @@ interface ComparisonOptions {
           class="json-textarea compact"
           rows="6"
           (input)="onJsonInput($event, false)"
-          (blur)="autoFormatJson(false)"
-          (keydown.control.enter)="autoFormatJson(false)"
-          (keydown.meta.enter)="autoFormatJson(false)"
+          (blur)="formatJsonImmediately(false)"
+          (keydown.control.enter)="formatJsonImmediately(false)"
+          (keydown.meta.enter)="formatJsonImmediately(false)"
         ></textarea>
       </div>
     </div>
@@ -148,6 +153,7 @@ export class JsonDifferComponent {
   error: string = '';
   loading: boolean = false;
   formatStatus: string = '';
+  isDarkMode: boolean = false;
 
   options: ComparisonOptions = {
     ignoreArrayOrder: false,
@@ -165,7 +171,17 @@ export class JsonDifferComponent {
     private http: HttpClient,
     private router: Router,
     private jsonCompareService: JsonCompareService
-  ) {}
+  ) {
+    const savedTheme = localStorage.getItem('json-differ-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('json-differ-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   // File selection handler with auto-format
   onFileSelected(event: any, isLeft: boolean): void {
@@ -249,6 +265,17 @@ export class JsonDifferComponent {
     }, 1500);
   }
 
+  // Format JSON immediately (without timeout)
+  formatJsonImmediately(isLeft: boolean): void {
+    // Clear any pending timeout
+    if (this.formatTimeout) {
+      clearTimeout(this.formatTimeout);
+      this.formatTimeout = null;
+    }
+    
+    this.autoFormatJson(isLeft);
+  }
+
   // Auto-format JSON with validation
   autoFormatJson(isLeft: boolean): void {
     const jsonString = isLeft ? this.leftJson : this.rightJson;
@@ -291,9 +318,14 @@ export class JsonDifferComponent {
     try {
       this.error = '';
       
-      // Auto-format both JSONs before comparison
-      this.autoFormatJson(true);
-      this.autoFormatJson(false);
+      // Format both JSONs immediately before comparison (without timeout)
+      this.formatJsonImmediately(true);
+      this.formatJsonImmediately(false);
+      
+      // Check if JSONs are valid after formatting
+      if (this.error) {
+        return; // Don't proceed if there's a formatting error
+      }
       
       const leftObj = this.leftJson.trim() ? JSON.parse(this.leftJson) : {};
       const rightObj = this.rightJson.trim() ? JSON.parse(this.rightJson) : {};
@@ -331,11 +363,17 @@ export class JsonDifferComponent {
     this.rightJsonLines = 0;
     this.error = '';
     this.formatStatus = '';
+    
+    // Clear any pending timeouts
+    if (this.formatTimeout) {
+      clearTimeout(this.formatTimeout);
+      this.formatTimeout = null;
+    }
   }
 
   formatBothJson(): void {
-    this.autoFormatJson(true);
-    this.autoFormatJson(false);
+    this.formatJsonImmediately(true);
+    this.formatJsonImmediately(false);
     this.showFormatStatus('Both JSONs formatted');
   }
 

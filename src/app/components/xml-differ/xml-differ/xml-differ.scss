@@ -22,31 +22,231 @@ $valid-bg: #d4edda;
 $valid-border: #c3e6cb;
 $valid-text: #155724;
 
+// Dark theme variables
+$dark-bg: #1a1a1a;
+$dark-surface: #2d2d2d;
+$dark-border: #444;
+$dark-text: #e9ecef;
+$dark-text-muted: #9ca3af;
+$dark-primary: #3b82f6;
+$dark-error-bg: #2d1d1d;
+$dark-error-border: #5c1c1c;
+$dark-error-text: #f8a5a5;
+$dark-success-bg: #1d2d1d;
+$dark-success-border: #2d4a2d;
+$dark-success-text: #d4edda;
+$dark-info-bg: #1e2a3a;
+$dark-info-border: #2a3a4a;
+$dark-info-text: #b3d9ff;
+
 // Compact Container
 .xml-differ-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 15px;
   font-size: 0.8rem;
+  background: white;
+  color: $text-color;
+  transition: all 0.3s ease;
+
+  // COMPLETE DARK MODE STYLES
+  &.dark-mode {
+    background: $dark-bg;
+    color: $dark-text;
+
+    // Page header
+    .page-header {
+      border-bottom-color: $dark-border;
+      
+      h2 {
+        color: $dark-text;
+      }
+    }
+
+    .subtitle {
+      color: $dark-text-muted;
+    }
+
+    // Compact Load Section
+    .compact-load-section {
+      .xml-source {
+        label {
+          color: $dark-text-muted;
+        }
+      }
+    }
+
+    // Buttons
+    .btn {
+      background: $dark-surface;
+      color: $dark-text;
+      border-color: $dark-border;
+      
+      &:hover:not(:disabled) {
+        background: lighten($dark-surface, 5%);
+        color: $dark-text;
+      }
+      
+      &:disabled {
+        background: darken($dark-surface, 5%);
+        color: $dark-text-muted;
+        border-color: $dark-border;
+      }
+      
+      &--primary {
+        background: $dark-primary;
+        color: white;
+        border-color: $dark-primary;
+        
+        &:hover:not(:disabled) {
+          background: darken($dark-primary, 10%);
+          border-color: darken($dark-primary, 10%);
+        }
+      }
+    }
+
+    // URL Input
+    .url-input.compact {
+      background: $dark-bg;
+      color: $dark-text;
+      border-color: $dark-border;
+      
+      &:focus {
+        border-color: $dark-primary;
+        background: $dark-bg;
+        color: $dark-text;
+      }
+      
+      &::placeholder {
+        color: $dark-text-muted;
+      }
+    }
+
+    // XML Textareas
+    .xml-textarea.compact {
+      background: $dark-bg;
+      color: $dark-text;
+      border-color: $dark-border;
+      
+      &:focus {
+        border-color: $dark-primary;
+        background: $dark-bg;
+        color: $dark-text;
+      }
+      
+      &::placeholder {
+        color: $dark-text-muted;
+      }
+    }
+
+    // XML Headers
+    .xml-header {
+      h4 {
+        color: $dark-text;
+      }
+      
+      .line-count {
+        color: $dark-text-muted;
+        background: $dark-surface;
+      }
+      
+      .stats-badge {
+        &.valid {
+          background: $dark-success-bg;
+          color: $dark-success-text;
+          border: 1px solid $dark-success-border;
+        }
+        
+        &.invalid {
+          background: $dark-error-bg;
+          color: $dark-error-text;
+          border: 1px solid $dark-error-border;
+        }
+      }
+    }
+
+    // XML Stats
+    .xml-stats {
+      span {
+        color: $dark-text-muted;
+        background: $dark-surface;
+        border: 1px solid $dark-border;
+      }
+    }
+
+    // Messages
+    .compact-message {
+      &.loading {
+        background-color: $dark-info-bg;
+        color: $dark-info-text;
+        border: 1px solid $dark-info-border;
+      }
+
+      &.error {
+        background-color: $dark-error-bg;
+        color: $dark-error-text;
+        border: 1px solid $dark-error-border;
+      }
+
+      &.info {
+        background-color: $dark-info-bg;
+        color: $dark-info-text;
+        border: 1px solid $dark-info-border;
+      }
+    }
+  }
 }
 
-// Compact Header
-.header {
-  text-align: center;
-  margin-bottom: 15px;
-
+// Page Header with Theme Toggle
+.page-header {
+  text-align: left;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $border-color;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
   h2 {
     color: $text-color;
-    margin-bottom: 2px;
+    margin: 0;
     font-size: 1.3rem;
     font-weight: 600;
   }
 
-  p {
-    color: $text-muted;
-    font-size: 0.75rem;
-    margin: 0;
+  .theme-toggle {
+    .theme-toggle-btn {
+      background: none;
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: $light-color;
+      }
+    }
   }
+}
+
+.dark-mode .page-header .theme-toggle .theme-toggle-btn {
+  border-color: $dark-border;
+  color: $dark-text;
+  
+  &:hover {
+    background: $dark-surface;
+    color: $dark-text;
+  }
+}
+
+.subtitle {
+  text-align: center;
+  color: $text-muted;
+  font-size: 0.75rem;
+  margin: 0 0 15px 0;
 }
 
 // Compact Load Section
@@ -230,7 +430,6 @@ $valid-text: #155724;
 }
 
 .xml-textarea.compact {
-  // width: 100%;
   padding: 6px;
   border: 1px solid $border-color;
   border-radius: 3px;
@@ -325,7 +524,7 @@ $valid-text: #155724;
     padding: 10px 8px;
   }
 
-  .header {
+  .page-header {
     h2 {
       font-size: 1.1rem;
     }

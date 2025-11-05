@@ -37,6 +37,173 @@
       }
     }
 
+    // INPUT METHODS SECTION - FIXED DARK THEME
+    .input-methods {
+      background: #2d2d2d !important;
+      border-color: #444 !important;
+
+      .method-tabs {
+        background: #2d2d2d !important;
+        border-bottom-color: #444 !important;
+        
+        .method-tab {
+          color: #aaa !important;
+          background: #2d2d2d !important;
+          
+          &:hover {
+            background: #3d3d3d !important;
+            color: #e9ecef !important;
+          }
+          
+          &.active {
+            color: #007bff !important;
+            background: #1a1a1a !important;
+            border-bottom-color: #007bff !important;
+          }
+        }
+      }
+
+      .method-content {
+        background: #2d2d2d !important;
+      }
+    }
+
+    // INPUT SECTION - DARK THEME - FIXED
+    .input-section {
+      background: #2d2d2d !important;
+
+      .input-header {
+        h3 {
+          color: #e9ecef !important;
+        }
+      }
+
+      // TEXTAREA - DARK THEME - FIXED
+      .json-textarea {
+        background: #1a1a1a !important;
+        color: #e9ecef !important;
+        border-color: #444 !important;
+        
+        &:focus {
+          border-color: #007bff !important;
+          background: #1a1a1a !important;
+          color: #e9ecef !important;
+          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        
+        &.error {
+          border-color: #dc3545 !important;
+          background: #2d1d1d !important;
+          color: #f8a5a5 !important;
+        }
+        
+        &::placeholder {
+          color: #666 !important;
+          opacity: 0.7;
+        }
+      }
+
+      .input-info {
+        color: #aaa;
+        
+        .char-count {
+          color: #e9ecef;
+        }
+        
+        .error-count {
+          color: #f8a5a5;
+        }
+        
+        .success-count {
+          color: #8fdf8f;
+        }
+      }
+    }
+
+    // FILE UPLOAD SECTION - DARK THEME - FIXED
+    .file-upload-section {
+      .upload-area {
+        background: #2d2d2d !important;
+        border-color: #444 !important;
+        color: #e9ecef !important;
+        
+        &.dragover {
+          background: #1e2a3a !important;
+          border-color: #007bff !important;
+        }
+        
+        p {
+          color: #aaa !important;
+        }
+      }
+      
+      .file-info {
+        background: #1a1a1a !important;
+        border-color: #444 !important;
+        
+        h4 {
+          color: #e9ecef !important;
+        }
+        
+        p {
+          color: #aaa !important;
+        }
+      }
+      
+      .upload-error {
+        background: #2d1d1d !important;
+        border-color: #5c1c1c !important;
+        color: #f8d7da !important;
+      }
+    }
+
+    // URL LOAD SECTION - DARK THEME - FIXED
+    .url-load-section {
+      .url-input {
+        background: #1a1a1a !important;
+        color: #e9ecef !important;
+        border-color: #444 !important;
+        
+        &:focus {
+          border-color: #007bff !important;
+          background: #1a1a1a !important;
+          color: #e9ecef !important;
+        }
+        
+        &.error {
+          border-color: #dc3545 !important;
+          background: #2d1d1d !important;
+        }
+
+        &:disabled {
+          background: #2d2d2d !important;
+          color: #777 !important;
+        }
+
+        &::placeholder {
+          color: #666 !important;
+        }
+      }
+      
+      .url-status {
+        background: #1e2a3a !important;
+        border-color: #2a3a4a !important;
+        color: #b3d9ff !important;
+      }
+      
+      .url-error {
+        background: #2d1d1d !important;
+        border-color: #5c1c1c !important;
+        color: #f8d7da !important;
+      }
+      
+      .url-success {
+        background: #1d2d1d !important;
+        border-color: #2d4a2d !important;
+        color: #d4edda !important;
+      }
+    }
+
     // Panels
     .viewer-panel,
     .search-results-panel {
@@ -229,93 +396,6 @@
       color: #e9ecef;
     }
 
-    // Method tabs
-    .method-tabs {
-      background: #2d2d2d;
-      border-bottom-color: #444;
-      
-      .method-tab {
-        color: #aaa;
-        background: #2d2d2d;
-        
-        &:hover {
-          background: #3d3d3d;
-          color: #e9ecef;
-        }
-        
-        &.active {
-          color: #007bff;
-          background: #1a1a1a;
-          border-bottom-color: #007bff;
-        }
-      }
-    }
-
-    .method-content {
-      background: #2d2d2d;
-    }
-
-    // INPUT SECTION - DARK THEME
-    .input-section {
-      background: #2d2d2d;
-
-      .input-header h3 {
-        color: #e9ecef;
-      }
-
-      // TEXTAREA - DARK THEME - FIXED
-      .json-textarea {
-        background: #1a1a1a !important;
-        color: #e9ecef !important;
-        border-color: #444 !important;
-        
-        &:focus {
-          border-color: #007bff !important;
-          background: #1a1a1a !important;
-          color: #e9ecef !important;
-          box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        }
-        
-        &.error {
-          border-color: #dc3545 !important;
-          background: #2d1d1d !important;
-          color: #f8a5a5 !important;
-        }
-        
-        &::placeholder {
-          color: #666 !important;
-          opacity: 0.7;
-        }
-        
-        // Syntax highlighting for JSON in dark mode
-        &::-moz-selection {
-          background: #0056b3;
-          color: #ffffff;
-        }
-        
-        &::selection {
-          background: #0056b3;
-          color: #ffffff;
-        }
-      }
-
-      .input-info {
-        color: #aaa;
-        
-        .char-count {
-          color: #e9ecef;
-        }
-        
-        .error-count {
-          color: #f8a5a5;
-        }
-        
-        .success-count {
-          color: #8fdf8f;
-        }
-      }
-    }
-
     // TREE VIEW AREA - DARK THEME - FIXED
     .tree-view-area {
       background: #1a1a1a !important;
@@ -330,109 +410,6 @@
       background: #1a1a1a !important;
       border-color: #444 !important;
       color: #e9ecef !important;
-      
-      // Tree scrollbar
-      &::-webkit-scrollbar {
-        width: 8px;
-      }
-      
-      &::-webkit-scrollbar-track {
-        background: #2d2d2d;
-        border-radius: 4px;
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background: #555;
-        border-radius: 4px;
-        
-        &:hover {
-          background: #666;
-        }
-      }
-    }
-
-    // File upload section
-    .file-upload-section {
-      .upload-area {
-        border-color: #444;
-        background: #2d2d2d !important;
-        color: #e9ecef;
-        
-        &.dragover {
-          border-color: #007bff;
-          background: #1e2a3a !important;
-        }
-        
-        p {
-          color: #aaa;
-        }
-      }
-      
-      .file-info {
-        background: #1a1a1a;
-        border-color: #444;
-        
-        h4 {
-          color: #e9ecef;
-        }
-        
-        p {
-          color: #aaa;
-        }
-      }
-      
-      .upload-error {
-        background: #2d1d1d;
-        border-color: #5c1c1c;
-        color: #f8d7da;
-      }
-    }
-
-    // URL load section - FIXED
-    .url-load-section {
-      .url-input {
-        background: #1a1a1a !important;
-        color: #e9ecef !important;
-        border-color: #444 !important;
-        
-        &:focus {
-          border-color: #007bff !important;
-          background: #1a1a1a !important;
-          color: #e9ecef !important;
-        }
-        
-        &.error {
-          border-color: #dc3545 !important;
-          background: #2d1d1d !important;
-        }
-
-        &:disabled {
-          background: #2d2d2d !important;
-          color: #777 !important;
-        }
-
-        &::placeholder {
-          color: #666 !important;
-        }
-      }
-      
-      .url-status {
-        background: #1e2a3a;
-        border-color: #2a3a4a;
-        color: #b3d9ff;
-      }
-      
-      .url-error {
-        background: #2d1d1d;
-        border-color: #5c1c1c;
-        color: #f8d7da;
-      }
-      
-      .url-success {
-        background: #1d2d1d;
-        border-color: #2d4a2d;
-        color: #d4edda;
-      }
     }
 
     .error-message {

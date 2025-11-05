@@ -1,7 +1,7 @@
-<!-- json-csv-converter.component.html -->
-<div class="json-csv-container" [class.dark-mode]="isDarkMode">
+<!-- xml-csv-converter.component.html -->
+<div class="xml-csv-container" [class.dark-mode]="isDarkMode">
   <div class="page-header">
-    <h1>JSON to CSV Converter</h1>
+    <h1>XML to CSV Converter</h1>
     <div class="header-controls">
       <div class="auto-detection" *ngIf="autoDetectedRootPath">
         <span class="detection-info">📊 Auto-detected: {{ autoDetectedRootPath }}</span>
@@ -42,13 +42,13 @@
           <div class="action-buttons">
             <button 
               (click)="convertToCsv()" 
-              [disabled]="!isValid || !jsonInput.trim()"
+              [disabled]="!isValid || !xmlInput.trim()"
               class="btn btn-convert">
               Convert to CSV
             </button>
             <button 
-              (click)="formatJson()" 
-              [disabled]="!jsonInput.trim()"
+              (click)="formatXml()" 
+              [disabled]="!xmlInput.trim()"
               class="btn btn-format">
               Format
             </button>
@@ -65,27 +65,27 @@
         <div class="method-content" *ngIf="activeInputMethod === 'manual'">
           <div class="input-section">
             <div class="input-header">
-              <h3>JSON Input</h3>
+              <h3>XML Input</h3>
               <div class="input-actions">
-                <button class="btn btn-sm" (click)="loadSampleJson()">Sample</button>
+                <button class="btn btn-sm" (click)="loadSampleXml()">Sample</button>
               </div>
             </div>
 
             <div class="textarea-container">
               <textarea
-                class="json-textarea"
-                [(ngModel)]="jsonInput"
-                (ngModelChange)="onJsonInputChange()"
-                placeholder='Paste your JSON here...'
+                class="xml-textarea"
+                [(ngModel)]="xmlInput"
+                (ngModelChange)="onXmlInputChange()"
+                placeholder='Paste your XML here...'
                 spellcheck="false"
-                [class.error]="!isValid && jsonInput.trim() !== ''">
+                [class.error]="!isValid && xmlInput.trim() !== ''">
               </textarea>
             </div>
 
             <div class="input-info">
-              <span class="char-count">{{ jsonInput?.length || 0 }} chars</span>
-              <span class="error-count" *ngIf="!isValid && jsonInput.trim() !== ''">⚠️ Invalid JSON</span>
-              <span class="success-count" *ngIf="isValid && jsonInput.trim() !== ''">✓ Valid JSON</span>
+              <span class="char-count">{{ xmlInput?.length || 0 }} chars</span>
+              <span class="error-count" *ngIf="!isValid && xmlInput.trim() !== ''">⚠️ Invalid XML</span>
+              <span class="success-count" *ngIf="isValid && xmlInput.trim() !== ''">✓ Valid XML</span>
             </div>
 
             <div *ngIf="errorMessage" class="error-message">
@@ -105,11 +105,11 @@
                 type="file" 
                 #fileInput
                 (change)="onFileSelected($event)"
-                accept=".json,application/json"
+                accept=".xml,application/xml,text/xml"
                 class="file-input">
               
               <div class="upload-content" *ngIf="!selectedFile">
-                <p>Drop JSON file or click to browse</p>
+                <p>Drop XML file or click to browse</p>
                 <button class="btn btn-primary" (click)="fileInput.click()">
                   Choose File
                 </button>
@@ -141,7 +141,7 @@
               <input
                 type="url"
                 [(ngModel)]="urlInput"
-                placeholder="https://example.com/data.json"
+                placeholder="https://example.com/data.xml"
                 class="url-input"
                 [class.error]="urlError"
                 [disabled]="urlLoading">
@@ -167,7 +167,7 @@
           </div>
         </div>
 
-        <div class="conversion-options" *ngIf="isValid && jsonInput.trim()">
+        <div class="conversion-options" *ngIf="isValid && xmlInput.trim()">
           <h4>Conversion Options</h4>
           <div class="options-grid">
             <label class="option-checkbox">
@@ -175,12 +175,8 @@
               <span>Include Headers</span>
             </label>
             <label class="option-checkbox">
-              <input type="checkbox" [(ngModel)]="conversionOptions.flattenObjects">
-              <span>Flatten Objects</span>
-            </label>
-            <label class="option-checkbox">
-              <input type="checkbox" [(ngModel)]="conversionOptions.flattenArrays">
-              <span>Flatten Arrays</span>
+              <input type="checkbox" [(ngModel)]="conversionOptions.includeAttributes">
+              <span>Include Attributes</span>
             </label>
             <div class="option-select">
               <label>Delimiter:</label>
@@ -191,10 +187,18 @@
               </select>
             </div>
             <div class="option-select">
+              <label>Text Content:</label>
+              <select [(ngModel)]="conversionOptions.textContentHandling">
+                <option value="separate">Separate Column</option>
+                <option value="inline">Inline Value</option>
+              </select>
+            </div>
+            <div class="option-select">
               <label>Array Handling:</label>
               <select [(ngModel)]="conversionOptions.arrayHandling">
+                 <option value="stringify">Stringify Arrays</option>
                 <option value="expand">Expand Arrays</option>
-                <option value="stringify">Stringify Arrays</option>
+               
               </select>
             </div>
           </div>

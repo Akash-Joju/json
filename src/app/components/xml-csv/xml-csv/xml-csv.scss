@@ -1,4 +1,4 @@
-// json-csv-converter.scss
+// xml-csv-converter.scss
 :host {
   display: block;
   height: 100vh;
@@ -22,7 +22,7 @@ $dark-info-bg: #1e2a3a;
 $dark-info-border: #2a3a4a;
 $dark-info-text: #b3d9ff;
 
-.json-csv-container {
+.xml-csv-container {
   max-width: 100%;
   margin: 0;
   padding: 4px;
@@ -85,7 +85,7 @@ $dark-info-text: #b3d9ff;
     }
 
     // Textareas
-    .json-textarea, .csv-textarea {
+    .xml-textarea, .csv-textarea {
       background: $dark-bg;
       color: $dark-text;
       border-color: $dark-border;
@@ -258,6 +258,11 @@ $dark-info-text: #b3d9ff;
           background: $dark-primary;
           color: white;
         }
+      }
+      
+      &-sm {
+        padding: 2px 4px;
+        font-size: 10px;
       }
     }
 
@@ -523,7 +528,7 @@ $dark-info-text: #b3d9ff;
     margin-bottom: 6px;
   }
 
-  .json-textarea, .csv-textarea {
+  .xml-textarea, .csv-textarea {
     width: 100%;
     min-height: 400px;
     border: 1px solid #ced4da;
@@ -992,7 +997,7 @@ $dark-info-text: #b3d9ff;
 }
 
 @media (max-width: 768px) {
-  .json-csv-container {
+  .xml-csv-container {
     padding: 3px;
     height: 100vh;
 
@@ -1019,7 +1024,7 @@ $dark-info-text: #b3d9ff;
       padding: 6px;
     }
 
-    .json-textarea, .csv-textarea {
+    .xml-textarea, .csv-textarea {
       min-height: 300px;
       max-height: calc(50vh - 100px);
       padding: 6px;
@@ -1033,6 +1038,7 @@ $dark-info-text: #b3d9ff;
     }
   }
 }
+
 .btn-format {
   background: #6f42c1 !important;
   color: white !important;

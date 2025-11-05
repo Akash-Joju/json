@@ -14,6 +14,18 @@ $modified-bg: #fff8e1;
 $success-color: #28a745;
 $warning-color: #ffc107;
 
+// Dark theme variables
+$dark-bg: #1a1a1a;
+$dark-surface: #2d2d2d;
+$dark-border: #444;
+$dark-text: #e9ecef;
+$dark-text-muted: #9ca3af;
+$dark-primary: #3b82f6;
+$dark-primary-hover: #60a5fa;
+$dark-added-bg: #1e3a2d;
+$dark-removed-bg: #3a1e1e;
+$dark-modified-bg: #3a2e1e;
+
 // Buttons
 @mixin button($bg, $hover) {
   background: $bg;
@@ -52,44 +64,283 @@ $warning-color: #ffc107;
   font-family: "Consolas", "Courier New", monospace;
   font-size: 12px;
   color: $text;
-}
+  background: white;
+  transition: all 0.3s ease;
 
-// ==========================
-// Header (Centered Layout)
-// ==========================
-.results-header {
-  background: #fff;
-  border: 1px solid $border;
-  border-radius: 6px;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  // COMPLETE DARK MODE STYLES
+  &.dark-mode {
+    background: $dark-bg;
+    color: $dark-text;
 
-  .header-content {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    text-align: center;
-
-    h2 {
-      grid-column: 2;
-      font-size: 1rem;
-      margin: 0;
-      font-weight: 600;
-    }
-
-    .back-btn {
-      justify-self: start;
-      @include button($primary, $primary-hover);
-    }
-
-    .header-actions {
-      justify-self: end;
-
-      button {
-         @include button(#6c757d, #5a6268);
+    // Theme toggle header
+    .theme-toggle-header {
+      .header-content h2 {
+        color: $dark-text;
       }
     }
+
+    // Summary Card
+    .summary-card {
+      .summary-item {
+        background: $dark-surface;
+        border-color: $dark-border;
+
+        .summary-label {
+          color: $dark-text-muted;
+        }
+
+        .summary-value {
+          color: $dark-primary;
+        }
+
+        &.success {
+          border-left-color: $success-color;
+          
+          .summary-value {
+            color: $success-color;
+          }
+        }
+
+        &.warning {
+          border-left-color: $warning-color;
+          
+          .summary-value {
+            color: $warning-color;
+          }
+        }
+      }
+    }
+
+    // Options Section
+    .options-section {
+      background: $dark-surface;
+      border-color: $dark-border;
+
+      .options-header h3 {
+        color: $dark-text;
+      }
+
+      .options-grid label {
+        background: $dark-bg;
+        border-color: $dark-border;
+        color: $dark-text;
+
+        &:hover {
+          border-color: $dark-primary;
+          background: lighten($dark-bg, 5%);
+        }
+      }
+
+      .numeric-option,
+      .depth-option {
+        label {
+          color: $dark-text-muted;
+        }
+
+        input {
+          background: $dark-bg;
+          color: $dark-text;
+          border-color: $dark-border;
+        }
+
+        small {
+          color: $dark-text-muted;
+        }
+      }
+    }
+
+    // Differences Navigation
+    .differences-navigation {
+      background: $dark-surface;
+      border-color: $dark-border;
+
+      .nav-header h3 {
+        color: $dark-text;
+      }
+
+      .nav-controls .nav-counter {
+        background: $dark-bg;
+        color: $dark-text;
+      }
+
+      .difference-description {
+        .diff-type-badge {
+          &.badge-added {
+            background: $dark-added-bg;
+            color: #4ade80;
+          }
+          &.badge-removed {
+            background: $dark-removed-bg;
+            color: #f87171;
+          }
+          &.badge-modified {
+            background: $dark-modified-bg;
+            color: #fbbf24;
+          }
+        }
+
+        .diff-path,
+        .diff-details {
+          color: $dark-text-muted;
+        }
+
+        .diff-values {
+          .value-left,
+          .value-right {
+            background: $dark-bg;
+            border-color: $dark-border;
+            color: $dark-text;
+          }
+        }
+      }
+    }
+
+    // JSON Viewers
+    .comparison-container {
+      .json-section {
+        background: $dark-surface;
+        border-color: $dark-border;
+
+        h3 {
+          background: $dark-bg;
+          border-color: $dark-border;
+          color: $dark-text;
+        }
+
+        .json-viewer {
+          background: $dark-bg;
+
+          .json-lines .json-line {
+            .line-number {
+              color: $dark-text-muted;
+            }
+
+            &.diff-added {
+              background: $dark-added-bg;
+            }
+            &.diff-removed {
+              background: $dark-removed-bg;
+            }
+            &.diff-modified {
+              background: $dark-modified-bg;
+            }
+            &.highlighted {
+              outline: 2px solid $dark-primary;
+              background: rgba($dark-primary, 0.1);
+            }
+          }
+        }
+      }
+    }
+
+    // No Differences
+    .no-differences {
+      background: $dark-surface;
+      border-color: $dark-border;
+
+      h3 {
+        color: $dark-text;
+      }
+
+      p {
+        color: $dark-text-muted;
+      }
+    }
+
+    // Buttons
+    .btn {
+      background: $dark-surface;
+      color: $dark-text;
+      border-color: $dark-border;
+
+      &:hover:not(:disabled) {
+        background: lighten($dark-surface, 5%);
+        color: $dark-text;
+      }
+
+      &--primary {
+        background: $dark-primary;
+        color: white;
+        border-color: $dark-primary;
+
+        &:hover:not(:disabled) {
+          background: $dark-primary-hover;
+          border-color: $dark-primary-hover;
+        }
+      }
+
+      &--secondary {
+        background: #6c757d;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background: #5a6268;
+        }
+      }
+    }
+
+    .btn--blue {
+      background-color: $dark-primary;
+      color: #ffffff;
+      border-color: $dark-primary;
+
+      &:hover {
+        background-color: $dark-primary-hover;
+      }
+    }
+  }
+}
+
+// Theme Toggle Header
+.theme-toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: $text;
+    }
+
+    .theme-toggle-btn {
+      background: none;
+      border: 1px solid $border;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: #f8f9fa;
+      }
+    }
+  }
+
+  .header-actions {
+    button {
+      @include button(#6c757d, #5a6268);
+    }
+  }
+}
+
+.dark-mode .theme-toggle-header .theme-toggle-btn {
+  border-color: $dark-border;
+  color: $dark-text;
+  
+  &:hover {
+    background: $dark-surface;
+    color: $dark-text;
   }
 }
 

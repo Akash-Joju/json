@@ -13,7 +13,7 @@ import { RouterModule } from '@angular/router';
         <div class="nav-brand">
           <a routerLink="/" class="logo-link">
             <span class="logo-icon">📋</span>
-            <span class="logo-text">Xonify Tools</span>
+            <span class="logo-text">AWCS Labs</span>
           </a>
         </div>
 

@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="home-container">
       <div class="hero-section">
-        <h1>Welcome to Xonify Tools</h1>
+        <h1>Welcome to AWCS Labs</h1>
         <p class="subtitle">Your all-in-one solution for working with JSON & XML data</p>
         
         <div class="cta-buttons">
@@ -47,6 +47,18 @@ import { CommonModule } from '@angular/common';
             <div class="feature-icon">📋</div>
             <h3>Copy & Share</h3>
             <p>Easy copying and sharing of formatted JSON</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🌙</div>
+            <h3>Dark Mode</h3>
+            <p>Visualize the data on dark mode</p>
+          </div>
+
+           <div class="feature-card">
+            <div class="feature-icon">🏷️</div>
+            <h3>CSV Conversion</h3>
+            <p>Converting JSON & XML into CSV</p>
           </div>
         </div>
       </div>

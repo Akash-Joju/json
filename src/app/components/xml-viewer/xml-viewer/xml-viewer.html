@@ -1,5 +1,15 @@
-<!-- xml-viewer.component.html - WITH INTEGRATED SEARCH RESULTS -->
-<div class="xml-viewer" [class.dark-theme]="theme === 'dark'">
+<!-- xml-viewer.component.html - WITH INTEGRATED SEARCH RESULTS AND THEME TOGGLE -->
+<div class="xml-viewer" [class.dark-mode]="isDarkMode">
+  <!-- Header with Theme Toggle - NEW -->
+  <div class="page-header">
+    <h1>XML Viewer</h1>
+    <div class="theme-toggle">
+      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        {{ isDarkMode ? '☀️' : '🌙' }}
+      </button>
+    </div>
+  </div>
+
   <!-- Input Methods Section -->
   <div class="input-methods">
     <div class="method-tabs">
@@ -246,13 +256,14 @@
 
               <div class="line-content" [style.padding-left.px]="treeLine.level * 20">
                 <!-- Toggle Button -->
-                <span class="toggle" 
-                      *ngIf="(treeLine.type === 'open' || treeLine.type === 'self-closing') && treeLine.node.children.length > 0"
-                      (click)="$event.stopPropagation(); toggleNode(treeLine.node)"
-                      [style.color]="currentColors.expandIcon"
-                      [style.background]="currentColors.expandIcon + '20'">
-                  {{ treeLine.node.isExpanded ? '−' : '+' }}
-                </span>
+                <!-- In the tree-line section, update the toggle button -->
+<span class="toggle" 
+      *ngIf="(treeLine.type === 'open' || treeLine.type === 'self-closing') && treeLine.node.children.length > 0"
+      (click)="onToggleClick(treeLine, $event)"
+      [style.color]="currentColors.expandIcon"
+      [style.background]="currentColors.expandIcon + '20'">
+  {{ treeLine.node.isExpanded ? '−' : '+' }}
+</span>
 
                 <span class="toggle-placeholder" 
                       *ngIf="!(treeLine.type === 'open' || treeLine.type === 'self-closing') || treeLine.node.children.length === 0">

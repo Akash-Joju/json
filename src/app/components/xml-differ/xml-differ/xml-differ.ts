@@ -21,11 +21,18 @@ interface ComparisonOptions {
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
-<div class="xml-differ-container">
-  <div class="header">
+<div class="xml-differ-container" [class.dark-mode]="isDarkMode">
+  <!-- Header with Theme Toggle -->
+  <div class="page-header">
     <h2>XML Differ</h2>
-    <p>Compare two XML documents</p>
+    <div class="theme-toggle">
+      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        {{ isDarkMode ? '☀️' : '🌙' }}
+      </button>
+    </div>
   </div>
+
+  <p class="subtitle">Compare two XML documents</p>
 
   <!-- Compact Load Section -->
   <div class="compact-load-section">
@@ -172,6 +179,9 @@ export class XmlDifferComponent {
   loading: boolean = false;
   formatStatus: string = '';
 
+  // Dark theme properties
+  isDarkMode: boolean = false;
+
   options: ComparisonOptions = {
     ignoreWhitespace: true,
     ignoreComments: true,
@@ -188,7 +198,18 @@ export class XmlDifferComponent {
     private xmlUtils: XmlUtilsService,
     private router: Router,
     private xmlCompareService: XmlCompareService
-  ) {}
+  ) {
+    const savedTheme = localStorage.getItem('xml-viewer-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
+
+  // Dark theme toggle method
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   // File selection handler with auto-format
   onFileSelected(event: any, isLeft: boolean): void {

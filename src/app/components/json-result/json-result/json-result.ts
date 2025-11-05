@@ -46,16 +46,19 @@ interface ComparisonOptions {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-<div class="json-results-container">
-  <!-- Header with Back Button -->
-  <div class="results-header">
+<div class="json-results-container" [class.dark-mode]="isDarkMode">
+  <!-- Theme Toggle Button -->
+  <div class="theme-toggle-header">
     <div class="header-content">
       <h2>JSON Comparison Results</h2>
-      <div class="header-actions">
-        <button (click)="toggleOptionsPanel()" class="btn btn--secondary">
-          ⚙️ {{showOptionsPanel ? 'Hide' : 'Show'}} Options
-        </button>
-      </div>
+      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        {{ isDarkMode ? '☀️' : '🌙' }}
+      </button>
+    </div>
+    <div class="header-actions">
+      <button (click)="toggleOptionsPanel()" class="btn btn--secondary">
+        ⚙️ {{showOptionsPanel ? 'Hide' : 'Show'}} Options
+      </button>
     </div>
   </div>
 
@@ -232,6 +235,7 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   currentDiffIndex: number = 0;
   showOptionsPanel: boolean = false;
   hasData: boolean = false;
+  isDarkMode: boolean = false;
 
   options: ComparisonOptions = {
     ignoreArrayOrder: false,
@@ -249,7 +253,17 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private jsonCompareService: JsonCompareService
-  ) {}
+  ) {
+    const savedTheme = localStorage.getItem('json-differ-theme');
+    if (savedTheme) {
+      this.isDarkMode = savedTheme === 'dark';
+    }
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    localStorage.setItem('json-differ-theme', this.isDarkMode ? 'dark' : 'light');
+  }
 
   ngOnInit(): void {
     const data = this.jsonCompareService.getComparisonData();

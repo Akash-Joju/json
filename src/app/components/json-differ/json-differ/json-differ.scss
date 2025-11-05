@@ -19,12 +19,191 @@ $info-bg: #d1ecf1;
 $info-border: #bee5eb;
 $info-text: #0c5460;
 
+// Dark theme variables
+$dark-bg: #1a1a1a;
+$dark-surface: #2d2d2d;
+$dark-border: #444;
+$dark-text: #e9ecef;
+$dark-text-muted: #9ca3af;
+$dark-primary: #3b82f6;
+$dark-primary-hover: #60a5fa;
+
 // Compact Container
 .json-differ-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 15px;
   font-size: 0.8rem;
+  background: white;
+  color: $text-color;
+  transition: all 0.3s ease;
+
+  // COMPLETE DARK MODE STYLES
+  &.dark-mode {
+    background: $dark-bg;
+    color: $dark-text;
+
+    // Theme toggle header
+    .theme-toggle-header {
+      h2 {
+        color: $dark-text;
+      }
+    }
+
+    // Header text
+    p {
+      color: $dark-text-muted;
+    }
+
+    // Compact Load Section
+    .compact-load-section {
+      .json-source {
+        label {
+          color: $dark-text-muted;
+        }
+      }
+    }
+
+    // Buttons
+    .btn {
+      background: $dark-surface;
+      color: $dark-text;
+      border-color: $dark-border;
+
+      &:hover:not(:disabled) {
+        background: lighten($dark-surface, 5%);
+        color: $dark-text;
+      }
+
+      &:disabled {
+        background: #333;
+        color: #777;
+        border-color: #555;
+      }
+
+      &--primary {
+        background: $dark-primary;
+        color: white;
+        border-color: $dark-primary;
+
+        &:hover:not(:disabled) {
+          background: $dark-primary-hover;
+          border-color: $dark-primary-hover;
+        }
+      }
+    }
+
+    // URL Input
+    .url-input.compact {
+      background: $dark-bg;
+      color: $dark-text;
+      border-color: $dark-border;
+
+      &:focus {
+        border-color: $dark-primary;
+        background: $dark-bg;
+        color: $dark-text;
+      }
+
+      &:disabled {
+        background: $dark-surface;
+        color: $dark-text-muted;
+      }
+
+      &::placeholder {
+        color: $dark-text-muted;
+      }
+    }
+
+    // JSON Textareas
+    .json-textarea.compact {
+      background: $dark-bg;
+      color: $dark-text;
+      border-color: $dark-border;
+
+      &:focus {
+        border-color: $dark-primary;
+        background: $dark-bg;
+        color: $dark-text;
+      }
+
+      &::placeholder {
+        color: $dark-text-muted;
+      }
+    }
+
+    // JSON Headers
+    .json-header {
+      h4 {
+        color: $dark-text;
+      }
+
+      .line-count {
+        color: $dark-text-muted;
+        background: $dark-surface;
+      }
+    }
+
+    // Messages
+    .compact-message {
+      &.loading {
+        background: #2d2d1d;
+        border-color: #444422;
+        color: #e9d8a6;
+      }
+
+      &.error {
+        background: #2d1d1d;
+        border-color: #5c1c1c;
+        color: #f8a5a5;
+      }
+
+      &.info {
+        background: #1d2d2d;
+        border-color: #2d4a4a;
+        color: #a5d6d6;
+      }
+    }
+  }
+}
+
+// Theme Toggle Header
+.theme-toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  h2 {
+    color: $text-color;
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .theme-toggle-btn {
+    background: none;
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: $light-color;
+    }
+  }
+}
+
+.dark-mode .theme-toggle-header .theme-toggle-btn {
+  border-color: $dark-border;
+  color: $dark-text;
+  
+  &:hover {
+    background: $dark-surface;
+    color: $dark-text;
+  }
 }
 
 // Compact Header
