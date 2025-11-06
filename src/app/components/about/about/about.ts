@@ -1,130 +1,168 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="about-container">
-      <!-- Hero Section -->
-      <div class="hero-section">
-        <div class="hero-content">
-          <div class="hero-badge">🚀 Powerful JSON & XML Tools</div>
-          <h1 class="hero-title">Transform Your Data Workflow</h1>
-          <p class="hero-subtitle">
-            Experience the ultimate suite of JSON & XML processing tools designed for developers, 
-            data analysts, and professionals who demand precision and efficiency.
-          </p>
-          <div class="hero-stats">
-            <div class="stat">
-              <div class="stat-number">5+</div>
-              <div class="stat-label">Powerful Tools</div>
-            </div>
-            <div class="stat">
-              <div class="stat-number">100%</div>
-              <div class="stat-label">Free & Open</div>
-            </div>
-            <div class="stat">
-              <div class="stat-number">⚡</div>
-              <div class="stat-label">Lightning Fast</div>
-            </div>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="floating-card card-1">📊</div>
-          <div class="floating-card card-2">🔧</div>
-          <div class="floating-card card-3">🎯</div>
-          <div class="floating-card card-4">⚡</div>
-        </div>
-      </div>
-
-      <!-- Features Grid -->
-      <section class="features-section">
-        <h2 class="section-title">Why Choose Our Tools?</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🎨</div>
-            <h3>Beautiful Interface</h3>
-            <p>Clean, intuitive design that makes data processing a pleasure</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>Lightning Fast</h3>
-            <p>Process large datasets instantly with optimized algorithms</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <h3>Privacy First</h3>
-            <p>Your data never leaves your browser - complete privacy guaranteed</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>Responsive</h3>
-            <p>Works perfectly on desktop and tablets</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🎯</div>
-            <h3>Precision Tools</h3>
-            <p>Accurate conversions and validations you can trust</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">🚀</div>
-            <h3>No Setup Required</h3>
-            <p>Start using immediately in your browser - zero installation</p>
-          </div>
+      <!-- Header Section -->
+      <section class="header-section">
+        <div class="header-content">
+          <div class="header-icon"></div>
+          <h1>About AWCS Labs</h1>
+          <p class="header-subtitle">Innovation arm of Adhwaitha Web Consultancy Services</p>
         </div>
       </section>
 
-      <!-- Mission Section -->
-      <section class="mission-section">
-        <div class="mission-content">
-          <div class="mission-text">
-            <h2>Our Vision</h2>
+      <!-- Main Content -->
+      <div class="content-container">
+        <!-- Who We Are -->
+        <section class="content-section">
+          <h2>Who We Are</h2>
+          <div class="section-content">
             <p>
-              We believe that powerful data tools should be accessible to everyone. 
-              Our mission is to break down barriers in data processing by providing 
-              professional-grade tools that are completely free and easy to use.
+              AWCS Labs is the innovation arm of <strong>Adhwaitha Web Consultancy Services Pvt. Ltd.</strong>, 
+              dedicated to creating fast, reliable, and developer-friendly tools that simplify everyday technical tasks.
             </p>
-            <div class="mission-highlights">
-              <div class="highlight">
-                <span class="highlight-icon">💝</span>
-                <span>Always Free</span>
-              </div>
-              <div class="highlight">
-                <span class="highlight-icon">🌍</span>
-                <span>Accessible Worldwide</span>
-              </div>
-              <div class="highlight">
-                <span class="highlight-icon">🔓</span>
-                <span>No Restrictions</span>
-              </div>
-            </div>
+            <p>
+              We believe that innovation should make life easier — not more complicated. That's why AWCS Labs builds 
+              lightweight, powerful utilities designed to help developers view, compare, and transform data with just a few clicks.
+            </p>
           </div>
-          <div class="mission-visual">
-            <div class="visual-element globe">🌐</div>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- Contact CTA -->
-      <section class="contact-section">
-        <div class="contact-card">
-          <div class="contact-content">
-            <h2>Ready to Transform Your Workflow?</h2>
-            <p>Start using our powerful JSON tools today and experience the difference</p>
-            <div class="cta-buttons">
-              <button class="cta-primary" routerLink="/">Get Started Now</button>
-              <button class="cta-secondary">Learn More</button>
+        <!-- Mission -->
+        <section class="content-section mission-section">
+          <div class="mission-header">
+            <!-- <span class="mission-icon">🎯</span> -->
+            <h2>Our Mission</h2>
+          </div>
+          <div class="section-content">
+            <p>
+              To empower developers and tech enthusiasts around the world with simple yet powerful web tools 
+              that transform how they interact with data.
+            </p>
+            <p class="mission-highlight">
+              We focus on speed, precision, and accessibility, ensuring our tools remain open, secure, and user-centric.
+            </p>
+          </div>
+        </section>
+
+        <!-- What We Do -->
+        <section class="content-section">
+          <h2>What We Do</h2>
+          <div class="section-content">
+            <p>At AWCS Labs, we specialize in building online tools for:</p>
+            <div class="tools-list">
+              <div class="tool-item">
+                <span class="tool-bullet">•</span>
+                <div>
+                  <strong>JSON Viewing & Formatting</strong> – Beautify, structure, and validate JSON effortlessly.
+                </div>
+              </div>
+              <div class="tool-item">
+                <span class="tool-bullet">•</span>
+                <div>
+                  <strong>XML Comparison & Diffing</strong> – Identify differences between XML files in seconds.
+                </div>
+              </div>
+              <div class="tool-item">
+                <span class="tool-bullet">•</span>
+                <div>
+                  <strong>Data Conversion Tools</strong> – Convert between JSON, XML, and CSV formats instantly.
+                </div>
+              </div>
+              <div class="tool-item">
+                <span class="tool-bullet">•</span>
+                <div>
+                  <strong>More Utilities Coming Soon</strong> – YAML tools, CSV diff, and advanced data analytics support are on our roadmap.
+                </div>
+              </div>
+            </div>
+            <p class="note-text">
+              Each tool is built with performance-first architecture, ensuring a seamless experience even for large data sets.
+            </p>
+          </div>
+        </section>
+
+        <!-- Philosophy -->
+        <section class="content-section">
+          <h2>Our Philosophy</h2>
+          <div class="section-content">
+            <p>
+              We believe that technology should be accessible to everyone, from seasoned developers to beginners 
+              experimenting with APIs and data formats.
+            </p>
+            <div class="philosophy-grid">
+              <div class="philosophy-item">
+                <h3>Simplicity</h3>
+                <p>Tools that work right out of the box.</p>
+              </div>
+              <div class="philosophy-item">
+                <h3>Transparency</h3>
+                <p>No hidden data collection; everything runs securely in your browser.</p>
+              </div>
+              <div class="philosophy-item">
+                <h3>Innovation</h3>
+                <p>Constantly improving and experimenting to bring better developer experiences.</p>
+              </div>
             </div>
           </div>
-          <div class="contact-visual">
-            <div class="rocket">🚀</div>
+        </section>
+
+        <!-- Roots -->
+        <section class="content-section">
+          <h2>Our Roots</h2>
+          <div class="section-content">
+            <p>
+              AWCS Labs is part of <strong>Adhwaitha Web Consultancy Services</strong>, a technology company 
+              committed to "Customization Through Innovation."
+            </p>
+            <p>
+              We carry forward that spirit — crafting modular, adaptable, and forward-thinking solutions 
+              to help businesses and individuals thrive in the digital age.
+            </p>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <!-- CTA -->
+        <section class="cta-section">
+          <div class="cta-content">
+            <h2>Join the Journey</h2>
+            <p>We're just getting started. Explore our tools, share your feedback, and help us build the next generation of developer utilities.</p>
+            <div class="cta-buttons">
+              <a routerLink="/" class="btn btn-primary">Explore Tools</a>
+              <!-- <a routerLink="/contact" class="btn btn-secondary">Get In Touch</a> -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer Quote -->
+        <section class="quote-section">
+          <p class="quote-text">AWCS Labs – Innovation in Every Line of Code.</p>
+        </section>
+      </div>
     </div>
   `,
   styleUrls: ['./about.scss']
 })
-export class AboutComponent {}
+export class AboutComponent implements OnInit {
+  
+  ngOnInit() {
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
+  }
+}

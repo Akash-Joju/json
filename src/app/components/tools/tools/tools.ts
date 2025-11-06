@@ -8,106 +8,71 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="tools-container">
-      <div class="tools-header">
-        <h1>JSON & XML Tools Collection</h1>
-        <p class="subtitle">Various utilities for working with JSON and XML data</p>
-      </div>
+    <section class="tools-section">
+      <h2 class="section-title">Tools</h2>
 
       <div class="tools-grid">
-        <div class="tool-card" routerLink="/viewer">
-          <div class="tool-icon">🔍</div>
+        <article class="tool-card">
+          <div class="tool-icon">
+            <img src="assets/icons/brain.svg" alt="" />
+          </div>
           <h3>JSON Viewer</h3>
-          <p>Visualize and explore JSON data with our interactive tree viewer</p>
-          <div class="tool-features">
-            <span class="feature-tag">Tree View</span>
-            <span class="feature-tag">Syntax Highlight</span>
-            <span class="feature-tag">Validation</span>
-          </div>
-        </div>
+          <p>Pretty print and explore JSON instantly.</p>
+          <a routerLink="/viewer" class="card-cta">Open Tool →</a>
+        </article>
 
-        <div class="tool-card" routerLink="/xml-viewer">
-          <div class="tool-icon">🔧</div>
+        <article class="tool-card">
+          <div class="tool-icon">
+            <img src="assets/icons/arrow-both.svg" alt="" />
+          </div>
+          <h3>JSON Diff</h3>
+          <p>Compare two JSON files side by side.</p>
+          <a routerLink="/json-differ" class="card-cta">Compare Now →</a>
+        </article>
+
+        <article class="tool-card">
+          <div class="tool-icon">
+            <img src="assets/icons/a-b-2.svg" alt="" />
+          </div>
+          <h3>XML Compare</h3>
+          <p>Spot differences in XML structures.</p>
+          <a routerLink="/xml-differ" class="card-cta">Try XML Diff →</a>
+        </article>
+
+        <article class="tool-card">
+          <div class="tool-icon">
+            <img src="assets/icons/api-app-off.svg" alt="" />
+          </div>
+          <h3>JSON ↔ CSV Converter</h3>
+          <p>Convert between structured formats in one click.</p>
+          <a routerLink="/json-csv" class="card-cta">Convert Data →</a>
+        </article>
+
+
+        <article class="tool-card">
+          <div class="tool-icon">
+            <img src="assets/icons/activity.svg" alt="" />
+          </div>
           <h3>XML Viewer</h3>
-          <p>Visualize and explore XML data with our interactive tree viewer</p>
-          <div class="tool-features">
-            <span class="feature-tag">Tree View</span>
-            <span class="feature-tag">Syntax Highlight</span>
-            <span class="feature-tag">Validation</span>
+          <p>Beautify and analyze XML Documents</p>
+          <a routerLink="/xml-viewer" class="card-cta">Open Viewer →</a>
+        </article>
+
+
+        <article class="tool-card">
+          <div class="tool-icon">
+            <img src="assets/icons/article.svg" alt="" />
           </div>
-        </div>
-
-        <div class="tool-card " routerLink="/json-differ">
-          <div class="tool-icon">⚡</div>
-          <h3>JSON Differ</h3>
-          <p>Compare two JSON objects and find differences with visual highlighting</p>
-          <div class="tool-features">
-            <span class="feature-tag">Diff View</span>
-            <span class="feature-tag">Side by Side</span>
-            <span class="feature-tag">Visual Compare</span>
-          </div>
-        </div>
-
-        <!-- NEW: XML Code Editor Tool -->
-        <!-- <div class="tool-card" routerLink="/xml-code">
-          <div class="tool-icon">📝</div>
-          <h3>XML Code Editor</h3>
-          <p>Advanced XML editor with syntax highlighting, folding, and formatting features</p>
-          <div class="tool-features">
-            <span class="feature-tag">Line Numbers</span>
-            <span class="feature-tag">Code Folding</span>
-            <span class="feature-tag">Syntax Highlight</span>
-            <span class="feature-tag">Auto Format</span>
-          </div>
-        </div> -->
-
-        <!-- <div class="tool-card" routerLink="/xml-viewer">
-          <div class="tool-icon">🔧</div>
-          <h3>XML Viewer</h3>
-          <p>Visualize and explore XML data with our interactive tree viewer</p>
-          <div class="tool-features">
-            <span class="feature-tag">Tree View</span>
-            <span class="feature-tag">Syntax Highlight</span>
-            <span class="feature-tag">Validation</span>
-          </div>
-        </div> -->
-
-        <div class="tool-card " routerLink="/xml-differ">
-          <div class="tool-icon">🔄</div>
-          <h3>XML Differ</h3>
-          <p>Compare two XML documents and find differences with visual highlighting</p>
-          <div class="tool-features">
-            <span class="feature-tag">XML Compare</span>
-            <span class="feature-tag">Side by Side</span>
-            <span class="feature-tag">Visual Diff</span>
-          </div>
-        </div>
-
-        <div class="tool-card" routerLink="/json-csv">
-          <div class="tool-icon">🔐</div>
-          <h3>JSON Convertor</h3>
-          <p>Converting JSON</p>
-          <div class="tool-features">
-            <span class="feature-tag">Conversion</span>
-            <span class="feature-tag">CSV</span>
-            <span class="feature-tag">Table view</span>
-          </div>
-        </div>
+          <h3>XML ↔ CSV Converter</h3>
+          <p>Convert between structured formats in one click.</p>
+          <a routerLink="/xml-csv" class="card-cta">Open Converter →</a>
+        </article>
 
 
-
-         <div class="tool-card" routerLink="/xml-csv">
-          <div class="tool-icon"> 🚀</div>
-          <h3>XML Convertor</h3>
-          <p>Converting XML</p>
-          <div class="tool-features">
-            <span class="feature-tag">Conversion</span>
-            <span class="feature-tag">CSV</span>
-             <span class="feature-tag">Table view</span>
-          </div>
-        </div>
+          
       </div>
-    </div>
+    </section>
+
   `,
   styleUrls: ['./tools.scss']
 })

@@ -1,5 +1,5 @@
 // json-csv-converter.component.ts
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSizePipe } from '../../../pipes/file-size.pipe';
@@ -24,7 +24,22 @@ interface CsvTableData {
   templateUrl: './json-csv.html',
   styleUrls: ['./json-csv.scss']
 })
-export class JsonCsvConverterComponent {
+export class JsonCsvConverterComponent implements OnInit {
+
+  ngOnInit() {
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
+  }
   activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
   jsonInput: string = '';
   isValid: boolean = true;

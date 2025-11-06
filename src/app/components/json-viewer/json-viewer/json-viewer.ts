@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, ViewChild, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JsonUtilsService, JsonNode, SearchResult } from '../../../services/json-utils.service';
@@ -330,7 +330,22 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
   `,
   styleUrls: ['./json-viewer.scss']
 })
-export class JsonViewerComponent {
+export class JsonViewerComponent implements OnInit {
+
+  ngOnInit() {
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
+  }
   @ViewChild('treeContainer') treeContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
 

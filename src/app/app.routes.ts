@@ -11,6 +11,8 @@ import { XmlResultsComponent } from './components/xml-result/xml-result/xml-resu
 import { XmlCodeEditorComponent } from './components/xml-code/xml-code/xml-code';
 import { JsonCsvConverterComponent } from './components/json-csv/json-csv/json-csv';
 import { XmlCsvConverterComponent } from './components/xml-csv/xml-csv/xml-csv';
+import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy/privacy-policy';
+import { TermsConditionsComponent } from './components/terms-and-conditions/terms-and-conditions/terms-and-conditions';
 export const routes: Routes = [
   { path: '', component: HomeComponent, title: 'AWCS Labs' },
   { path: 'viewer', component: JsonViewerComponent, title: 'AWCS Labs-JSON Viewer' },
@@ -24,5 +26,7 @@ export const routes: Routes = [
    { path: 'json-csv', component: JsonCsvConverterComponent, title: 'AWCS Labs-Json-CSV' },
    { path: 'xml-csv', component: XmlCsvConverterComponent, title: 'AWCS Labs-XML-CSV' },
   { path: 'about', component: AboutComponent, title: 'About' },
+   { path: 'privacy-policy', component: PrivacyPolicyComponent, title: 'Privacy-Policy' },
+   { path: 'terms', component: TermsConditionsComponent, title: 'Terms and Conditions' },
   { path: '**', redirectTo: '' } // Redirect unknown routes to home
 ];

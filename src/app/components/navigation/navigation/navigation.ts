@@ -12,8 +12,8 @@ import { RouterModule } from '@angular/router';
         <!-- Logo -->
         <div class="nav-brand">
           <a routerLink="/" class="logo-link">
-            <span class="logo-icon">📋</span>
-            <span class="logo-text">AWCS Labs</span>
+            <img src="assets/icons/black.png" alt="AWCS Labs" class="logo-img" />
+            
           </a>
         </div>
 
@@ -25,50 +25,50 @@ import { RouterModule } from '@angular/router';
             [routerLinkActiveOptions]="{ exact: true }" 
             class="nav-link"
             (click)="closeMobileMenu()">
-            🏠 Home
+            Home
           </a>
+
+          <!-- Tools Dropdown -->
+          <div 
+            class="nav-link dropdown" 
+            (mouseenter)="openDropdown()" 
+            (mouseleave)="closeDropdown()">
+            <button class="dropdown-btn" type="button">
+              Tools ▾
+            </button>
+            <div class="dropdown-menu" [class.show]="isDropdownOpen">
+              <a routerLink="/viewer" routerLinkActive="active" (click)="closeMobileMenu()">JSON Viewer</a>
+              <a routerLink="/json-differ" routerLinkActive="active" (click)="closeMobileMenu()">JSON Diff</a>
+              <a routerLink="/xml-viewer" routerLinkActive="active" (click)="closeMobileMenu()">XML Viewer</a>
+              <a routerLink="/xml-differ" routerLinkActive="active" (click)="closeMobileMenu()">XML Diff</a>
+              <a routerLink="/json-csv" routerLinkActive="active" (click)="closeMobileMenu()">JSON → CSV</a>
+              <a routerLink="/xml-csv" routerLinkActive="active" (click)="closeMobileMenu()">XML → CSV</a>
+            </div>
+          </div>
+
           <!-- <a 
-            routerLink="/viewer" 
+            routerLink="/docs" 
             routerLinkActive="active" 
             class="nav-link"
             (click)="closeMobileMenu()">
-            🔍 JSON Viewer
-          </a>
-          <a 
-            routerLink="/json-differ" 
-            routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
-            ⚡ JSON Differ
+            Docs
           </a> -->
-          <!-- <a 
-            routerLink="/xml-viewer" 
-            routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
-            📄 XML Viewer
-          </a> -->
-          <!-- <a 
-            routerLink="/xml-differ" 
-            routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
-            🔄 XML Differ
-          </a> -->
-          <a 
-            routerLink="/tools" 
-            routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
-            🛠️ Tools
-          </a>
+
           <a 
             routerLink="/about" 
             routerLinkActive="active" 
             class="nav-link"
             (click)="closeMobileMenu()">
-            ℹ️ About
+            About
           </a>
+
+          <!-- <a 
+            routerLink="/contact" 
+            routerLinkActive="active" 
+            class="nav-link"
+            (click)="closeMobileMenu()">
+            Contact
+          </a> -->
         </div>
 
         <!-- Mobile menu button -->
@@ -98,6 +98,7 @@ import { RouterModule } from '@angular/router';
 })
 export class NavigationComponent implements OnDestroy {
   isMobileMenuOpen = false;
+  isDropdownOpen = false;
 
   // Toggle mobile menu
   toggleMobileMenu(): void {
@@ -111,7 +112,16 @@ export class NavigationComponent implements OnDestroy {
     this.updateBodyScroll();
   }
 
-  // Update body scroll based on menu state
+  // Dropdown controls
+  openDropdown(): void {
+    this.isDropdownOpen = true;
+  }
+
+  closeDropdown(): void {
+    this.isDropdownOpen = false;
+  }
+
+  // Manage scroll
   private updateBodyScroll(): void {
     if (this.isMobileMenuOpen) {
       document.body.classList.add('menu-open');
@@ -120,7 +130,7 @@ export class NavigationComponent implements OnDestroy {
     }
   }
 
-  // Close menu when clicking outside on mobile
+  // Close when clicking outside
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
@@ -129,21 +139,21 @@ export class NavigationComponent implements OnDestroy {
     }
   }
 
-  // Close menu on window resize (if resizing to desktop)
-  @HostListener('window:resize', ['$event'])
-  onResize(event: Event): void {
+  // Close on resize
+  @HostListener('window:resize')
+  onResize(): void {
     if (window.innerWidth > 768 && this.isMobileMenuOpen) {
       this.closeMobileMenu();
     }
   }
 
-  // Close menu when navigating (using browser buttons)
+  // Close on browser navigation
   @HostListener('window:popstate')
   onPopState(): void {
     this.closeMobileMenu();
   }
 
-  // Clean up when component is destroyed
+  // Cleanup
   ngOnDestroy(): void {
     document.body.classList.remove('menu-open');
   }
