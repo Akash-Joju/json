@@ -14,10 +14,19 @@ import { RouterModule } from '@angular/router';
           <div class="copyright">
             © 2025 Powered by Adhwaitha Web Consultancy Services
           </div>
+          
+        </div>
+
+         <div class="footer-section">
+          <div class="copyright">
+            All Rights reserved
+          </div>
+          
         </div>
 
         <div class="footer-section">
           <div class="footer-links">
+            
             <a routerLink="/privacy-policy" class="footer-link">Privacy Policy</a>
             <span class="link-separator">|</span>
             <a routerLink="/terms" class="footer-link">Terms and Conditions</a>
