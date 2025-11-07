@@ -1,5 +1,5 @@
 // tools.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -76,4 +76,20 @@ import { RouterModule } from '@angular/router';
   `,
   styleUrls: ['./tools.scss']
 })
-export class ToolsComponent {}
+export class ToolsComponent implements OnInit {
+
+  ngOnInit() {
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
+  }
+}

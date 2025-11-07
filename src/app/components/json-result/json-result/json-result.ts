@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { JsonCompareService } from '../../../services/json-compare/json-compare.service';
+import { ThemeService } from '../../../services/theme.service'; // ADD THIS
+import { Subscription } from 'rxjs'; // ADD THIS
 
 interface DiffPart {
   value: string;
@@ -235,7 +237,10 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   currentDiffIndex: number = 0;
   showOptionsPanel: boolean = false;
   hasData: boolean = false;
+  
+  // Theme management - UPDATED
   isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
   options: ComparisonOptions = {
     ignoreArrayOrder: false,
@@ -252,20 +257,19 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private jsonCompareService: JsonCompareService
+    private jsonCompareService: JsonCompareService,
+    private themeService: ThemeService // ADD THIS
   ) {
-    const savedTheme = localStorage.getItem('json-differ-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
-    }
-  }
-
-  toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('json-differ-theme', this.isDarkMode ? 'dark' : 'light');
+    // Use the synchronous method to get initial theme - UPDATED
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
   }
 
   ngOnInit(): void {
+    // Subscribe to theme changes from the global theme service - ADD THIS
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     const data = this.jsonCompareService.getComparisonData();
     if (!data) {
       this.router.navigate(['/json-differ']);
@@ -281,8 +285,18 @@ export class JsonResultsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clean up subscription - ADD THIS
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+    
     this.visited = new WeakSet();
     this.lineToPathMap.clear();
+  }
+
+  // Theme toggle method - UPDATED to use service
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 
   private performComparison(leftObj: any, rightObj: any): void {

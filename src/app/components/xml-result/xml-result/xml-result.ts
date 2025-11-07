@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { XmlUtilsService} from '../../../services/xml-utils.service';
 import { XmlCompareService } from '../../../services/xml-compare/xml-compare.service';
 import { XmlViewerStats } from '../../xml-types/xml-types';
+import { ThemeService } from '../../../services/theme.service'; // ADD THIS
+import { Subscription } from 'rxjs'; // ADD THIS
 
 interface Difference {
   description: string;
@@ -220,8 +222,9 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
   showOptionsPanel: boolean = false;
   hasData: boolean = false;
 
-  // Dark theme properties
+  // Theme management - UPDATED
   isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
   options: ComparisonOptions = {
     ignoreWhitespace: true,
@@ -235,15 +238,19 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private xmlUtils: XmlUtilsService,
-    private xmlCompareService: XmlCompareService
+    private xmlCompareService: XmlCompareService,
+    private themeService: ThemeService // ADD THIS
   ) {
-    const savedTheme = localStorage.getItem('xml-viewer-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
-    }
+    // Use the synchronous method to get initial theme - UPDATED
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
   }
 
   ngOnInit(): void {
+    // Subscribe to theme changes from the global theme service - ADD THIS
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     const data = this.xmlCompareService.getComparisonData();
     if (!data) {
       this.router.navigate(['/xml-differ']);
@@ -258,12 +265,16 @@ export class XmlResultsComponent implements OnInit, OnDestroy {
     this.performComparison(data.leftDoc, data.rightDoc);
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    // Clean up subscription - ADD THIS
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+  }
 
-  // Dark theme toggle method
+  // Theme toggle method - UPDATED to use service
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+    this.themeService.toggleTheme();
   }
 
   private performComparison(leftDoc: Document | null, rightDoc: Document | null): void {

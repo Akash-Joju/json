@@ -1,9 +1,11 @@
-import { Component, ElementRef, ViewChild, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { JsonUtilsService, JsonNode, SearchResult } from '../../../services/json-utils.service';
 import { JsonNodeComponent } from '../../json-node/json-node/json-node';
 import { FileSizePipe } from '../../../pipes/file-size.pipe';
+import { ThemeService } from '../../../services/theme.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-json-viewer',
@@ -11,14 +13,10 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
   imports: [CommonModule, FormsModule, JsonNodeComponent, FileSizePipe],
   template: `
     <div class="json-viewer-container" [class.dark-mode]="isDarkMode">
-      <!-- Ultra Compact Header -->
+      <!-- Ultra Compact Header - THEME TOGGLE REMOVED -->
       <div class="page-header">
         <h1>JSON Viewer</h1>
-        <div class="theme-toggle">
-          <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
-            {{ isDarkMode ? '☀️' : '🌙' }}
-          </button>
-        </div>
+        <!-- Theme toggle removed but functionality remains -->
       </div>
 
       <!-- Main Content Area -->
@@ -330,10 +328,22 @@ import { FileSizePipe } from '../../../pipes/file-size.pipe';
   `,
   styleUrls: ['./json-viewer.scss']
 })
-export class JsonViewerComponent implements OnInit {
+export class JsonViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.scrollToTop();
+    // Subscribe to theme changes from the global theme service
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+      this.cdRef.detectChanges(); // Ensure change detection runs
+    });
+  }
+
+  ngOnDestroy() {
+    // Clean up subscription
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   private scrollToTop() {
@@ -349,8 +359,9 @@ export class JsonViewerComponent implements OnInit {
   @ViewChild('treeContainer') treeContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef;
 
-  // Theme management
+  // Theme management - UPDATED
   isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
   // Input methods
   activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
@@ -391,20 +402,16 @@ export class JsonViewerComponent implements OnInit {
 
   constructor(
     private jsonUtils: JsonUtilsService,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private themeService: ThemeService // ADD THIS
   ) {
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem('json-viewer-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
-    }
+    // Use the synchronous method to get initial theme
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
   }
 
-  // Theme toggle method
+  // Theme toggle method - UPDATED to use service
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    // Save preference to localStorage
-    localStorage.setItem('json-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+    this.themeService.toggleTheme();
   }
 
   // Input method management

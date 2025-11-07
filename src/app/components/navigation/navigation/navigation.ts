@@ -1,19 +1,25 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { GlobalThemeToggleComponent } from '../../global-theme/global-theme';
+import { ThemeService } from '../../../services/theme.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, GlobalThemeToggleComponent],
   template: `
     <nav class="navbar">
       <div class="nav-container">
         <!-- Logo -->
         <div class="nav-brand">
           <a routerLink="/" class="logo-link">
-            <img src="assets/icons/black.png" alt="AWCS Labs" class="logo-img" />
-            
+            <img 
+              [src]="getLogoImage()" 
+              alt="AWCS Labs" 
+              class="logo-img" 
+            />
           </a>
         </div>
 
@@ -28,31 +34,14 @@ import { RouterModule } from '@angular/router';
             Home
           </a>
 
-          <!-- Tools Dropdown -->
-          <div 
-            class="nav-link dropdown" 
-            (mouseenter)="openDropdown()" 
-            (mouseleave)="closeDropdown()">
-            <button class="dropdown-btn" type="button">
-              Tools ▾
-            </button>
-            <div class="dropdown-menu" [class.show]="isDropdownOpen">
-              <a routerLink="/viewer" routerLinkActive="active" (click)="closeMobileMenu()">JSON Viewer</a>
-              <a routerLink="/json-differ" routerLinkActive="active" (click)="closeMobileMenu()">JSON Diff</a>
-              <a routerLink="/xml-viewer" routerLinkActive="active" (click)="closeMobileMenu()">XML Viewer</a>
-              <a routerLink="/xml-differ" routerLinkActive="active" (click)="closeMobileMenu()">XML Diff</a>
-              <a routerLink="/json-csv" routerLinkActive="active" (click)="closeMobileMenu()">JSON → CSV</a>
-              <a routerLink="/xml-csv" routerLinkActive="active" (click)="closeMobileMenu()">XML → CSV</a>
-            </div>
-          </div>
-
-          <!-- <a 
-            routerLink="/docs" 
+          <!-- Tools Link - No Dropdown -->
+          <a 
+            routerLink="/tools" 
             routerLinkActive="active" 
             class="nav-link"
             (click)="closeMobileMenu()">
-            Docs
-          </a> -->
+            Tools
+          </a>
 
           <a 
             routerLink="/about" 
@@ -62,17 +51,18 @@ import { RouterModule } from '@angular/router';
             About
           </a>
 
-          <!-- <a 
-            routerLink="/contact" 
-            routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
-            Contact
-          </a> -->
+          <!-- Global Theme Toggle -->
+          <div class="nav-link theme-toggle-container">
+            <app-global-theme-toggle></app-global-theme-toggle>
+          </div>
         </div>
 
-        <!-- Mobile menu button -->
+        <!-- Mobile menu button and theme toggle -->
         <div class="mobile-menu">
+          <!-- Theme toggle for mobile -->
+          <div class="mobile-theme-toggle">
+            <app-global-theme-toggle></app-global-theme-toggle>
+          </div>
           <button 
             class="menu-btn" 
             (click)="toggleMobileMenu()"
@@ -96,23 +86,37 @@ import { RouterModule } from '@angular/router';
   `,
   styleUrls: ['./navigation.scss']
 })
-export class NavigationComponent implements OnDestroy {
+export class NavigationComponent implements OnInit, OnDestroy {
   isMobileMenuOpen = false;
   isDropdownOpen = false;
+  currentTheme: 'light' | 'dark' = 'light';
+  private themeSubscription!: Subscription;
 
-  // Toggle mobile menu
+  constructor(private themeService: ThemeService) {}
+
+  ngOnInit(): void {
+    // Subscribe to theme changes
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.currentTheme = theme;
+    });
+  }
+
+  getLogoImage(): string {
+    return this.currentTheme === 'dark' 
+      ? 'assets/icons/white.png' 
+      : 'assets/icons/black.png';
+  }
+
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
     this.updateBodyScroll();
   }
 
-  // Close mobile menu
   closeMobileMenu(): void {
     this.isMobileMenuOpen = false;
     this.updateBodyScroll();
   }
 
-  // Dropdown controls
   openDropdown(): void {
     this.isDropdownOpen = true;
   }
@@ -121,7 +125,6 @@ export class NavigationComponent implements OnDestroy {
     this.isDropdownOpen = false;
   }
 
-  // Manage scroll
   private updateBodyScroll(): void {
     if (this.isMobileMenuOpen) {
       document.body.classList.add('menu-open');
@@ -130,7 +133,6 @@ export class NavigationComponent implements OnDestroy {
     }
   }
 
-  // Close when clicking outside
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
@@ -139,7 +141,6 @@ export class NavigationComponent implements OnDestroy {
     }
   }
 
-  // Close on resize
   @HostListener('window:resize')
   onResize(): void {
     if (window.innerWidth > 768 && this.isMobileMenuOpen) {
@@ -147,14 +148,15 @@ export class NavigationComponent implements OnDestroy {
     }
   }
 
-  // Close on browser navigation
   @HostListener('window:popstate')
   onPopState(): void {
     this.closeMobileMenu();
   }
 
-  // Cleanup
   ngOnDestroy(): void {
     document.body.classList.remove('menu-open');
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 }

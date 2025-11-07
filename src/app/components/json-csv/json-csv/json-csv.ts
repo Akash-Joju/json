@@ -1,8 +1,10 @@
 // json-csv-converter.component.ts
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSizePipe } from '../../../pipes/file-size.pipe';
+import { ThemeService } from '../../../services/theme.service'; // ADD THIS
+import { Subscription } from 'rxjs'; // ADD THIS
 
 interface ConversionOptions {
   flattenObjects: boolean;
@@ -24,22 +26,12 @@ interface CsvTableData {
   templateUrl: './json-csv.html',
   styleUrls: ['./json-csv.scss']
 })
-export class JsonCsvConverterComponent implements OnInit {
+export class JsonCsvConverterComponent implements OnInit, OnDestroy {
 
-  ngOnInit() {
-    this.scrollToTop();
-  }
+  // Theme management - UPDATED
+  isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
-  private scrollToTop() {
-    // Check if we're in a browser environment
-    if (typeof window !== 'undefined') {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'smooth'
-      });
-    }
-  }
   activeInputMethod: 'manual' | 'file' | 'url' = 'manual';
   jsonInput: string = '';
   isValid: boolean = true;
@@ -57,9 +49,6 @@ export class JsonCsvConverterComponent implements OnInit {
   conversionError: string = '';
   csvTableData: CsvTableData = { headers: [], rows: [] };
   autoDetectedRootPath: string = '';
-  
-  // Dark theme properties
-  isDarkMode: boolean = false;
 
   conversionOptions: ConversionOptions = {
     flattenObjects: true,
@@ -75,17 +64,44 @@ export class JsonCsvConverterComponent implements OnInit {
     'https://jsonplaceholder.typicode.com/todos'
   ];
 
-  constructor(private cdRef: ChangeDetectorRef) {
-    const savedTheme = localStorage.getItem('xml-viewer-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
+  constructor(
+    private cdRef: ChangeDetectorRef,
+    private themeService: ThemeService // ADD THIS
+  ) {
+    // Use the synchronous method to get initial theme - UPDATED
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
+  }
+
+  ngOnInit() {
+    // Subscribe to theme changes from the global theme service - ADD THIS
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+    
+    this.scrollToTop();
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription - ADD THIS
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 
-  // Dark theme toggle method
+  // Theme toggle method - UPDATED to use service
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+    this.themeService.toggleTheme();
+  }
+
+  private scrollToTop() {
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
   }
 
   setInputMethod(method: 'manual' | 'file' | 'url'): void {

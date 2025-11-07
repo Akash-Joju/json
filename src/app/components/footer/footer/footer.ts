@@ -12,7 +12,7 @@ import { RouterModule } from '@angular/router';
         <!-- Logo and Company Info -->
         <div class="footer-section">
           <div class="footer-logo">
-             <img src="assets/icons/white.png" alt="" class="logo-img" />
+             <img src="assets/icons/white.png" alt="AWCS Labs" class="logo-img" />
             <!-- <span class="logo-text">AWCS Labs</span> -->
           </div>
           <!-- <p class="company-tagline">Customization Through Innovation</p> -->
@@ -115,8 +115,9 @@ import { RouterModule } from '@angular/router';
     }
 
     .logo-img {
-      // width: 24px;
-      height: 44px;
+      /* FIXED: No hardcoded height - maintains image clarity */
+      max-width: 150px; /* Only sets maximum size */
+      height: auto; /* Maintains aspect ratio */
       object-fit: contain;
     }
 
@@ -196,10 +197,7 @@ import { RouterModule } from '@angular/router';
 
       .footer-section {
         align-items: flex-end;
-    text-align: right;
-        
-        
-        
+        text-align: right;
       }
 
       .social-links {

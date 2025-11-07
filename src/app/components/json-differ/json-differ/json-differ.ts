@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { JsonCompareService } from '../../../services/json-compare/json-compare.service';
+import { ThemeService } from '../../../services/theme.service'; // ADD THIS
+import { Subscription } from 'rxjs'; // ADD THIS
 
 interface ComparisonOptions {
   ignoreArrayOrder: boolean;
@@ -21,13 +23,14 @@ interface ComparisonOptions {
   imports: [CommonModule, FormsModule, HttpClientModule],
   template: `
 <div class="json-differ-container" [class.dark-mode]="isDarkMode">
+  <h2>JSON Differ</h2>
   <!-- Theme Toggle Button -->
-  <div class="theme-toggle-header">
-    <h2>JSON Differ</h2>
+  <!-- <div class="theme-toggle-header">
+    
     <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
       {{ isDarkMode ? '☀️' : '🌙' }}
     </button>
-  </div>
+  </div> -->
   
   <p>Compare two JSON objects</p>
 
@@ -139,7 +142,7 @@ interface ComparisonOptions {
   `,
   styleUrls: ['./json-differ.scss']
 })
-export class JsonDifferComponent {
+export class JsonDifferComponent implements OnInit, OnDestroy {
   leftJson: string = '';
   rightJson: string = '';
   leftFileName: string = '';
@@ -153,7 +156,10 @@ export class JsonDifferComponent {
   error: string = '';
   loading: boolean = false;
   formatStatus: string = '';
+  
+  // Theme management - UPDATED
   isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
   options: ComparisonOptions = {
     ignoreArrayOrder: false,
@@ -170,17 +176,30 @@ export class JsonDifferComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private jsonCompareService: JsonCompareService
+    private jsonCompareService: JsonCompareService,
+    private themeService: ThemeService // ADD THIS
   ) {
-    const savedTheme = localStorage.getItem('json-differ-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
+    // Use the synchronous method to get initial theme - UPDATED
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
+  }
+
+  ngOnInit(): void {
+    // Subscribe to theme changes from the global theme service - ADD THIS
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription - ADD THIS
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 
+  // Theme toggle method - UPDATED to use service
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('json-differ-theme', this.isDarkMode ? 'dark' : 'light');
+    this.themeService.toggleTheme();
   }
 
   // File selection handler with auto-format

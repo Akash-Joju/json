@@ -4,11 +4,12 @@ import { NavigationComponent } from './components/navigation/navigation/navigati
 import { FooterComponent } from './components/footer/footer/footer';
 import { DebugComponent } from "./components/debugger/debugger";
 import { PrivacyAlertBannerComponent } from './components/privacy-summary/privacy-summary/privacy-summary';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavigationComponent, FooterComponent, DebugComponent,PrivacyAlertBannerComponent],
+  imports: [RouterOutlet, NavigationComponent, FooterComponent, DebugComponent, PrivacyAlertBannerComponent],
   template: `
    <!-- <app-debug></app-debug> -->
     <div class="app-container">
@@ -40,16 +41,19 @@ import { PrivacyAlertBannerComponent } from './components/privacy-summary/privac
     margin: 0 !important;
     padding: 0 !important;
     overflow-x: hidden !important;
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
   }
   
   .main-content {
     flex: 1;
     width: 100% !important;
-    background-color: #f8f9fa;
+    background-color: var(--bg-primary) !important;
     margin: 0 !important;
     padding: 0 !important;
-    padding-top: 80px !important;
+     padding-top: 50px !important;
     min-width: 100% !important;
+    color: var(--text-primary) !important;
   }
 
   /* Ensure router outlet content takes full width */
@@ -66,4 +70,11 @@ import { PrivacyAlertBannerComponent } from './components/privacy-summary/privac
 })
 export class AppComponent {
   title = 'JSON Tools';
+
+  constructor(private themeService: ThemeService) {
+    // Force apply theme on app start - FIXED: use getCurrentThemeValue() instead
+    setTimeout(() => {
+      this.themeService.setTheme(this.themeService.getCurrentThemeValue());
+    }, 100);
+  }
 }

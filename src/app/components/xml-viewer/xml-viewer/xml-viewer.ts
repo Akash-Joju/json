@@ -1,9 +1,11 @@
 // xml-viewer.component.ts - WITH FIXED NODE SELECTION AFTER EXPAND ALL
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnChanges, SimpleChanges, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { XmlUtilsService } from '../../../services/xml-utils.service';
 import { FileSizePipe } from '../../../pipes/file-size.pipe';
+import { ThemeService } from '../../../services/theme.service'; // ADD THIS
+import { Subscription } from 'rxjs'; // ADD THIS
 
 export interface XmlNode {
   treeLineNumber: any;
@@ -50,7 +52,7 @@ export interface TreeLine {
   templateUrl: './xml-viewer.html',
   styleUrls: ['./xml-viewer.scss']
 })
-export class XmlViewerComponent implements OnChanges, AfterViewInit {
+export class XmlViewerComponent implements OnInit, OnDestroy, OnChanges, AfterViewInit {
   @Input() xmlData: string = '';
   @Input() editable: boolean = true;
   @Input() showLineNumbers: boolean = true;
@@ -63,7 +65,9 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
   @ViewChild('lineNumbers') lineNumbers!: ElementRef<HTMLDivElement>;
   @ViewChild('treeContentArea') treeContentArea!: ElementRef<HTMLDivElement>;
 
+  // Theme management - UPDATED
   isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
   parsedData: XmlNode | null = null;
   error: string = '';
@@ -212,25 +216,37 @@ export class XmlViewerComponent implements OnChanges, AfterViewInit {
 
   private selectedNodePath: string | null = null;
 
-  constructor(private xmlUtilsService: XmlUtilsService) {
-    const savedTheme = localStorage.getItem('xml-viewer-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
+  constructor(
+    private xmlUtilsService: XmlUtilsService,
+    private themeService: ThemeService // ADD THIS
+  ) {
+    // Use the synchronous method to get initial theme - UPDATED
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
+  }
+
+  ngOnInit(): void {
+    this.checkMobileView();
+    // Subscribe to theme changes from the global theme service - ADD THIS
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription - ADD THIS
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 
+  // Theme toggle method - UPDATED to use service
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+    this.themeService.toggleTheme();
   }
 
   get currentColors(): ColorTheme {
     const themes = this.isDarkMode ? this.darkColorThemes : this.colorThemes;
     return themes[this.colorScheme] || themes['default'];
-  }
-
-  ngOnInit(): void {
-    this.checkMobileView();
   }
 
   ngOnChanges(changes: SimpleChanges): void {

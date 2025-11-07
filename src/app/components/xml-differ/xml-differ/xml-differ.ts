@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { XmlUtilsService} from '../../../services/xml-utils.service';
 import { XmlViewerStats } from '../../xml-types/xml-types';
 import { XmlCompareService } from '../../../services/xml-compare/xml-compare.service';
+import { ThemeService } from '../../../services/theme.service'; // ADD THIS
+import { Subscription } from 'rxjs'; // ADD THIS
 
 interface ComparisonOptions {
   ignoreWhitespace: boolean;
@@ -25,11 +27,11 @@ interface ComparisonOptions {
   <!-- Header with Theme Toggle -->
   <div class="page-header">
     <h2>XML Differ</h2>
-    <div class="theme-toggle">
+    <!-- <div class="theme-toggle">
       <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
         {{ isDarkMode ? '☀️' : '🌙' }}
       </button>
-    </div>
+    </div> -->
   </div>
 
   <p class="subtitle">Compare two XML documents</p>
@@ -162,7 +164,7 @@ interface ComparisonOptions {
   `,
   styleUrls: ['./xml-differ.scss']
 })
-export class XmlDifferComponent {
+export class XmlDifferComponent implements OnInit, OnDestroy {
   leftXml: string = '';
   rightXml: string = '';
   leftFileName: string = '';
@@ -179,8 +181,9 @@ export class XmlDifferComponent {
   loading: boolean = false;
   formatStatus: string = '';
 
-  // Dark theme properties
+  // Theme management - UPDATED
   isDarkMode: boolean = false;
+  private themeSubscription!: Subscription;
 
   options: ComparisonOptions = {
     ignoreWhitespace: true,
@@ -197,18 +200,30 @@ export class XmlDifferComponent {
     private http: HttpClient,
     private xmlUtils: XmlUtilsService,
     private router: Router,
-    private xmlCompareService: XmlCompareService
+    private xmlCompareService: XmlCompareService,
+    private themeService: ThemeService // ADD THIS
   ) {
-    const savedTheme = localStorage.getItem('xml-viewer-theme');
-    if (savedTheme) {
-      this.isDarkMode = savedTheme === 'dark';
+    // Use the synchronous method to get initial theme - UPDATED
+    this.isDarkMode = this.themeService.getCurrentThemeValue() === 'dark';
+  }
+
+  ngOnInit(): void {
+    // Subscribe to theme changes from the global theme service - ADD THIS
+    this.themeSubscription = this.themeService.getCurrentTheme().subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription - ADD THIS
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 
-  // Dark theme toggle method
+  // Theme toggle method - UPDATED to use service
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem('xml-viewer-theme', this.isDarkMode ? 'dark' : 'light');
+    this.themeService.toggleTheme();
   }
 
   // File selection handler with auto-format
