@@ -24,13 +24,12 @@ import { Subscription } from 'rxjs';
         </div>
 
         <!-- Desktop Navigation Links -->
-        <div class="nav-links" [class.active]="isMobileMenuOpen">
+        <div class="nav-links">
           <a 
             routerLink="/" 
             routerLinkActive="active" 
             [routerLinkActiveOptions]="{ exact: true }" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
+            class="nav-link">
             Home
           </a>
 
@@ -38,16 +37,14 @@ import { Subscription } from 'rxjs';
           <a 
             routerLink="/tools" 
             routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
+            class="nav-link">
             Tools
           </a>
 
           <a 
             routerLink="/about" 
             routerLinkActive="active" 
-            class="nav-link"
-            (click)="closeMobileMenu()">
+            class="nav-link">
             About
           </a>
 
@@ -75,12 +72,34 @@ import { Subscription } from 'rxjs';
         </div>
       </div>
 
-      <!-- Mobile menu overlay -->
+      <!-- Mobile Menu (Separate from desktop) -->
       <div 
-        class="mobile-overlay" 
-        [class.active]="isMobileMenuOpen"
-        (click)="closeMobileMenu()"
-        aria-hidden="true">
+        class="mobile-nav-links" 
+        [class.active]="isMobileMenuOpen">
+        <a 
+          routerLink="/" 
+          routerLinkActive="active" 
+          [routerLinkActiveOptions]="{ exact: true }" 
+          class="nav-link"
+          (click)="closeMobileMenu()">
+          Home
+        </a>
+
+        <a 
+          routerLink="/tools" 
+          routerLinkActive="active" 
+          class="nav-link"
+          (click)="closeMobileMenu()">
+          Tools
+        </a>
+
+        <a 
+          routerLink="/about" 
+          routerLinkActive="active" 
+          class="nav-link"
+          (click)="closeMobileMenu()">
+          About
+        </a>
       </div>
     </nav>
   `,
@@ -88,7 +107,6 @@ import { Subscription } from 'rxjs';
 })
 export class NavigationComponent implements OnInit, OnDestroy {
   isMobileMenuOpen = false;
-  isDropdownOpen = false;
   currentTheme: 'light' | 'dark' = 'light';
   private themeSubscription!: Subscription;
 
@@ -117,19 +135,17 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.updateBodyScroll();
   }
 
-  openDropdown(): void {
-    this.isDropdownOpen = true;
-  }
-
-  closeDropdown(): void {
-    this.isDropdownOpen = false;
-  }
-
   private updateBodyScroll(): void {
     if (this.isMobileMenuOpen) {
       document.body.classList.add('menu-open');
+      // Prevent background scroll
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     } else {
       document.body.classList.remove('menu-open');
+      // Restore scroll
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     }
   }
 
@@ -155,6 +171,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.body.classList.remove('menu-open');
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
     if (this.themeSubscription) {
       this.themeSubscription.unsubscribe();
     }
