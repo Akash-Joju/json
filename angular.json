@@ -23,17 +23,17 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-           "assets": [
-  "src/favicon.ico",
-  "src/assets",
-  "src/_redirects",
-  {
-    "glob": "**/*",
-    "input": "public",
-    "output": "/"
-  }
-]
-
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/_redirects",
+              "src/.htaccess",  
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
+              }
+            ]
           },
           "configurations": {
             "production": {
@@ -45,8 +45,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-    "maximumWarning": "50kb",
-    "maximumError": "100kb"
+                  "maximumWarning": "50kb",
+                  "maximumError": "100kb"
                 }
               ],
               "outputHashing": "all"
@@ -83,17 +83,17 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
-           "assets": [
-  "src/favicon.ico",
-  "src/assets",
-  "src/_redirects",
-  {
-    "glob": "**/*",
-    "input": "public",
-    "output": "/"
-  }
-]
-
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/_redirects",
+              "src/.htaccess",  
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
+              }
+            ]
           }
         }
       }

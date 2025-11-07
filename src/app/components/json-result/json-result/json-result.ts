@@ -53,9 +53,9 @@ interface ComparisonOptions {
   <div class="theme-toggle-header">
     <div class="header-content">
       <h2>JSON Comparison Results</h2>
-      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+      <!-- <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
         {{ isDarkMode ? '☀️' : '🌙' }}
-      </button>
+      </button> -->
     </div>
     <div class="header-actions">
       <button (click)="toggleOptionsPanel()" class="btn btn--secondary">

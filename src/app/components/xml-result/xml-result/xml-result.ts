@@ -45,11 +45,11 @@ interface ComparisonOptions {
   <!-- Header with Theme Toggle -->
   <div class="page-header">
     <h2>XML Comparison Results</h2>
-    <div class="theme-toggle">
+    <!-- <div class="theme-toggle">
       <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
         {{ isDarkMode ? '☀️' : '🌙' }}
       </button>
-    </div>
+    </div> -->
   </div>
 
   <!-- Summary Card -->

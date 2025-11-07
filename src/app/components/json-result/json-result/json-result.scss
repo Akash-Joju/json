@@ -66,6 +66,7 @@ $dark-modified-bg: #3a2e1e;
   color: $text;
   background: white;
   transition: all 0.3s ease;
+  margin-top: 10px;
 
   // COMPLETE DARK MODE STYLES
   &.dark-mode {
