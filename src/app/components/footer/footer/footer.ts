@@ -12,17 +12,17 @@ import { RouterModule } from '@angular/router';
         <!-- Copyright and Links -->
         <div class="footer-section">
           <div class="copyright">
-            © 2025 Powered by Adhwaitha Web Consultancy Services
+            © 2025 Powered by Adhwaitha Web Consultancy Services. All Rights reserved
           </div>
           
         </div>
 
-         <div class="footer-section">
+         <!-- <div class="footer-section">
           <div class="copyright">
             All Rights reserved
           </div>
           
-        </div>
+        </div> -->
 
         <div class="footer-section">
           <div class="footer-links">
