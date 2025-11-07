@@ -9,43 +9,32 @@ import { RouterModule } from '@angular/router';
   template: `
     <footer class="footer">
       <div class="footer-content">
-        <!-- Logo and Company Info -->
-        <div class="footer-section">
-          <div class="footer-logo">
-             <img src="assets/icons/white.png" alt="AWCS Labs" class="logo-img" />
-            <!-- <span class="logo-text">AWCS Labs</span> -->
-          </div>
-          <!-- <p class="company-tagline">Customization Through Innovation</p> -->
-        </div>
-
         <!-- Copyright and Links -->
         <div class="footer-section">
           <div class="copyright">
-            © 2025 Powered by Adhwaitha Web Consultancy Services - Customization Through Innovation. All rights reserved.
+            © 2025 Powered by Adhwaitha Web Consultancy Services
           </div>
+        </div>
+
+        <div class="footer-section">
           <div class="footer-links">
             <a routerLink="/privacy-policy" class="footer-link">Privacy Policy</a>
             <span class="link-separator">|</span>
             <a routerLink="/terms" class="footer-link">Terms and Conditions</a>
-            <!-- <span class="link-separator">|</span>
-            <a routerLink="/contact" class="footer-link">Contact</a> -->
           </div>
         </div>
 
         <!-- Social Links -->
         <div class="footer-section">
-            <div class="copyright">
-           Follow us on
-          </div>
-          <div class="social-links">
-            
+          <div class="social-container">
+            <span class="follow-text">Follow us on</span>
             <a 
               href="https://www.linkedin.com/company/adhwaitha-web-consultancy-services/" 
               target="_blank" 
               rel="noopener noreferrer" 
               class="social-link"
               aria-label="LinkedIn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
               </svg>
             </a>
@@ -65,7 +54,7 @@ import { RouterModule } from '@angular/router';
     .footer {
       background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
       color: #ecf0f1;
-      padding: 30px 0;
+      padding: 20px 0;
       margin: 0;
       border-top: 1px solid #34495e;
       width: 100%;
@@ -73,71 +62,39 @@ import { RouterModule } from '@angular/router';
     }
 
     .footer-content {
-      width: 100%;
+      max-width: 1200px;
+      // margin: 0 auto;
       padding: 0 20px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 20px;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 15px;
       box-sizing: border-box;
     }
 
     .footer-section {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-      min-width: 200px;
-      flex-basis: 0;
+      align-items: center;
+      flex: 0 1 auto;
+      white-space: nowrap;
     }
 
     .footer-section:first-child {
-      align-items: flex-start;
-      text-align: left;
+      justify-content: flex-start;
     }
 
     .footer-section:nth-child(2) {
-      align-items: center;
-      text-align: center;
+      justify-content: center;
     }
 
     .footer-section:last-child {
-      align-items: flex-end;
-      text-align: right;
-    }
-
-    .footer-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 5px;
-    }
-
-    .logo-img {
-      /* FIXED: No hardcoded height - maintains image clarity */
-      // max-width: 150px; /* Only sets maximum size */
-      height: 50px; /* Maintains aspect ratio */
-      object-fit: contain;
-    }
-
-    .logo-text {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #ecf0f1;
-    }
-
-    .company-tagline {
-      font-size: 0.9rem;
-      color: #bdc3c7;
-      font-style: italic;
-      margin: 0;
+      justify-content: flex-end;
     }
 
     .copyright {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #bdc3c7;
-      text-align: center;
       line-height: 1.4;
     }
 
@@ -145,14 +102,13 @@ import { RouterModule } from '@angular/router';
       display: flex;
       align-items: center;
       gap: 8px;
-      justify-content: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     .footer-link {
       color: #ecf0f1;
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       transition: color 0.3s ease;
       white-space: nowrap;
     }
@@ -164,17 +120,24 @@ import { RouterModule } from '@angular/router';
 
     .link-separator {
       color: #7f8c8d;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
-    .social-links {
+    .social-container {
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .follow-text {
+      font-size: 0.85rem;
+      color: #bdc3c7;
+      white-space: nowrap;
     }
 
     .social-link {
       color: #ecf0f1;
-      padding: 8px;
+      padding: 6px;
       border-radius: 4px;
       transition: all 0.3s ease;
       display: flex;
@@ -191,17 +154,31 @@ import { RouterModule } from '@angular/router';
     @media (max-width: 768px) {
       .footer-content {
         flex-direction: column;
+        gap: 15px;
         text-align: center;
-        gap: 25px;
       }
 
       .footer-section {
-        align-items: flex-end;
-        text-align: right;
+        justify-content: center;
+        // width: 100%;
       }
 
-      .social-links {
-        justify-content: center;
+      .copyright, .follow-text {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .footer-content {
+        padding: 0 15px;
+      }
+      
+      .copyright {
+        font-size: 0.8rem;
+      }
+      
+      .footer-link, .follow-text {
+        font-size: 0.8rem;
       }
     }
   `]
