@@ -6,7 +6,7 @@
   top: 0;
   z-index: 1000;
   width: 100%;
-  height: 4px;
+  height: 80px;
   left: 0;
   right: 0;
   box-sizing: border-box;
@@ -72,8 +72,8 @@
 
   .logo-img {
     /* FIXED: No hardcoded dimensions - maintains image clarity */
-    max-width: 150px; /* Only sets maximum size */
-    height: auto; /* Maintains aspect ratio */
+    // max-width: 150px; /* Only sets maximum size */
+    height: 50px; /* Maintains aspect ratio */
     object-fit: contain;
     
     @media (max-width: 768px) {

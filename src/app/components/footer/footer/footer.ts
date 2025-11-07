@@ -116,8 +116,8 @@ import { RouterModule } from '@angular/router';
 
     .logo-img {
       /* FIXED: No hardcoded height - maintains image clarity */
-      max-width: 150px; /* Only sets maximum size */
-      height: auto; /* Maintains aspect ratio */
+      // max-width: 150px; /* Only sets maximum size */
+      height: 50px; /* Maintains aspect ratio */
       object-fit: contain;
     }
 
